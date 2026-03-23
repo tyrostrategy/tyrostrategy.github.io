@@ -314,7 +314,21 @@
     "dataverseConnection": "Dataverse Connection",
     "notConfigured": "Not Configured",
     "about": "About",
-    "version": "Version"
+    "version": "Version",
+    "tagManagement": "Tag Management",
+    "tagManagementDesc": "Manage tags and their colors that can be assigned to objectives",
+    "addTag": "New Tag",
+    "tagName": "Tag Name",
+    "tagColor": "Color",
+    "tagNamePlaceholder": "Enter tag name...",
+    "tagDeleteConfirm": "Are you sure you want to delete this tag?",
+    "tagInUseWarning": "This tag is used in {{count}} objectives. After deletion, tag references in objectives will remain.",
+    "tagNameRequired": "Tag name is required",
+    "tagNameDuplicate": "A tag with this name already exists",
+    "tagCreated": "Tag created",
+    "tagUpdated": "Tag updated",
+    "tagDeleted": "Tag deleted",
+    "noTags": "No tags defined yet"
   },
   "users": {
     "title": "Users"
@@ -365,7 +379,27 @@
     "relatedObjectives": "Related Objectives"
   },
   "karargah": {
-    "tablo": "Table"
+    "tablo": "Table",
+    "master": "Master",
+    "selectObjective": "Select an objective",
+    "selectObjectiveDesc": "Select an objective from the list to view details",
+    "generalStatus": "General Status",
+    "overallProgress": "Overall Progress",
+    "objectiveInfo": "Objective Details",
+    "actionsCount": "Actions ({{count}})",
+    "addAction": "Add Action",
+    "actionsCompleted": "{{completed}}/{{total}} actions completed",
+    "clearFilters": "Clear filters",
+    "noObjectivesFound": "No objectives match these filters",
+    "sortByName": "By name",
+    "sortByDate": "By date",
+    "sortByProgress": "By progress",
+    "sortByStatus": "By status",
+    "quickProgress": "Quick Update",
+    "actionUpdated": "Action updated",
+    "createdByAt": "Created by: {{user}}, {{date}}",
+    "updatedByAt": "Last updated: {{user}}, {{date}}",
+    "noDescription": "No description added"
   },
   "tAlignment": {
     "horizontal": "Horizontal",

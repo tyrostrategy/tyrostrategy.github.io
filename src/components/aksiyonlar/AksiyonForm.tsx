@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +12,8 @@ import { toast } from "@/stores/toastStore";
 import { getStatusOptions } from "@/lib/constants";
 import { formatDate } from "@/lib/dateUtils";
 import { departments } from "@/config/departments";
-import type { Aksiyon } from "@/types";
+import StatusBadge from "@/components/ui/StatusBadge";
+import type { Aksiyon, EntityStatus } from "@/types";
 
 const CURRENT_USER = "Cenk \u015eayli";
 const allUsers = departments.flatMap((d) => d.users.map((u) => u.name));
@@ -49,6 +50,8 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
   const {
     control,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<AksiyonFormData>({
     resolver: zodResolver(aksiyonSchema),
@@ -64,15 +67,61 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
     },
   });
 
+  // ===== İlerleme → Durum otomatik hesaplama =====
+  const watchProgress = watch("progress");
+  const watchStartDate = watch("startDate");
+  const watchEndDate = watch("endDate");
+
+  const suggestStatus = (progress: number, start: string, end: string): EntityStatus => {
+    if (progress === 0) return "Not Started";
+    if (progress >= 100) return "Achieved";
+    // %1-99: tarihe göre hesapla
+    if (!start || !end) return "On Track";
+    const now = Date.now();
+    const startMs = new Date(start).getTime();
+    const endMs = new Date(end).getTime();
+    const totalDuration = endMs - startMs;
+    if (totalDuration <= 0) return "On Track";
+    const elapsed = now - startMs;
+    const expectedProgress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+    const diff = expectedProgress - progress;
+    if (diff > 20) return "Behind";    // %20'den fazla geride → Gecikmeli
+    if (diff > 10) return "At Risk";   // %10-20 geride → Risk Altında
+    return "On Track";                  // Planda → Yolunda
+  };
+
+  // İlerleme değiştiğinde durumu otomatik öner
+  useEffect(() => {
+    const suggested = suggestStatus(watchProgress, watchStartDate, watchEndDate);
+    // %0 ve %100'de kilitli — otomatik set
+    if (watchProgress === 0 || watchProgress >= 100) {
+      setValue("status", suggested);
+    } else {
+      // %1-99: öner ama kullanıcı override edebilir
+      setValue("status", suggested);
+    }
+  }, [watchProgress, watchStartDate, watchEndDate, setValue]);
+
+  const isStatusLocked = watchProgress === 0 || watchProgress >= 100;
+
   const onSubmit = (data: AksiyonFormData) => {
     setIsLoading(true);
     try {
       if (aksiyon) {
+        // Detect changed fields for detailed toast
+        const changes: string[] = [];
+        if (data.name !== aksiyon.name) changes.push(`Ad: "${data.name}"`);
+        if (data.progress !== aksiyon.progress) changes.push(`İlerleme: %${data.progress}`);
+        if (data.status !== aksiyon.status) changes.push(`Durum: ${data.status}`);
+        if (data.owner !== aksiyon.owner) changes.push(`Sahip: ${data.owner}`);
+        if (data.startDate !== aksiyon.startDate) changes.push(`Başlangıç: ${data.startDate}`);
+        if (data.endDate !== aksiyon.endDate) changes.push(`Bitiş: ${data.endDate}`);
         updateAksiyon(aksiyon.id, data);
-        toast.success(t("toast.actionUpdated"), `"${data.name}" ${t("toast.updatedSuccessfully")}.`);
+        const detail = changes.length > 0 ? `"${data.name}" → ${changes.join(", ")}` : `"${data.name}" ${t("toast.updatedSuccessfully")}.`;
+        toast.success(t("toast.actionUpdated"), detail);
       } else {
         addAksiyon(data);
-        toast.success(t("toast.actionCreated"), `"${data.name}" ${t("toast.createdSuccessfully")}.`);
+        toast.success(t("toast.actionCreated"), `"${data.name}" hedefe eklendi.`);
       }
       onSuccess();
     } catch (err) {
@@ -85,13 +134,13 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
   const statusOptions = getStatusOptions(t);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
       <Controller
         name="name"
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.action.name")}<span className="text-tyro-danger ml-0.5">*</span>
             </label>
             <Input
@@ -112,12 +161,12 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.objective.description")}
             </label>
             <Textarea
               {...field}
-              placeholder={t("forms.objective.descriptionPlaceholder")}
+              placeholder={t("forms.action.descriptionPlaceholder", "Aksiyon açıklaması giriniz (isteğe bağlı)")}
               variant="bordered"
               size="sm"
               minRows={2}
@@ -133,7 +182,7 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("common.owner")}<span className="text-tyro-danger ml-0.5">*</span>
             </label>
             <Autocomplete
@@ -161,7 +210,7 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("nav.objectives")}<span className="text-tyro-danger ml-0.5">*</span>
             </label>
             <Select
@@ -268,71 +317,84 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
-              {t("forms.objective.status")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <Select
-              selectedKeys={field.value ? [field.value] : []}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as string;
-                field.onChange(val ?? "");
-              }}
-              variant="bordered"
-              size="sm"
-              isInvalid={!!errors.status}
-              errorMessage={errors.status?.message}
-              classNames={{ trigger: "border-tyro-border" }}
-              placeholder={t("forms.objective.statusPlaceholder")}
-            >
-              {statusOptions.map((opt) => (
-                <SelectItem key={opt.key}>{opt.label}</SelectItem>
-              ))}
-            </Select>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-semibold text-tyro-text-secondary">
+                {t("forms.objective.status")}<span className="text-tyro-danger ml-0.5">*</span>
+                {isStatusLocked && (
+                  <span className="ml-1.5 text-[9px] text-tyro-text-muted font-normal">(otomatik)</span>
+                )}
+              </label>
+              {field.value && <StatusBadge status={field.value as EntityStatus} />}
+            </div>
+            {!isStatusLocked ? (
+              <Select
+                selectedKeys={field.value ? [field.value] : []}
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
+                  field.onChange(val ?? "");
+                }}
+                variant="bordered"
+                size="sm"
+                isInvalid={!!errors.status}
+                errorMessage={errors.status?.message}
+                classNames={{ trigger: "border-tyro-border" }}
+                placeholder={t("forms.objective.statusPlaceholder")}
+              >
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                ))}
+              </Select>
+            ) : (
+              <p className="text-[11px] text-tyro-text-muted italic px-1">
+                {watchProgress === 0 ? "İlerleme %0 olduğunda durum otomatik belirlenir" : "İlerleme %100 olduğunda durum otomatik belirlenir"}
+              </p>
+            )}
           </div>
         )}
       />
 
-      <Controller
-        name="startDate"
-        control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
-              {t("forms.objective.startDate")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <DatePicker
-              value={toCalendarDate(field.value)}
-              onChange={(date) => field.onChange(fromCalendarDate(date))}
-              isInvalid={!!errors.startDate}
-              errorMessage={errors.startDate?.message}
-              variant="bordered"
-              size="sm"
-              granularity="day"
-            />
-          </div>
-        )}
-      />
-
-      <Controller
-        name="endDate"
-        control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
-              {t("forms.objective.endDate")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <DatePicker
-              value={toCalendarDate(field.value)}
-              onChange={(date) => field.onChange(fromCalendarDate(date))}
-              isInvalid={!!errors.endDate}
-              errorMessage={errors.endDate?.message}
-              variant="bordered"
-              size="sm"
-              granularity="day"
-            />
-          </div>
-        )}
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <Controller
+          name="startDate"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                {t("forms.objective.startDate")}<span className="text-tyro-danger ml-0.5">*</span>
+              </label>
+              <DatePicker
+                value={toCalendarDate(field.value)}
+                onChange={(date) => field.onChange(fromCalendarDate(date))}
+                isInvalid={!!errors.startDate}
+                errorMessage={errors.startDate?.message}
+                variant="bordered"
+                size="sm"
+                granularity="day"
+              />
+            </div>
+          )}
+        />
+        <Controller
+          name="endDate"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                {t("forms.objective.endDate")}<span className="text-tyro-danger ml-0.5">*</span>
+              </label>
+              <DatePicker
+                value={toCalendarDate(field.value)}
+                onChange={(date) => field.onChange(fromCalendarDate(date))}
+                isInvalid={!!errors.endDate}
+                errorMessage={errors.endDate?.message}
+                variant="bordered"
+                size="sm"
+                granularity="day"
+              />
+            </div>
+          )}
+        />
+      </div>
 
       {aksiyon && (aksiyon.createdBy || aksiyon.createdAt || aksiyon.completedAt) && (
         <div className="mt-4 pt-4 border-t border-tyro-border/30 flex flex-wrap gap-x-6 gap-y-2">

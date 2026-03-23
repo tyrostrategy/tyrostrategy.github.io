@@ -5,7 +5,9 @@ import {
   Pagination, Input, Button, Tooltip,
   Dropdown, DropdownTrigger, DropdownMenu, DropdownItem,
 } from "@heroui/react";
-import { Search, Target, ChevronDown, Trash2, LayoutList, Kanban, CircleDot, Columns3, Eye, Pencil } from "lucide-react";
+import { Search, Target, ChevronDown, Trash2, LayoutList, Kanban, CircleDot, Columns3, Eye, Pencil, Tag } from "lucide-react";
+import TagChip from "@/components/ui/TagChip";
+import { useDataStore as useDataStoreTag } from "@/stores/dataStore";
 import { useHedefler } from "@/hooks/useHedefler";
 import { useDataStore } from "@/stores/dataStore";
 import PageHeader from "@/components/layout/PageHeader";
@@ -34,7 +36,7 @@ function formatDate(dateStr: string): string {
   }
 }
 
-const INITIAL_VISIBLE = new Set(["name", "owner", "source", "status", "startDate", "endDate", "aksiyonCount", "actions"]);
+const INITIAL_VISIBLE = new Set(["name", "owner", "source", "tags", "status", "startDate", "endDate", "aksiyonCount", "actions"]);
 
 export default function HedeflerPage() {
   const { t } = useTranslation();
@@ -45,6 +47,7 @@ export default function HedeflerPage() {
     { uid: "description", name: t("common.description") },
     { uid: "owner", name: t("common.owner") },
     { uid: "source", name: t("common.source") },
+    { uid: "tags", name: t("forms.objective.tags", "Etiketler") },
     { uid: "status", name: t("common.status") },
     { uid: "startDate", name: t("common.startDate") },
     { uid: "endDate", name: t("common.endDate") },
@@ -56,8 +59,11 @@ export default function HedeflerPage() {
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const deleteHedef = useDataStore((s) => s.deleteHedef);
 
+  const tagDefs = useDataStoreTag((s) => s.tagDefinitions);
+  const getTagColor = (name: string) => tagDefs.find((t) => t.name.toLocaleLowerCase("tr") === name.toLocaleLowerCase("tr"))?.color ?? "#D4A017";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [tagFilter, setTagFilter] = useState<string>("all");
   const [visibleColumns, setVisibleColumns] = useState(INITIAL_VISIBLE);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
@@ -84,20 +90,32 @@ export default function HedeflerPage() {
     return map;
   }, [aksiyonlar]);
 
+  // Collect all unique tags across hedefler
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    for (const h of (hedefler ?? [])) {
+      (h.tags ?? []).forEach((t) => tagSet.add(t));
+    }
+    return Array.from(tagSet).sort((a, b) => a.localeCompare(b, "tr"));
+  }, [hedefler]);
+
   const filtered = useMemo(() => {
     let result = filterHedefler(hedefler ?? []);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((h) => {
-        const searchStr = [h.name, h.source, h.status, h.leader, formatDate(h.startDate), formatDate(h.endDate), String(aksiyonCountMap.get(h.id) ?? 0)].join(" ").toLowerCase();
+        const searchStr = [h.name, h.source, h.status, h.owner, formatDate(h.startDate), formatDate(h.endDate), ...(h.tags ?? []), String(aksiyonCountMap.get(h.id) ?? 0)].join(" ").toLowerCase();
         return searchStr.includes(q);
       });
     }
     if (statusFilter !== "all") {
       result = result.filter((h) => h.status === statusFilter);
     }
+    if (tagFilter !== "all") {
+      result = result.filter((h) => (h.tags ?? []).includes(tagFilter));
+    }
     return result;
-  }, [hedefler, search, statusFilter, aksiyonCountMap, filterHedefler]);
+  }, [hedefler, search, statusFilter, tagFilter, aksiyonCountMap, filterHedefler]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -156,6 +174,15 @@ export default function HedeflerPage() {
         return <span className="text-[13px] text-tyro-text-primary">{hedef.owner || "-"}</span>;
       case "source":
         return <span className="text-[13px] text-tyro-text-secondary">{hedef.source}</span>;
+      case "tags":
+        return (
+          <div className="flex flex-wrap gap-1 max-w-[200px]">
+            {(hedef.tags ?? []).map((tag) => (
+              <TagChip key={tag} name={tag} size="sm" />
+            ))}
+            {(!hedef.tags || hedef.tags.length === 0) && <span className="text-[12px] text-tyro-text-muted">-</span>}
+          </div>
+        );
       case "status": {
         const dot = STATUS_DOT_COLOR[hedef.status];
         const label = getStatusLabel(hedef.status, t);
@@ -189,7 +216,7 @@ export default function HedeflerPage() {
             )}
             {canDeleteHedef(hedef.id) && (
             <Tooltip content={t("common.delete")} color="danger" size="sm">
-              <button className="text-lg text-danger cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); const reason = getHedefDeleteReason(hedef.id); if (reason) { toast.error(reason); return; } setConfirmMessage(t("confirm.deleteObjective")); setConfirmAction(() => () => { deleteHedef(hedef.id); toast.success(t("toast.objectiveDeleted")); }); setConfirmOpen(true); }}>
+              <button className="text-lg text-danger cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); const reason = getHedefDeleteReason(hedef.id); if (reason) { toast.error(reason); return; } setConfirmMessage(t("confirm.deleteObjective")); setConfirmAction(() => () => { deleteHedef(hedef.id); toast.success(t("toast.objectiveDeleted"), `"${hedef.name}" silindi.`); }); setConfirmOpen(true); }}>
                 <Trash2 size={16} />
               </button>
             </Tooltip>
@@ -314,6 +341,40 @@ export default function HedeflerPage() {
               <DropdownItem key="Not Started">{t("status.notStarted")}</DropdownItem>
             </DropdownMenu>
           </Dropdown>
+          {allTags.length > 0 && (() => {
+            const activeColor = tagFilter !== "all" ? getTagColor(tagFilter) : undefined;
+            return (
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={<Tag size={14} />} endContent={<ChevronDown size={14} />}
+                  style={activeColor ? { backgroundColor: `${activeColor}18`, color: activeColor, borderColor: `${activeColor}40` } : undefined}
+                  className={activeColor ? "border" : ""}
+                >
+                  <span className="hidden sm:inline">{tagFilter === "all" ? t("forms.objective.tags", "Etiketler") : tagFilter}</span>
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                selectionMode="single"
+                selectedKeys={new Set([tagFilter])}
+                onSelectionChange={(keys) => { const v = Array.from(keys)[0] as string; setTagFilter(v); setPage(1); }}
+                className="max-h-[300px] overflow-y-auto"
+              >
+                {[
+                  <DropdownItem key="all">{t("common.all")}</DropdownItem>,
+                  ...allTags.map((tag) => (
+                    <DropdownItem key={tag}>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: getTagColor(tag) }} />
+                        <span>{tag}</span>
+                      </div>
+                    </DropdownItem>
+                  )),
+                ]}
+              </DropdownMenu>
+            </Dropdown>
+            );
+          })()}
           <Dropdown>
             <DropdownTrigger>
               <Button size="sm" variant="flat" startContent={<Columns3 size={14} />} endContent={<ChevronDown size={14} />}>

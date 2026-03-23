@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
-import { Pencil, ArrowLeft } from "lucide-react";
+import { Pencil, Trash2, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
@@ -15,6 +15,7 @@ interface AksiyonDetailProps {
   onBackToParent?: () => void;
   parentLabel?: string;
   onModeChange?: (mode: string) => void;
+  onDelete?: () => void;
 }
 
 export default function AksiyonDetail({
@@ -22,6 +23,7 @@ export default function AksiyonDetail({
   onBackToParent,
   parentLabel,
   onModeChange,
+  onDelete,
 }: AksiyonDetailProps) {
   const { t } = useTranslation();
   const [mode, _setMode] = useState<"detail" | "editing">("detail");
@@ -85,18 +87,28 @@ export default function AksiyonDetail({
             </p>
           )}
         </div>
-        <Button
-          size="sm"
-          variant="bordered"
-          onPress={() => setMode("editing")}
-          startContent={<Pencil size={13} />}
-          className="rounded-button border-tyro-border text-tyro-text-primary relative overflow-hidden group shrink-0"
-        >
-          <span className="relative z-10">{t("common.edit")}</span>
-          <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
-            <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-tyro-navy/5 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
-          </span>
-        </Button>
+        <div className="flex flex-col gap-1.5 shrink-0">
+          <Button
+            size="sm"
+            variant="bordered"
+            onPress={() => setMode("editing")}
+            startContent={<Pencil size={13} />}
+            className="rounded-button border-tyro-border text-tyro-text-primary relative overflow-hidden group"
+          >
+            <span className="relative z-10">{t("common.edit")}</span>
+          </Button>
+          {onDelete && (
+            <Button
+              size="sm"
+              variant="bordered"
+              onPress={onDelete}
+              startContent={<Trash2 size={13} />}
+              className="rounded-button border-red-200 text-red-500 hover:bg-red-50"
+            >
+              {t("common.delete")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Description */}

@@ -78,27 +78,27 @@ export default function SlidingPanel({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-tyro-border">
-                <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-between px-5 py-2.5 border-b border-tyro-border">
+                <div className="flex items-center gap-2">
                   {icon && (
-                    <div className="w-8 h-8 rounded-lg bg-tyro-navy/10 flex items-center justify-center text-tyro-navy">
+                    <div className="w-7 h-7 rounded-lg bg-tyro-bg flex items-center justify-center">
                       {icon}
                     </div>
                   )}
-                  <h2 className="text-base font-bold text-tyro-text-primary">{title}</h2>
+                  <h2 className="text-[14px] font-bold text-tyro-text-primary">{title}</h2>
                 </div>
                 <button
                   onClick={onClose}
                   aria-label={t("common.cancel")}
-                  className="w-10 h-10 rounded-lg flex items-center justify-center text-tyro-text-muted hover:bg-tyro-bg transition-colors cursor-pointer"
+                  className="w-7 h-7 rounded-md flex items-center justify-center text-tyro-text-muted hover:bg-tyro-bg transition-colors cursor-pointer"
                 >
-                  <X size={18} />
+                  <X size={15} />
                 </button>
               </div>
             )}
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
+            <div className="flex-1 overflow-y-auto px-5 py-3">{children}</div>
 
             {/* Optional sticky footer */}
             {footer && (

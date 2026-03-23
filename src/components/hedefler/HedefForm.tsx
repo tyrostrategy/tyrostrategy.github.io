@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Textarea, Select, SelectItem, DatePicker, Autocomplete, AutocompleteItem } from "@heroui/react";
-import { Check } from "lucide-react";
+import { Check, Tag } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useDataStore } from "@/stores/dataStore";
@@ -11,6 +11,8 @@ import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import { toast } from "@/stores/toastStore";
 import { getStatusOptions, getSourceOptions } from "@/lib/constants";
 import { departments } from "@/config/departments";
+import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
+import TagChip from "@/components/ui/TagChip";
 import type { Hedef } from "@/types";
 
 const CURRENT_USER = "Cenk \u015eayli";
@@ -26,10 +28,11 @@ const createHedefSchema = (t: TFunction) =>
     department: z.string().default(""),
     source: z.enum(["T\u00fcrkiye", "Kurumsal", "International"]),
     status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started"]),
+    tags: z.array(z.string()).default([]),
     parentObjectiveId: z.string().optional(),
     startDate: z.string().min(1, t("validation.startDateRequired")),
     endDate: z.string().min(1, t("validation.endDateRequired")),
-    reviewDate: z.string().optional(),
+    reviewDate: z.string().min(1, t("validation.reviewDateRequired", "Kontrol tarihi zorunludur")),
   });
 
 type HedefFormData = z.infer<ReturnType<typeof createHedefSchema>>;
@@ -51,6 +54,8 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
   const {
     control,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<HedefFormData>({
     resolver: zodResolver(hedefSchema) as any,
@@ -62,6 +67,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
       department: hedef?.department ?? "",
       source: hedef?.source ?? "T\u00fcrkiye",
       status: hedef?.status ?? "Not Started",
+      tags: hedef?.tags ?? [],
       parentObjectiveId: hedef?.parentObjectiveId ?? "",
       startDate: hedef?.startDate ?? "",
       endDate: hedef?.endDate ?? "",
@@ -69,19 +75,39 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
     },
   });
 
+  // Yeni hedefte: startDate değiştiğinde reviewDate otomatik doldur (eğer boşsa)
+  const watchStartDate = watch("startDate");
+  const watchReviewDate = watch("reviewDate");
+  useEffect(() => {
+    if (!hedef && watchStartDate && !watchReviewDate) {
+      setValue("reviewDate", watchStartDate);
+    }
+  }, [watchStartDate]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const onSubmit = (data: HedefFormData) => {
     setIsLoading(true);
     try {
       const payload = {
         ...data,
+        tags: data.tags.length > 0 ? data.tags : undefined,
         parentObjectiveId: data.parentObjectiveId || undefined,
       };
       if (hedef) {
+        // Detect changed fields for detailed toast
+        const changes: string[] = [];
+        if (data.name !== hedef.name) changes.push(`Ad: "${data.name}"`);
+        if (data.status !== hedef.status) changes.push(`Durum: ${data.status}`);
+        if (data.owner !== hedef.owner) changes.push(`Sahip: ${data.owner}`);
+        if (data.source !== hedef.source) changes.push(`Kaynak: ${data.source}`);
+        if (data.department !== hedef.department) changes.push(`Departman: ${data.department}`);
+        if (data.startDate !== hedef.startDate) changes.push(`Başlangıç: ${data.startDate}`);
+        if (data.endDate !== hedef.endDate) changes.push(`Bitiş: ${data.endDate}`);
         updateHedef(hedef.id, payload);
-        toast.success(t("toast.objectiveUpdated"), `"${data.name}" ${t("toast.updatedSuccessfully")}.`);
+        const detail = changes.length > 0 ? `"${data.name}" → ${changes.join(", ")}` : `"${data.name}" ${t("toast.updatedSuccessfully")}.`;
+        toast.success(t("toast.objectiveUpdated"), detail);
       } else {
         addHedef({ ...payload, progress: 0 });
-        toast.success(t("toast.objectiveCreated"), `"${data.name}" ${t("toast.createdSuccessfully")}.`);
+        toast.success(t("toast.objectiveCreated"), `"${data.name}" oluşturuldu.`);
       }
       onSuccess();
     } catch (err) {
@@ -95,13 +121,13 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
   const sourceOptions = getSourceOptions(t);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit) as any} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit(onSubmit) as any} className="flex flex-col gap-3">
       <Controller
         name="name"
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.objective.name")}<span className="text-tyro-danger ml-0.5">*</span>
             </label>
             <Input
@@ -122,7 +148,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.objective.description")}
             </label>
             <Textarea
@@ -143,7 +169,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.objective.owner")}<span className="text-tyro-danger ml-0.5">*</span>
             </label>
             <Autocomplete
@@ -171,7 +197,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.objective.participants")}
             </label>
             <Select
@@ -198,7 +224,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.objective.department")}
             </label>
             <Select
@@ -220,62 +246,137 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         )}
       />
 
-      <Controller
-        name="source"
-        control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
-              {t("forms.objective.source")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <Select
-              selectedKeys={field.value ? [field.value] : []}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as string;
-                field.onChange(val ?? "");
-              }}
-              variant="bordered"
-              size="sm"
-              isInvalid={!!errors.source}
-              errorMessage={errors.source?.message}
-              classNames={{ trigger: "border-tyro-border" }}
-              placeholder={t("forms.objective.sourcePlaceholder")}
-            >
-              {sourceOptions.map((opt) => (
-                <SelectItem key={opt.key}>{opt.label}</SelectItem>
-              ))}
-            </Select>
-          </div>
-        )}
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <Controller
+          name="source"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                {t("forms.objective.source")}<span className="text-tyro-danger ml-0.5">*</span>
+              </label>
+              <Select
+                selectedKeys={field.value ? [field.value] : []}
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
+                  field.onChange(val ?? "");
+                }}
+                variant="bordered"
+                size="sm"
+                isInvalid={!!errors.source}
+                errorMessage={errors.source?.message}
+                classNames={{ trigger: "border-tyro-border" }}
+                placeholder={t("forms.objective.sourcePlaceholder")}
+              >
+                {sourceOptions.map((opt) => (
+                  <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                ))}
+              </Select>
+            </div>
+          )}
+        />
+        <Controller
+          name="status"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                {t("forms.objective.status")}<span className="text-tyro-danger ml-0.5">*</span>
+              </label>
+              <Select
+                selectedKeys={field.value ? [field.value] : []}
+                onSelectionChange={(keys) => {
+                  const val = Array.from(keys)[0] as string;
+                  field.onChange(val ?? "");
+                }}
+                variant="bordered"
+                size="sm"
+                isInvalid={!!errors.status}
+                errorMessage={errors.status?.message}
+                classNames={{ trigger: "border-tyro-border" }}
+                placeholder={t("forms.objective.statusPlaceholder")}
+              >
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt.key}>{opt.label}</SelectItem>
+                ))}
+              </Select>
+            </div>
+          )}
+        />
+      </div>
 
       <Controller
-        name="status"
+        name="tags"
         control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
-              {t("forms.objective.status")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <Select
-              selectedKeys={field.value ? [field.value] : []}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as string;
-                field.onChange(val ?? "");
-              }}
-              variant="bordered"
-              size="sm"
-              isInvalid={!!errors.status}
-              errorMessage={errors.status?.message}
-              classNames={{ trigger: "border-tyro-border" }}
-              placeholder={t("forms.objective.statusPlaceholder")}
-            >
-              {statusOptions.map((opt) => (
-                <SelectItem key={opt.key}>{opt.label}</SelectItem>
-              ))}
-            </Select>
-          </div>
-        )}
+        render={({ field }) => {
+          const [tagInput, setTagInput] = useState("");
+          const tagDefs = useDataStore((s) => s.tagDefinitions);
+          const addTagDef = useDataStore((s) => s.addTagDefinition);
+          const getTagColor = useDataStore((s) => s.getTagColor);
+
+          const addTag = (tag: string) => {
+            const trimmed = tag.trim();
+            if (!trimmed || field.value.includes(trimmed)) { setTagInput(""); return; }
+            // On-the-fly: register unknown tag in store
+            const exists = tagDefs.some(
+              (t) => t.name.toLocaleLowerCase("tr") === trimmed.toLocaleLowerCase("tr")
+            );
+            if (!exists) {
+              addTagDef({ name: trimmed, color: DEFAULT_TAG_COLOR });
+            }
+            field.onChange([...field.value, trimmed]);
+            setTagInput("");
+          };
+          const removeTag = (tag: string) => {
+            field.onChange(field.value.filter((t: string) => t !== tag));
+          };
+          const filteredSuggestions = tagDefs.filter(
+            (td) => !field.value.includes(td.name) && td.name.toLocaleLowerCase("tr").includes(tagInput.toLocaleLowerCase("tr"))
+          );
+          return (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                <Tag size={12} className="inline mr-1 -mt-0.5" />
+                {t("forms.objective.tags", "Etiketler")}
+              </label>
+              {/* Current tags — renkli TagChip */}
+              {field.value.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {field.value.map((tag: string) => (
+                    <TagChip key={tag} name={tag} size="md" onClose={() => removeTag(tag)} />
+                  ))}
+                </div>
+              )}
+              {/* Tag input with autocomplete — renkli öneriler */}
+              <Autocomplete
+                inputValue={tagInput}
+                onInputChange={setTagInput}
+                onSelectionChange={(key) => { if (key) addTag(String(key)); }}
+                onKeyDown={(e: any) => {
+                  if (e.key === "Enter" && tagInput.trim()) {
+                    e.preventDefault();
+                    addTag(tagInput);
+                  }
+                }}
+                variant="bordered"
+                size="sm"
+                placeholder={t("forms.objective.tagsPlaceholder", "Etiket yazın veya seçin...")}
+                classNames={{ base: "w-full" }}
+                allowsCustomValue
+                menuTrigger="input"
+              >
+                {filteredSuggestions.slice(0, 8).map((td) => (
+                  <AutocompleteItem key={td.name} textValue={td.name}>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: td.color }} />
+                      <span>{td.name}</span>
+                    </div>
+                  </AutocompleteItem>
+                ))}
+              </Autocomplete>
+            </div>
+          );
+        }}
       />
 
       <Controller
@@ -285,7 +386,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
           const availableHedefler = hedefler.filter((h) => !hedef || h.id !== hedef.id);
           return (
             <div>
-              <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
                 {t("forms.objective.parentObjective")}
               </label>
               <Select
@@ -308,54 +409,55 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         }}
       />
 
-      <Controller
-        name="startDate"
-        control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
-              {t("forms.objective.startDate")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <DatePicker
-              value={toCalendarDate(field.value)}
-              onChange={(date) => field.onChange(fromCalendarDate(date))}
-              isInvalid={!!errors.startDate}
-              errorMessage={errors.startDate?.message}
-              variant="bordered"
-              size="sm"
-              granularity="day"
-            />
-          </div>
-        )}
-      />
-
-      <Controller
-        name="endDate"
-        control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
-              {t("forms.objective.endDate")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <DatePicker
-              value={toCalendarDate(field.value)}
-              onChange={(date) => field.onChange(fromCalendarDate(date))}
-              isInvalid={!!errors.endDate}
-              errorMessage={errors.endDate?.message}
-              variant="bordered"
-              size="sm"
-              granularity="day"
-            />
-          </div>
-        )}
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <Controller
+          name="startDate"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                {t("forms.objective.startDate")}<span className="text-tyro-danger ml-0.5">*</span>
+              </label>
+              <DatePicker
+                value={toCalendarDate(field.value)}
+                onChange={(date) => field.onChange(fromCalendarDate(date))}
+                isInvalid={!!errors.startDate}
+                errorMessage={errors.startDate?.message}
+                variant="bordered"
+                size="sm"
+                granularity="day"
+              />
+            </div>
+          )}
+        />
+        <Controller
+          name="endDate"
+          control={control}
+          render={({ field }) => (
+            <div>
+              <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
+                {t("forms.objective.endDate")}<span className="text-tyro-danger ml-0.5">*</span>
+              </label>
+              <DatePicker
+                value={toCalendarDate(field.value)}
+                onChange={(date) => field.onChange(fromCalendarDate(date))}
+                isInvalid={!!errors.endDate}
+                errorMessage={errors.endDate?.message}
+                variant="bordered"
+                size="sm"
+                granularity="day"
+              />
+            </div>
+          )}
+        />
+      </div>
 
       <Controller
         name="reviewDate"
         control={control}
         render={({ field }) => (
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">
+            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
               {t("forms.objective.reviewDate")}
             </label>
             <DatePicker

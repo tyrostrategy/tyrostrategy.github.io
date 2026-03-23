@@ -130,6 +130,47 @@ body {
   transition: max-width 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease 0.1s;
 }
 
+/* Small expandable button variant — glass premium */
+.btn-expandable-sm {
+  padding: 0 8px;
+  height: 28px;
+  border-radius: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  transition: gap 0.3s ease, padding 0.3s ease, background 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  color: var(--tyro-text-muted);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+}
+.btn-expandable-sm span {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  font-size: 11px;
+  font-weight: 600;
+  transition: max-width 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+}
+.btn-expandable-sm:hover {
+  gap: 5px;
+  padding: 0 12px 0 8px;
+  color: var(--tyro-gold);
+  border-color: rgba(200, 146, 42, 0.2);
+  background: rgba(200, 146, 42, 0.06);
+  box-shadow: 0 2px 8px rgba(200, 146, 42, 0.1);
+}
+.btn-expandable-sm:hover span {
+  max-width: 100px;
+  opacity: 1;
+  transition: max-width 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease 0.1s;
+}
+
 /* ===== Wizard Confetti Animation ===== */
 @keyframes confetti-fall {
   0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }

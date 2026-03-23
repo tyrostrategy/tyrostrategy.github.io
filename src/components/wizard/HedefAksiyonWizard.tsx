@@ -31,7 +31,7 @@ const createWizardSchema = (t: TFunction) =>
     parentObjectiveId: z.string().optional().default(""),
     startDate: z.string().min(1, t("validation.startDateRequired")),
     endDate: z.string().min(1, t("validation.endDateRequired")),
-    reviewDate: z.string().optional().default(""),
+    reviewDate: z.string().default(""),
     aksiyonlar: z
       .array(
         z.object({
@@ -42,7 +42,7 @@ const createWizardSchema = (t: TFunction) =>
           endDate: z.string().min(1, t("validation.endDateRequired")),
         }),
       )
-      .min(1, t("wizard.minOneAction")),
+      .default([]),
   });
 
 export type WizardFormData = z.infer<ReturnType<typeof createWizardSchema>>;
@@ -105,6 +105,8 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
     control,
     trigger,
     handleSubmit,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<WizardFormData>({
     resolver: zodResolver(schema) as any,
@@ -119,7 +121,7 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
       startDate: "",
       endDate: "",
       reviewDate: "",
-      aksiyonlar: [{ name: "", description: "", owner: "", startDate: "", endDate: "" }],
+      aksiyonlar: [],
     },
     mode: "onTouched",
   });
@@ -133,18 +135,36 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
 
   const goNext = useCallback(async () => {
     const fieldsToValidate = STEP_FIELDS[currentStep];
+    // Aksiyonlar step: boş array'de validation atlansın
+    if (currentStep === 2) {
+      const aksList = getValues("aksiyonlar") ?? [];
+      if (aksList.length === 0) {
+        setDirection(1);
+        setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+        return;
+      }
+    }
     if (fieldsToValidate.length > 0) {
       const isValid = await trigger(fieldsToValidate);
       if (!isValid) return;
     }
     setDirection(1);
     setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-  }, [currentStep, trigger, steps.length]);
+  }, [currentStep, trigger, steps.length, getValues]);
 
   const goBack = useCallback(() => {
     setDirection(-1);
     setCurrentStep((s) => Math.max(s - 1, 0));
   }, []);
+
+  const goSkip = useCallback(() => {
+    // Aksiyonlar adımını atlarken boş/eksik aksiyonları temizle
+    const current = getValues("aksiyonlar") ?? [];
+    const valid = current.filter((a: any) => a.name?.trim() && a.owner?.trim());
+    setValue("aksiyonlar", valid);
+    setDirection(1);
+    setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+  }, [steps.length, getValues, setValue]);
 
   const onSubmit = useCallback(
     (data: WizardFormData) => {
@@ -159,14 +179,14 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
           parentObjectiveId: data.parentObjectiveId || undefined,
           startDate: data.startDate,
           endDate: data.endDate,
-          reviewDate: data.reviewDate || undefined,
+          reviewDate: data.reviewDate || data.startDate,
           status: "Not Started",
           progress: 0,
         });
 
         const newHedefId = useDataStore.getState().hedefler.at(-1)!.id;
 
-        data.aksiyonlar.forEach((a, i) => {
+        (data.aksiyonlar ?? []).forEach((a, i) => {
           addAksiyon({
             hedefId: newHedefId,
             name: a.name,
@@ -181,12 +201,15 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
         });
 
         setCreatedName(data.name);
-        setCreatedAksiyonCount(data.aksiyonlar.length);
+        setCreatedAksiyonCount(data.aksiyonlar?.length ?? 0);
         setShowSuccess(true);
 
+        const aksCount = data.aksiyonlar?.length ?? 0;
         toast.success(
           t("toast.objectiveCreated"),
-          `"${data.name}" — ${data.aksiyonlar.length} aksiyon eklendi`,
+          aksCount > 0
+            ? `"${data.name}" — ${aksCount} aksiyon eklendi`
+            : `"${data.name}" oluşturuldu.`,
         );
       } catch (err) {
         toast.error(
@@ -249,28 +272,41 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
             {t("wizard.back")}
           </Button>
 
-          {isLastStep ? (
-            <Button
-              color="secondary"
-              onPress={() => handleSubmit(onSubmit)()}
-              startContent={<Wand2 size={14} />}
-              className="rounded-button font-semibold relative overflow-hidden group"
-            >
-              <span className="relative z-10">{t("wizard.submit")}</span>
-              <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
-                <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/15 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
-              </span>
-            </Button>
-          ) : (
-            <Button
-              color="primary"
-              onPress={goNext}
-              endContent={<ArrowRight size={14} />}
-              className="rounded-button font-semibold"
-            >
-              {t("wizard.next")}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {/* Atla butonu — sadece aksiyonlar adımında (step 2) */}
+            {currentStep === 2 && (
+              <Button
+                variant="light"
+                onPress={goSkip}
+                className="font-semibold text-tyro-text-muted"
+              >
+                {t("wizard.skip", "Atla")}
+              </Button>
+            )}
+
+            {isLastStep ? (
+              <Button
+                color="secondary"
+                onPress={() => handleSubmit(onSubmit)()}
+                startContent={<Wand2 size={14} />}
+                className="rounded-button font-semibold relative overflow-hidden group"
+              >
+                <span className="relative z-10">{t("wizard.submit")}</span>
+                <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
+                  <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/15 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
+                </span>
+              </Button>
+            ) : (
+              <Button
+                color="primary"
+                onPress={goNext}
+                endContent={<ArrowRight size={14} />}
+                className="rounded-button font-semibold"
+              >
+                {t("wizard.next")}
+              </Button>
+            )}
+          </div>
         </div>
       )}
 

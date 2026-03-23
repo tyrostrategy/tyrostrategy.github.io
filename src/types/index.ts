@@ -48,12 +48,20 @@ export interface Hedef {
   startDate: string;
   endDate: string;
   reviewDate?: string;
+  tags?: string[];             // Etiketler — filtreleme & kategorizasyon
   parentObjectiveId?: string;  // Ana hedef ID — null ise bağımsız/ana hedef
   createdBy?: string;
   createdAt?: string;
   updatedBy?: string;
   updatedAt?: string;
   completedAt?: string;
+}
+
+// ===== Tag Tanımı — parametrik etiketler (ad + renk) =====
+export interface TagDefinition {
+  id: string;
+  name: string;
+  color: string; // hex "#D4A017"
 }
 
 // ===== Aksiyon (eski Görev — direkt hedefe bağlı) =====

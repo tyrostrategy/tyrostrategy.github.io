@@ -314,7 +314,21 @@
     "dataverseConnection": "Dataverse Bağlantısı",
     "notConfigured": "Yapılandırılmadı",
     "about": "Hakkında",
-    "version": "Versiyon"
+    "version": "Versiyon",
+    "tagManagement": "Etiket Yönetimi",
+    "tagManagementDesc": "Hedeflere atanabilecek etiketleri ve renklerini yönetin",
+    "addTag": "Yeni Etiket",
+    "tagName": "Etiket Adı",
+    "tagColor": "Renk",
+    "tagNamePlaceholder": "Etiket adı girin...",
+    "tagDeleteConfirm": "Bu etiketi silmek istediğinize emin misiniz?",
+    "tagInUseWarning": "Bu etiket {{count}} hedefte kullanılıyor. Silindikten sonra hedeflerdeki etiket referansları kalır.",
+    "tagNameRequired": "Etiket adı zorunludur",
+    "tagNameDuplicate": "Bu isimde bir etiket zaten mevcut",
+    "tagCreated": "Etiket oluşturuldu",
+    "tagUpdated": "Etiket güncellendi",
+    "tagDeleted": "Etiket silindi",
+    "noTags": "Henüz etiket tanımlanmamış"
   },
   "users": {
     "title": "Kullanıcılar"
@@ -365,7 +379,27 @@
     "relatedObjectives": "İlişkili Hedefler"
   },
   "karargah": {
-    "tablo": "Tablo"
+    "tablo": "Tablo",
+    "master": "Master",
+    "selectObjective": "Hedef seçin",
+    "selectObjectiveDesc": "Detayları görüntülemek için sol listeden bir hedef seçin",
+    "generalStatus": "Genel Durum",
+    "overallProgress": "Genel İlerleme",
+    "objectiveInfo": "Hedef Bilgileri",
+    "actionsCount": "Aksiyonlar ({{count}})",
+    "addAction": "Aksiyon Ekle",
+    "actionsCompleted": "{{completed}}/{{total}} aksiyon tamamlandı",
+    "clearFilters": "Temizle",
+    "noObjectivesFound": "Bu filtrelere uygun hedef bulunamadı",
+    "sortByName": "Ada göre",
+    "sortByDate": "Tarihe göre",
+    "sortByProgress": "İlerlemeye göre",
+    "sortByStatus": "Duruma göre",
+    "quickProgress": "Hızlı Güncelle",
+    "actionUpdated": "Aksiyon güncellendi",
+    "createdByAt": "Oluşturan: {{user}}, {{date}}",
+    "updatedByAt": "Son güncelleyen: {{user}}, {{date}}",
+    "noDescription": "Açıklama eklenmemiş"
   },
   "tAlignment": {
     "horizontal": "Yatay",

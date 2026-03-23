@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
 import { Pencil, Plus, ArrowLeft, ChevronRight } from "lucide-react";
+import TagChip from "@/components/ui/TagChip";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
@@ -139,6 +140,15 @@ export default function HedefDetail({
           </span>
         </Button>
       </div>
+
+      {/* Tags */}
+      {currentHedef.tags && currentHedef.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {currentHedef.tags.map((tag) => (
+            <TagChip key={tag} name={tag} size="md" showIcon />
+          ))}
+        </div>
+      )}
 
       {/* Description */}
       {currentHedef.description && (

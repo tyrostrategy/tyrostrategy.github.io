@@ -4,12 +4,23 @@ import {
   internationalHedefler,
 } from "@/lib/mock-data/cascade-data";
 import type { CascadeHedef } from "@/lib/mock-data/cascade-data";
-import type { Hedef, Aksiyon, EntityStatus, Source } from "@/types";
+import type { Hedef, Aksiyon, EntityStatus, Source, TagDefinition } from "@/types";
 import { getDepartmentByUser } from "@/config/departments";
+import { TAG_COLOR_PALETTE } from "@/config/tagColors";
 
 function mapStatus(s: string): EntityStatus {
   const valid: EntityStatus[] = ["On Track", "Achieved", "Behind", "At Risk", "Not Started"];
   return (valid.includes(s as EntityStatus) ? s : "Not Started") as EntityStatus;
+}
+
+function computeReviewDate(endDate: string): string {
+  try {
+    const d = new Date(endDate);
+    d.setMonth(d.getMonth() - 1);
+    return d.toISOString().slice(0, 10);
+  } catch {
+    return endDate;
+  }
 }
 
 // Add "Cenk Şayli" as participant to some hedefler for workspace demo
@@ -22,6 +33,63 @@ function buildParticipants(leader: string, hedefId: string): string[] {
     base.push(CURRENT_USER);
   }
   return base;
+}
+
+// Deterministic tag assignment based on hedef name keywords
+const TAG_KEYWORDS: Record<string, string[]> = {
+  "büyüme": ["Büyüme"],
+  "pazar": ["Pazar Geliştirme"],
+  "ihracat": ["İhracat"],
+  "finans": ["Finansal"],
+  "bütçe": ["Finansal"],
+  "maliyet": ["Maliyet Optimizasyonu"],
+  "operasyon": ["Operasyonel"],
+  "lojistik": ["Lojistik"],
+  "stok": ["Stok Yönetimi"],
+  "dijital": ["Dijital Dönüşüm"],
+  "teknoloji": ["Dijital Dönüşüm"],
+  "kalite": ["Kalite"],
+  "müşteri": ["Müşteri Odaklı"],
+  "insan": ["İK"],
+  "eğitim": ["İK"],
+  "sürdürülebilir": ["Sürdürülebilirlik"],
+  "çevre": ["Sürdürülebilirlik"],
+  "risk": ["Risk Yönetimi"],
+  "güvenlik": ["Risk Yönetimi"],
+  "inovasyon": ["İnovasyon"],
+  "ar-ge": ["İnovasyon"],
+  "strateji": ["Stratejik"],
+  "yatırım": ["Yatırım"],
+  "kapasite": ["Kapasite"],
+  "üretim": ["Üretim"],
+  "verimlilik": ["Verimlilik"],
+};
+
+function assignPhaseTags(progress: number, status: string): string {
+  // Aşama tag'i: progress ve status'a göre belirle
+  if (status === "Not Started" || progress === 0) return "Ön Çalışma";
+  if (status === "Achieved" || progress >= 80) return "Uygulama";
+  return "Geliştirme";
+}
+
+function assignTags(name: string, source: Source, progress: number, status: string): string[] {
+  const tags = new Set<string>();
+  const lower = name.toLocaleLowerCase("tr");
+  for (const [keyword, tagList] of Object.entries(TAG_KEYWORDS)) {
+    if (lower.includes(keyword)) tagList.forEach((t) => tags.add(t));
+  }
+  // Ensure at least one topic tag per hedef using source
+  if (tags.size === 0) {
+    const fallback: Record<Source, string> = {
+      "Türkiye": "Türkiye Operasyonları",
+      "Kurumsal": "Kurumsal Strateji",
+      "International": "Uluslararası",
+    };
+    tags.add(fallback[source]);
+  }
+  // Aşama tag'i ekle
+  tags.add(assignPhaseTags(progress, status));
+  return Array.from(tags).slice(0, 4); // max 4 tags
 }
 
 function flattenHedefler(hedefler: CascadeHedef[], source: Source): Hedef[] {
@@ -46,6 +114,8 @@ function flattenHedefler(hedefler: CascadeHedef[], source: Source): Hedef[] {
       progress,
       startDate: h.startDate,
       endDate: h.endDate,
+      reviewDate: computeReviewDate(h.endDate),
+      tags: assignTags(h.name, source, progress, mapStatus(h.status)),
       createdBy: h.leader,
       createdAt: h.startDate,
     };
@@ -124,4 +194,22 @@ export function getInitialHedefler(): Hedef[] {
 
 export function getInitialAksiyonlar(): Aksiyon[] {
   return allSources.flatMap(([h]) => flattenAksiyonlar(h));
+}
+
+// ===== Parametrik Tag Tanımları =====
+const INITIAL_TAG_NAMES = [
+  "Büyüme", "Pazar Geliştirme", "İhracat", "Finansal", "Maliyet Optimizasyonu",
+  "Operasyonel", "Lojistik", "Stok Yönetimi", "Dijital Dönüşüm", "Kalite",
+  "Müşteri Odaklı", "İK", "Sürdürülebilirlik", "Risk Yönetimi", "İnovasyon",
+  "Stratejik", "Yatırım", "Kapasite", "Üretim", "Verimlilik",
+  "Türkiye Operasyonları", "Kurumsal Strateji", "Uluslararası",
+  "Ön Çalışma", "Geliştirme", "Uygulama",
+];
+
+export function getInitialTagDefinitions(): TagDefinition[] {
+  return INITIAL_TAG_NAMES.map((name, i) => ({
+    id: `tag-${i + 1}`,
+    name,
+    color: TAG_COLOR_PALETTE[i % TAG_COLOR_PALETTE.length],
+  }));
 }

@@ -19,13 +19,14 @@ import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { useDataStore } from "@/stores/dataStore";
 const HedefAksiyonWizard = lazy(() => import("@/components/wizard/HedefAksiyonWizard"));
 const WizardHeader = lazy(() => import("@/components/wizard/WizardHeader"));
+import MasterDetailView from "@/components/karargah/MasterDetailView";
 import { getStatusLabel } from "@/lib/constants";
 import { formatDate } from "@/lib/dateUtils";
 import type { Hedef, Aksiyon, EntityStatus, Source } from "@/types";
 import i18n from "@/lib/i18n";
 
 // ─── Tab types ────────────────────────────────────────────────
-type TabId = "tablo" | "kanban" | "gantt" | "wbs";
+type TabId = "master" | "tablo" | "kanban";
 
 // ─── Shared colour maps ──────────────────────────────────────
 const sourceColors: Record<string, string> = {
@@ -67,7 +68,7 @@ export default function StratejikKarargahPage() {
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
 
-  const [activeTab, setActiveTab] = useState<TabId>("tablo");
+  const [activeTab, setActiveTab] = useState<TabId>("master");
   const [wizardOpen, setWizardOpen] = useState(false);
 
   // ─── Sliding panel state ─────────────────────────────────
@@ -101,49 +102,57 @@ export default function StratejikKarargahPage() {
 
   // ─── Tabs ────────────────────────────────────────────────
   const tabs: { id: TabId; label: string }[] = [
+    { id: "master", label: t("karargah.master") },
     { id: "tablo", label: t("karargah.tablo") },
     { id: "kanban", label: t("common.kanban") },
-    { id: "gantt", label: t("nav.gantt") },
-    { id: "wbs", label: t("nav.wbs") },
   ];
 
   return (
     <div>
-      <PageHeader
-        title={t("pages.strategicHQ.title")}
-        subtitle={t("pages.strategicHQ.subtitle")}
-      />
-
-      {/* Tab bar + wizard button */}
-      <div className="flex items-center justify-between gap-3 mb-5 overflow-x-auto pb-1">
-        <div className="flex bg-tyro-bg rounded-button p-0.5 gap-0.5">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={clsx(
-                "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
-                activeTab === tab.id
-                  ? "bg-tyro-surface text-tyro-navy shadow-tyro-sm"
-                  : "text-tyro-text-muted hover:text-tyro-text-secondary"
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {/* Header with tabs on the right */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h1 className="text-[22px] font-bold text-tyro-text-primary">{t("pages.strategicHQ.title")}</h1>
+          <p className="text-[13px] text-tyro-text-muted mt-0.5">{t("pages.strategicHQ.subtitle")}</p>
         </div>
-        <motion.button
-          type="button"
-          onClick={() => setWizardOpen(true)}
-          className="btn-expandable bg-gradient-to-r from-tyro-gold to-tyro-gold-light text-white font-semibold text-[13px] shadow-sm shadow-tyro-gold/20 cursor-pointer shrink-0"
-          whileTap={{ scale: 0.95 }}
-        >
-          <Wand2 size={14} className="shrink-0" />
-          <span>Hedef Sihirbazı</span>
-        </motion.button>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex bg-tyro-bg rounded-button p-0.5 gap-0.5">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={clsx(
+                  "px-3.5 py-1.5 rounded-[10px] text-[11px] font-semibold transition-all cursor-pointer whitespace-nowrap",
+                  activeTab === tab.id
+                    ? "bg-tyro-surface text-tyro-navy shadow-tyro-sm"
+                    : "text-tyro-text-muted hover:text-tyro-text-secondary"
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {activeTab !== "master" && (
+            <motion.button
+              type="button"
+              onClick={() => setWizardOpen(true)}
+              className="btn-expandable bg-gradient-to-r from-tyro-gold to-tyro-gold-light text-white font-semibold text-[12px] shadow-sm shadow-tyro-gold/20 cursor-pointer shrink-0"
+              whileTap={{ scale: 0.95 }}
+            >
+              <Wand2 size={13} className="shrink-0" />
+              <span>Sihirbaz</span>
+            </motion.button>
+          )}
+        </div>
       </div>
 
       {/* Tab content */}
+      {activeTab === "master" && (
+        <MasterDetailView
+          hedefler={hedefler}
+          onOpenWizard={() => setWizardOpen(true)}
+        />
+      )}
       {activeTab === "tablo" && (
         <TabloView
           hedefler={hedefler}
@@ -160,13 +169,6 @@ export default function StratejikKarargahPage() {
           onAksiyonClick={openAksiyonPanel}
         />
       )}
-      {activeTab === "gantt" && (
-        <GanttView aksiyonlar={aksiyonlar} hedefler={hedefler} />
-      )}
-      {activeTab === "wbs" && (
-        <WBSView hedefler={hedefler} aksiyonlar={aksiyonlar} />
-      )}
-
       {/* Detail panel */}
       <SlidingPanel isOpen={panelOpen} onClose={closePanel} title={panelTitle}>
         {panelHedef && (

@@ -1,10 +1,11 @@
-/** Returns a color based on progress percentage: red → orange → yellow → green */
+/** Returns a color based on progress percentage — matches AksiyonForm gradient palette */
 export function progressColor(pct: number): string {
-  if (pct >= 100) return "#22c55e";
-  if (pct >= 75) return "#4ade80";
-  if (pct >= 50) return "#facc15";
-  if (pct >= 25) return "#fb923c";
-  return "#ef4444";
+  if (pct === 0) return "#94a3b8";    // slate-400 — başlanmamış (gri)
+  if (pct <= 25) return "#ef4444";    // red-500 — kritik düşük
+  if (pct <= 50) return "#f59e0b";    // amber-500 — düşük
+  if (pct <= 75) return "#eab308";    // yellow-500 — orta
+  if (pct < 100) return "#10b981";    // emerald-500 — iyi
+  return "#10b981";                    // emerald-500 — tamamlandı
 }
 
 /** Convert hex color to HSL string for HeroUI CSS variables (e.g. "30 90% 44%") */
