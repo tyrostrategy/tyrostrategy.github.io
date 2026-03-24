@@ -133,27 +133,15 @@ export default function TagActivityGauge() {
               />
               <Tooltip content={<CustomTooltip />} />
 
-              {/* Center text: total count + label */}
+              {/* Center text: just the count */}
               <text
                 x="50%"
                 y="50%"
                 textAnchor="middle"
-                dominantBaseline="middle"
+                dominantBaseline="central"
+                style={{ fill: "var(--color-tyro-text-primary, #0f172a)", fontSize: 22, fontWeight: 700 }}
               >
-                <tspan
-                  x="50%"
-                  dy="-0.6em"
-                  style={{ fill: "var(--color-tyro-text-secondary, #64748b)", fontSize: 11, fontWeight: 500 }}
-                >
-                  Hedef
-                </tspan>
-                <tspan
-                  x="50%"
-                  dy="1.4em"
-                  style={{ fill: "var(--color-tyro-text-primary, #0f172a)", fontSize: 20, fontWeight: 700 }}
-                >
-                  {totalTaggedHedef}
-                </tspan>
+                {totalTaggedHedef}
               </text>
             </RadialBarChart>
           </ResponsiveContainer>
