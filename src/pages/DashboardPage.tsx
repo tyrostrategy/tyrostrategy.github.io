@@ -15,6 +15,7 @@ const SourceChart = lazy(() => import("@/components/dashboard/SourceChart"));
 const ProjectStatusBreakdown = lazy(() => import("@/components/dashboard/ProjectStatusBreakdown"));
 const MultiRingWidget = lazy(() => import("@/components/dashboard/MultiRingWidget"));
 const ActivityFeed = lazy(() => import("@/components/dashboard/ActivityFeed"));
+const TagActivityGauge = lazy(() => import("@/components/dashboard/TagActivityGauge"));
 const AdvancedFilterPanel = lazy(() => import("@/components/dashboard/AdvancedFilterPanel"));
 
 function getGreeting(t: (key: string) => string): string {
@@ -198,13 +199,16 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Row 2: Kaynak Bazlı Dağılım (8) + Genel İlerleme (4) */}
-      <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="col-span-12 lg:col-span-8 h-64 rounded-2xl bg-tyro-surface animate-pulse" /><div className="col-span-12 lg:col-span-4 h-64 rounded-2xl bg-tyro-surface animate-pulse" /></div>}>
+      {/* Row 2: Kaynak Bazlı Dağılım (5) + Tag Gauge (4) + Genel İlerleme (3) */}
+      <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="col-span-12 lg:col-span-5 h-64 rounded-2xl bg-tyro-surface animate-pulse" /><div className="col-span-12 lg:col-span-4 h-64 rounded-2xl bg-tyro-surface animate-pulse" /><div className="col-span-12 lg:col-span-3 h-64 rounded-2xl bg-tyro-surface animate-pulse" /></div>}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-8 flex">
+          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5 flex">
             <SourceChart />
           </motion.div>
           <motion.div variants={fadeUp} className="col-span-12 lg:col-span-4 flex">
+            <TagActivityGauge />
+          </motion.div>
+          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-3 flex">
             <MultiRingWidget />
           </motion.div>
         </div>

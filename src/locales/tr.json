@@ -259,6 +259,8 @@
   "dashboard": {
     "title": "KPI Dashboard",
     "overallProgress": "Genel İlerleme",
+    "tagDistribution": "Tag Bazlı Hedef Dağılımı",
+    "tagDistributionDesc": "Etiket bazında ortalama ilerleme",
     "sourceDistribution": "Kaynak Bazlı Aksiyon Dağılımı",
     "sourceSubtitle": "Türkiye, Kurumsal ve International operasyonları",
     "completed": "Tamamlanan",

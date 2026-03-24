@@ -259,6 +259,8 @@
   "dashboard": {
     "title": "KPI Dashboard",
     "overallProgress": "Overall Progress",
+    "tagDistribution": "Objective Distribution by Tag",
+    "tagDistributionDesc": "Average progress per tag",
     "sourceDistribution": "Action Distribution by Source",
     "sourceSubtitle": "Turkey, Corporate and International operations",
     "completed": "Completed",
