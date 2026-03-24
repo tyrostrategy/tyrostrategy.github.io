@@ -278,20 +278,26 @@ export default function StrategyMapPage() {
     return ids;
   }, [hedefler, mapSearch]);
 
-  // Source'a göre grupla
+  // Filtreli hedefler
+  const filteredHedefler = useMemo(() => {
+    if (!matchedHedefIds) return hedefler; // null = no search
+    return hedefler.filter((h) => matchedHedefIds.has(h.id));
+  }, [hedefler, matchedHedefIds]);
+
+  // Source'a göre grupla (filtreli)
   const themeGroups = useMemo(() => {
     const groups: Record<Source, Hedef[]> = {
       "Türkiye": [],
       "Kurumsal": [],
       "International": [],
     };
-    for (const h of hedefler) {
+    for (const h of filteredHedefler) {
       if (groups[h.source]) {
         groups[h.source].push(h);
       }
     }
     return groups;
-  }, [hedefler]);
+  }, [filteredHedefler]);
 
   const activeThemes = useMemo(
     () => (Object.entries(themeGroups) as [Source, Hedef[]][]).filter(([, list]) => list.length > 0),
@@ -408,9 +414,9 @@ export default function StrategyMapPage() {
           >
             {/* Level 1: Company */}
             <CompanyNode
-              hedefCount={hedefler.length}
-              aksiyonCount={aksiyonlar.length}
-              overallProgress={hedefler.length > 0 ? Math.round(hedefler.reduce((s, h) => s + h.progress, 0) / hedefler.length) : 0}
+              hedefCount={filteredHedefler.length}
+              aksiyonCount={mapSearch.trim() ? filteredHedefler.reduce((s, h) => s + (hedefAksiyonlar.get(h.id)?.length ?? 0), 0) : aksiyonlar.length}
+              overallProgress={filteredHedefler.length > 0 ? Math.round(filteredHedefler.reduce((s, h) => s + h.progress, 0) / filteredHedefler.length) : 0}
               theme={sidebarTheme}
             />
 
@@ -447,9 +453,8 @@ export default function StrategyMapPage() {
                     {[...list].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()).map((hedef) => {
                       const isExpanded = expandedHedefIds.has(hedef.id);
                       const hedefActions = hedefAksiyonlar.get(hedef.id) ?? [];
-                      const isSearchMatch = matchedHedefIds === null || matchedHedefIds.has(hedef.id);
                       return (
-                        <div key={hedef.id} className="flex flex-col items-center transition-opacity duration-200" style={{ opacity: isSearchMatch ? 1 : 0.25 }}>
+                        <div key={hedef.id} className="flex flex-col items-center">
                           <ObjectiveNode
                             hedef={hedef}
                             onClick={() => openDetail(hedef)}
