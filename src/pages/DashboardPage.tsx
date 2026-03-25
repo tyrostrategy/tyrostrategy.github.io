@@ -143,40 +143,39 @@ export default function DashboardPage() {
     setSearchParams(tab === "dashboard" ? {} : { tab });
   };
 
-  const KpiTabs = () => (
-    <div className="flex items-center gap-1">
+  // ===== Tab render helper =====
+  const renderTabs = () => (
+    <div className="flex items-center gap-1 text-[12px]">
       {[
         { id: "dashboard", label: "Dashboard", icon: BarChart3 },
         { id: "rapor", label: "Rapor Sihirbazı", icon: FileText },
-      ].map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => switchTab(tab.id)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-colors cursor-pointer ${
-            activeTab === tab.id
-              ? "bg-tyro-navy text-white shadow-sm"
-              : "text-tyro-text-muted hover:text-tyro-text-secondary hover:bg-tyro-bg"
-          }`}
-        >
-          <tab.icon size={13} />
-          {tab.label}
-        </button>
-      ))}
+      ].map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => switchTab(tab.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+              isActive
+                ? "bg-tyro-navy text-white shadow-sm"
+                : "text-tyro-text-muted hover:bg-tyro-bg hover:text-tyro-text-secondary"
+            }`}
+          >
+            <Icon size={14} />
+            {tab.label}
+          </button>
+        );
+      })}
     </div>
   );
 
   // ===== Rapor Sihirbazı tab =====
   if (activeTab === "rapor") {
     return (
-      <div className="space-y-0">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h1 className="text-[18px] font-extrabold tracking-tight text-tyro-text-primary">
-              Yönetim Raporu
-            </h1>
-            <p className="text-[12px] text-tyro-text-secondary">Stratejik hedef ve aksiyon raporları oluşturun</p>
-          </div>
-          <KpiTabs />
+      <div>
+        <div className="flex items-center justify-between mb-5">
+          {renderTabs()}
         </div>
         <Suspense fallback={<div className="flex items-center justify-center py-20 text-tyro-text-muted">Yükleniyor...</div>}>
           <RaporSihirbazi />
@@ -187,16 +186,19 @@ export default function DashboardPage() {
 
   return (
     <motion.div className="space-y-5" variants={stagger} initial="hidden" animate="show">
-      {/* Page Header — Greeting + Summary */}
+      {/* Page Header — Tabs + Greeting + Summary */}
       <motion.div variants={fadeUp} className="space-y-3 sm:space-y-0">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="min-w-0">
+            <div className="flex items-center gap-4 flex-wrap mb-2">
+              {renderTabs()}
+            </div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-[22px] font-extrabold tracking-tight text-tyro-text-primary">
                 {getGreeting(t)}, Cenk Şayli
               </h1>
               <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-tyro-gold/10 text-tyro-gold">
-                Şubat 2026
+                Mart 2026
               </span>
             </div>
             <p className="mt-1 text-sm text-tyro-text-secondary">
@@ -204,8 +206,6 @@ export default function DashboardPage() {
             </p>
           </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <KpiTabs />
           <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
@@ -227,7 +227,6 @@ export default function DashboardPage() {
             <span className="text-[13px] font-semibold">{t("common.filter")}</span>
           </button>
           </div>
-        </div>
         </div>
       </motion.div>
 

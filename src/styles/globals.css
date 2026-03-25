@@ -660,15 +660,58 @@ tr[data-hover=true]:not([data-selected=true]) {
 
 /* ===== Print styles for Rapor Sihirbazı ===== */
 @media print {
-  body { background: white !important; }
-  nav, aside, .print\\:hidden { display: none !important; }
-  main { padding: 0 !important; margin: 0 !important; }
-  .print\\:block { display: block !important; }
-  .print\\:h-auto { height: auto !important; }
-  .print\\:max-w-full { max-width: 100% !important; }
-  .print\\:px-12 { padding-left: 3rem !important; padding-right: 3rem !important; }
-  .print\\:py-6 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+  @page { margin: 1.5cm; size: A4 portrait; }
+
+  /* Reset everything */
+  body { background: white !important; color: #0f172a !important; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  .glass-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
-  @page { margin: 1cm; size: A4 portrait; }
+
+  /* Hide app chrome — sidebar, topbar, bottomnav, toolbar */
+  nav, aside,
+  .print\:hidden,
+  [data-sidebar],
+  header.fixed,
+  .fixed.bottom-0,
+  .fixed.z-30,
+  .fixed.z-40 { display: none !important; }
+
+  /* Remove layout constraints — make content flow naturally */
+  body, #root, #root > div, main,
+  .flex.h-screen, .flex-1.overflow-y-auto {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Report container */
+  .print\:block { display: block !important; }
+  .print\:h-auto { height: auto !important; }
+  .print\:max-w-full { max-width: 100% !important; }
+  .print\:border-0 { border: none !important; }
+  .print\:rounded-none { border-radius: 0 !important; }
+  .print\:shadow-none { box-shadow: none !important; }
+  .print\:break-inside-avoid { break-inside: avoid !important; }
+  .print\:break-after-avoid { break-after: avoid !important; }
+
+  /* Glass cards in print — clean borders */
+  .glass-card {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+    background: white !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Ensure rounded corners print nicely */
+  .rounded-xl, .rounded-2xl { border-radius: 8px !important; }
+  .rounded-lg { border-radius: 6px !important; }
+
+  /* Dark text for readability */
+  .text-tyro-text-primary { color: #0f172a !important; }
+  .text-tyro-text-secondary { color: #475569 !important; }
+  .text-tyro-text-muted { color: #64748b !important; }
 }
