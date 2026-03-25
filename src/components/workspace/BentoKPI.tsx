@@ -1,17 +1,31 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Crosshair, CircleCheckBig, CheckCircle, AlertTriangle } from "lucide-react";
+import { Crosshair, CircleCheckBig, CheckCircle, AlertTriangle, CalendarClock } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import { useMyWorkspace } from "@/hooks/useMyWorkspace";
+import { useDataStore } from "@/stores/dataStore";
 
 export default function BentoKPI() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const ws = useMyWorkspace();
+  const hedefler = useDataStore((s) => s.hedefler);
+
+  // Kontrol tarihi 1 ay veya daha fazla güncel olmayan hedefler
+  const overdueReviewHedefler = useMemo(() => {
+    const now = new Date();
+    const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    return hedefler.filter((h) => {
+      if (!h.reviewDate) return true; // reviewDate yoksa güncel değil
+      if (h.status === "Achieved" || h.status === "Cancelled") return false;
+      const rd = new Date(h.reviewDate);
+      return rd <= oneMonthAgo;
+    });
+  }, [hedefler]);
 
   const aksiyonPct = ws.totalAksiyonlar > 0
     ? Math.round((ws.achievedAksiyonlar / ws.totalAksiyonlar) * 100) : 0;
-  const overallPct = ws.overallProgress;
 
   return (
     <GlassCard className="p-4 sm:p-5 flex-1 flex flex-col gap-3 overflow-hidden">
@@ -63,32 +77,33 @@ export default function BentoKPI() {
         </div>
       </div>
 
-      {/* Geciken / Riskli */}
-      {(ws.behindAksiyonlar + ws.atRiskAksiyonlar) > 0 && (
+      {/* Geciken/Riskli + Kontrol Tarihi — same row */}
+      <div className="grid grid-cols-2 gap-2">
+        {/* Geciken / Riskli */}
         <div
           onClick={() => navigate("/aksiyonlar")}
-          className="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors"
+          className="flex flex-col items-center gap-1 p-3 rounded-xl bg-red-500/5 cursor-pointer hover:bg-red-500/10 transition-colors"
         >
-          <AlertTriangle size={20} className="text-red-500 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <span className="text-[16px] font-extrabold text-tyro-text-primary tabular-nums">{ws.behindAksiyonlar + ws.atRiskAksiyonlar}</span>
-            <span className="text-[11px] text-tyro-text-muted block">
-              {ws.behindAksiyonlar} {t("workspace.late")}, {ws.atRiskAksiyonlar} {t("workspace.atRisk")}
-            </span>
-          </div>
+          <AlertTriangle size={18} className="text-red-500 mb-0.5" />
+          <span className="text-[20px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{ws.behindAksiyonlar + ws.atRiskAksiyonlar}</span>
+          <span className="text-[10px] text-tyro-text-muted text-center leading-tight">
+            {ws.behindAksiyonlar} geciken, {ws.atRiskAksiyonlar} riskli
+          </span>
         </div>
-      )}
 
-      {/* Overall progress bar */}
-      <div className="mt-auto">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-medium text-tyro-text-muted">{t("workspace.avgProgress")}</span>
-          <span className="text-[13px] font-extrabold text-tyro-navy tabular-nums">%{overallPct}</span>
-        </div>
-        <div className="h-2.5 rounded-full bg-tyro-bg overflow-hidden">
-          <div className="h-full rounded-full bg-tyro-navy transition-all" style={{ width: `${overallPct}%` }} />
+        {/* Kontrol tarihi güncel olmayan */}
+        <div
+          onClick={() => navigate("/hedefler?reviewOverdue=true")}
+          className="flex flex-col items-center gap-1 p-3 rounded-xl bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 transition-colors"
+        >
+          <CalendarClock size={18} className="text-amber-500 mb-0.5" />
+          <span className="text-[20px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{overdueReviewHedefler.length}</span>
+          <span className="text-[10px] text-tyro-text-muted text-center leading-tight">kontrol tarihi güncel değil</span>
         </div>
       </div>
+
+      {/* spacer for flex layout */}
+      <div className="mt-auto" />
     </GlassCard>
   );
 }

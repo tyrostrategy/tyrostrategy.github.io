@@ -795,7 +795,6 @@ ${clone.outerHTML}
                     className="absolute top-full right-0 mt-1 z-40 w-[200px] bg-white dark:bg-tyro-surface rounded-xl border border-tyro-border/30 shadow-xl overflow-hidden"
                   >
                     {[
-                      { label: "PDF", icon: FileText, desc: "Yüksek kalite görsel", handler: handleExportPDF, color: "#ef4444" },
                       { label: "Yazdır / PDF", icon: Printer, desc: "Tarayıcı yazdırma", handler: handlePrint, color: "#64748b" },
                       { label: "Excel (.xlsx)", icon: FileSpreadsheet, desc: "Veri tablosu", handler: handleExportExcel, color: "#10b981" },
                       { label: "HTML", icon: FileCode, desc: "Web sayfası", handler: handleExportHTML, color: "#8b5cf6" },
@@ -812,18 +811,6 @@ ${clone.outerHTML}
                         </div>
                       </button>
                     ))}
-                    {/* Aksiyonları gizle toggle */}
-                    <div className="border-t border-tyro-border/20 px-4 py-2.5">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={hideActionsInExport}
-                          onChange={(e) => setHideActionsInExport(e.target.checked)}
-                          className="w-4 h-4 rounded border-tyro-border accent-tyro-navy cursor-pointer"
-                        />
-                        <span className="text-[11px] font-semibold text-tyro-text-secondary">Aksiyonları gizle</span>
-                      </label>
-                    </div>
                   </motion.div>
                 </>
               )}
@@ -837,15 +824,15 @@ ${clone.outerHTML}
         <div className="max-w-[900px] mx-auto px-6 py-6 print:max-w-full print:px-10">
           {/* COVER PAGE — Corporate Executive Style */}
           {sections.cover && (
-            <div className="mb-10 print:break-after-always print:min-h-[90vh] relative overflow-hidden rounded-xl" style={{ minHeight: 480 }}>
+            <div className="mb-10 print:break-after-always print:h-[100vh] print:m-0 print:rounded-none relative overflow-hidden rounded-xl" style={{ minHeight: 520 }}>
               {/* Background — navy gradient with subtle pattern */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#0f1d2f] via-[#1e3a5f] to-[#0f2847]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#0f1d2f] via-[#1e3a5f] to-[#0f2847] print:!bg-gradient-to-br" />
               <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)", backgroundSize: "28px 28px" }} />
-              <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-tyro-gold/8 blur-[100px]" />
-              <div className="absolute bottom-0 left-0 w-[200px] h-[200px] rounded-full bg-blue-500/6 blur-[80px]" />
+              <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-tyro-gold/8 blur-[100px] print:hidden" />
+              <div className="absolute bottom-0 left-0 w-[200px] h-[200px] rounded-full bg-blue-500/6 blur-[80px] print:hidden" />
 
               {/* Content — flex column, justify between for top/center/bottom */}
-              <div className="relative z-10 flex flex-col h-full px-10 py-8" style={{ minHeight: 480 }}>
+              <div className="relative z-10 flex flex-col h-full px-10 py-8 print:h-[100vh] print:justify-between" style={{ minHeight: 520 }}>
                 {/* Top — Logo + branding (fixed at top) */}
                 <div className="flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">

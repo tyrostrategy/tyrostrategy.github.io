@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback, type Key } from "react";
+import { useState, useMemo, useCallback, useEffect, type Key } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import {
   Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
   Pagination, Input, Button, Tooltip,

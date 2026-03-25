@@ -710,7 +710,17 @@ tr[data-hover=true]:not([data-selected=true]) {
   .print\:break-inside-avoid { break-inside: avoid !important; }
   .print\:break-after-avoid { break-after: avoid !important; }
   .print\:break-after-always { break-after: page !important; }
-  .print\:min-h-\[90vh\] { min-height: 90vh !important; }
+  .print\:h-\[100vh\] { height: 100vh !important; box-sizing: border-box !important; }
+  .print\:m-0 { margin: 0 !important; }
+  .print\:justify-between { justify-content: space-between !important; }
+
+  /* Hide print:hidden elements */
+  .print\:hidden { display: none !important; }
+
+  /* Hide report toolbar, tabs, page header during print */
+  [data-report-toolbar],
+  [data-page-tabs],
+  [data-page-header] { display: none !important; }
 
   /* Glass cards in print — clean borders */
   .glass-card {
