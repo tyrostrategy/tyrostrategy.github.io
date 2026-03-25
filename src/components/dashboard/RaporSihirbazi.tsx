@@ -316,27 +316,92 @@ export default function RaporSihirbazi() {
 
   const handleExportHTML = () => {
     if (!reportRef.current) return;
-    // Deep clone and inline all computed styles so the HTML is self-contained
+    // Clone content and strip inline styles (they contain fixed pixel values from the viewport)
     const clone = reportRef.current.cloneNode(true) as HTMLElement;
-    const inlineStyles = (source: HTMLElement, target: HTMLElement) => {
-      const cs = getComputedStyle(source);
-      const important = ["font-family", "font-size", "font-weight", "color", "background-color", "background", "border", "border-left", "border-radius", "padding", "margin", "display", "flex-direction", "align-items", "justify-content", "gap", "width", "max-width", "min-width", "height", "text-align", "line-height", "letter-spacing", "white-space", "overflow", "box-shadow", "opacity"];
-      important.forEach((p) => {
-        const v = cs.getPropertyValue(p);
-        if (v && v !== "none" && v !== "normal" && v !== "0px" && v !== "auto" && v !== "rgba(0, 0, 0, 0)") {
-          target.style.setProperty(p, v);
-        }
-      });
-      const srcChildren = source.children;
-      const tgtChildren = target.children;
-      for (let i = 0; i < srcChildren.length; i++) {
-        if (srcChildren[i] instanceof HTMLElement && tgtChildren[i] instanceof HTMLElement) {
-          inlineStyles(srcChildren[i] as HTMLElement, tgtChildren[i] as HTMLElement);
-        }
-      }
+    // Remove all inline style attributes — we'll use our own CSS
+    clone.querySelectorAll("[style]").forEach((el) => el.removeAttribute("style"));
+    clone.removeAttribute("style");
+    // Remove class references that won't work standalone, keep semantic ones
+    const cleanClasses = (el: Element) => {
+      const cls = el.getAttribute("class") || "";
+      // Keep only simple utility-like classes that our embedded CSS will handle
+      el.removeAttribute("class");
+      el.querySelectorAll("*").forEach((child) => child.removeAttribute("class"));
     };
-    inlineStyles(reportRef.current, clone);
-    const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>${reportTitle}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;max-width:900px;margin:0 auto;padding:2rem;color:#0f172a;background:#fff}table{border-collapse:collapse;width:100%}th,td{padding:8px 12px;border:1px solid #e2e8f0;text-align:left;font-size:12px}th{background:#f8fafc;font-weight:600}svg{display:inline-block}@media print{@page{margin:1.5cm}}</style></head><body>${clone.outerHTML}</body></html>`;
+    // Don't strip classes — instead provide comprehensive CSS
+    const css = `
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;max-width:860px;margin:0 auto;padding:2rem;color:#0f172a;background:#fff;font-size:13px;line-height:1.6}
+h1{font-size:22px;font-weight:800;margin-bottom:4px}
+h2{font-size:16px;font-weight:700;margin-bottom:4px}
+h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;color:#1e3a5f;display:flex;align-items:center;gap:8px}
+h4{font-size:14px;font-weight:700;margin-bottom:4px}
+p{margin:2px 0}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th,td{padding:10px 14px;border:1px solid #e2e8f0;text-align:left}
+th{background:#f8fafc;font-weight:600;color:#475569}
+tr:nth-child(even){background:#f8fafc}
+section{margin-bottom:28px}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b;display:flex;justify-content:space-between}
+svg{display:inline-block;vertical-align:middle}
+/* Glass card simulation */
+[class*="glass-card"]{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:12px}
+/* Grid layouts */
+[class*="grid"]{display:grid;gap:10px}
+[class*="grid-cols-8"]{grid-template-columns:repeat(8,1fr)}
+[class*="grid-cols-6"]{grid-template-columns:repeat(6,1fr)}
+[class*="grid-cols-4"]{grid-template-columns:repeat(4,1fr)}
+[class*="grid-cols-3"]{grid-template-columns:repeat(3,1fr)}
+[class*="grid-cols-2"]{grid-template-columns:repeat(2,1fr)}
+/* Flex */
+[class*="flex"]{display:flex}
+[class*="flex-col"]{flex-direction:column}
+[class*="items-center"]{align-items:center}
+[class*="justify-between"]{justify-content:space-between}
+[class*="justify-center"]{justify-content:center}
+[class*="gap-"]{gap:8px}
+[class*="flex-1"]{flex:1}
+[class*="flex-wrap"]{flex-wrap:wrap}
+/* Text */
+[class*="text-center"]{text-align:center}
+[class*="font-bold"]{font-weight:700}
+[class*="font-extrabold"]{font-weight:800}
+[class*="font-semibold"]{font-weight:600}
+[class*="font-medium"]{font-weight:500}
+[class*="truncate"]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Spacing */
+[class*="mb-"]{margin-bottom:8px}
+[class*="mt-"]{margin-top:8px}
+[class*="px-"]{padding-left:16px;padding-right:16px}
+[class*="py-"]{padding-top:8px;padding-bottom:8px}
+[class*="p-"]{padding:16px}
+/* Rounded */
+[class*="rounded-xl"]{border-radius:12px}
+[class*="rounded-lg"]{border-radius:8px}
+[class*="rounded-full"]{border-radius:9999px}
+/* Border */
+[class*="border-t"]{border-top:1px solid #e2e8f0}
+[class*="border-l"]{border-left:3px solid #64748b}
+/* Colors — status badge backgrounds */
+span[class*="rounded-full"]{padding:2px 10px;font-size:11px;display:inline-flex;align-items:center}
+/* Progress bar */
+[class*="h-3"][class*="rounded-full"]{height:12px;border-radius:9999px;overflow:hidden}
+/* Print */
+@media print{@page{margin:1.5cm;size:A4 portrait}body{padding:0}}
+@media(max-width:700px){[class*="grid-cols-8"],[class*="grid-cols-6"]{grid-template-columns:repeat(4,1fr)}}
+`.trim();
+
+    const html = `<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>${reportTitle}</title>
+<style>${css}</style>
+</head>
+<body>
+${clone.innerHTML}
+</body>
+</html>`;
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
