@@ -10,6 +10,7 @@ import {
 import { useDataStore } from "@/stores/dataStore";
 import { useUIStore } from "@/stores/uiStore";
 import { sidebarThemes } from "@/config/sidebarThemes";
+import { TyroLogo } from "@/components/ui/TyroLogo";
 import type { Hedef, Aksiyon, EntityStatus, Source } from "@/types";
 
 // ===== Status helpers =====
@@ -889,25 +890,62 @@ ${clone.innerHTML}
       {/* Report Content — Apple macOS style, print-optimized */}
       <div ref={reportRef} data-report-content className="rounded-2xl overflow-hidden print:border-0 print:rounded-none print:shadow-none bg-white dark:bg-tyro-surface">
         <div className="max-w-[900px] mx-auto px-6 py-6 print:max-w-full print:px-10">
-          {/* COVER PAGE */}
+          {/* COVER PAGE — Corporate Executive Style */}
           {sections.cover && (
-            <div className="mb-10 print:break-after-always print:min-h-[90vh] flex flex-col items-center justify-center text-center py-16">
-              <div className="w-14 h-14 rounded-2xl bg-tyro-navy/8 flex items-center justify-center mb-6">
-                <PieChart size={24} className="text-tyro-navy" />
-              </div>
-              <h1 className="text-[28px] font-extrabold text-tyro-text-primary tracking-tight">{reportTitle}</h1>
-              <div className="h-1 w-16 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light mt-4 mb-4" />
-              <p className="text-[14px] text-tyro-text-secondary">{today}</p>
-              <p className="text-[13px] text-tyro-text-muted mt-1">{reportHedefler.length} hedef · {reportAksiyonlar.length} aksiyon · {allDepartments.length} departman</p>
-              {effectiveDateRange && (
-                <p className="text-[12px] text-tyro-text-muted mt-2">
-                  Dönem: {new Date(effectiveDateRange.from).toLocaleDateString("tr-TR")} — {new Date(effectiveDateRange.to).toLocaleDateString("tr-TR")}
-                </p>
-              )}
-              <div className="mt-8 space-y-1">
-                <p className="text-[13px] font-bold text-tyro-text-primary">TYRO Strategy</p>
-                <p className="text-[12px] text-tyro-text-muted">Powered by TTECH Business Solutions</p>
-                <p className="text-[11px] text-tyro-text-muted mt-2">Bu rapor gizli ve kurumsal kullanım içindir.</p>
+            <div className="mb-10 print:break-after-always print:min-h-[90vh] relative overflow-hidden rounded-xl" style={{ minHeight: 480 }}>
+              {/* Background — navy gradient with subtle pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#0f1d2f] via-[#1e3a5f] to-[#0f2847]" />
+              <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)", backgroundSize: "28px 28px" }} />
+              <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-tyro-gold/8 blur-[100px]" />
+              <div className="absolute bottom-0 left-0 w-[200px] h-[200px] rounded-full bg-blue-500/6 blur-[80px]" />
+
+              {/* Content */}
+              <div className="relative z-10 flex flex-col justify-between h-full px-10 py-10" style={{ minHeight: 480 }}>
+                {/* Top — Logo area */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <TyroLogo size={36} variant="sidebar" isDark />
+                    <div>
+                      <p className="text-[14px] font-bold text-white">TYRO Strategy</p>
+                      <p className="text-[11px] text-white/40">Stratejik Hedef Yönetim Platformu</p>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-white/30 uppercase tracking-wider">Gizli · Kurumsal Kullanım</p>
+                </div>
+
+                {/* Center — Title */}
+                <div className="text-center py-8">
+                  <p className="text-[11px] font-semibold text-tyro-gold uppercase tracking-[0.2em] mb-3">Yönetim Raporu</p>
+                  <h1 className="text-[30px] font-extrabold text-white tracking-tight leading-tight">{reportTitle}</h1>
+                  <div className="h-[2px] w-20 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light mx-auto mt-5 mb-5" />
+                  <p className="text-[14px] text-white/70">{today}</p>
+                  {effectiveDateRange && (
+                    <p className="text-[12px] text-white/40 mt-1">
+                      Dönem: {new Date(effectiveDateRange.from).toLocaleDateString("tr-TR")} — {new Date(effectiveDateRange.to).toLocaleDateString("tr-TR")}
+                    </p>
+                  )}
+                </div>
+
+                {/* Bottom — Stats + Footer */}
+                <div>
+                  <div className="flex items-center justify-center gap-10 mb-8">
+                    {[
+                      { label: "Hedef", value: reportHedefler.length },
+                      { label: "Aksiyon", value: reportAksiyonlar.length },
+                      { label: "Departman", value: allDepartments.length },
+                      { label: "Ort. İlerleme", value: `%${avgProgress}` },
+                    ].map((s) => (
+                      <div key={s.label} className="text-center">
+                        <p className="text-[24px] font-extrabold text-white tabular-nums">{s.value}</p>
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider mt-0.5">{s.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-white/25">
+                    <span>Powered by TTECH Business Solutions</span>
+                    <span>© {new Date().getFullYear()} Tiryaki Agro</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -933,41 +971,124 @@ ${clone.innerHTML}
             </header>
           )}
 
-          {/* 1. GENEL ÖZET — glass KPI cards */}
-          {sections.summary && (
-            <Section num={1} title="Genel Özet">
-              <div className="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
-                {[
-                  { label: "Toplam", value: reportHedefler.length, color: "var(--tyro-navy, #1e3a5f)" },
-                  { label: "Yolunda", value: statusSummary["On Track"] || 0, color: "#10b981" },
-                  { label: "Risk Altında", value: statusSummary["At Risk"] || 0, color: "#f59e0b" },
-                  { label: "Gecikmeli", value: statusSummary["Behind"] || 0, color: "#ef4444" },
-                  { label: "Tamamlandı", value: statusSummary["Achieved"] || 0, color: "#059669" },
-                  { label: "Başlanmadı", value: statusSummary["Not Started"] || 0, color: "#94a3b8" },
-                  { label: "Askıda", value: statusSummary["On Hold"] || 0, color: "#8b5cf6" },
-                  { label: "İptal", value: statusSummary["Cancelled"] || 0, color: "#6b7280" },
-                ].map((k) => (
-                  <div key={k.label} className="glass-card text-center py-3.5 px-2 rounded-xl">
-                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-1">{k.label}</p>
-                    <p className="text-[26px] font-extrabold tabular-nums leading-none" style={{ color: k.color }}>{k.value}</p>
+          {/* 1. GENEL ÖZET — Executive Summary */}
+          {sections.summary && (() => {
+            // Sort status cards by value desc
+            const statusCards = [
+              { label: "Toplam", value: reportHedefler.length, color: "var(--tyro-navy, #1e3a5f)" },
+              { label: "Yolunda", value: statusSummary["On Track"] || 0, color: "#10b981" },
+              { label: "Risk Altında", value: statusSummary["At Risk"] || 0, color: "#f59e0b" },
+              { label: "Gecikmeli", value: statusSummary["Behind"] || 0, color: "#ef4444" },
+              { label: "Tamamlandı", value: statusSummary["Achieved"] || 0, color: "#059669" },
+              { label: "Başlanmadı", value: statusSummary["Not Started"] || 0, color: "#94a3b8" },
+              { label: "Askıda", value: statusSummary["On Hold"] || 0, color: "#8b5cf6" },
+              { label: "İptal", value: statusSummary["Cancelled"] || 0, color: "#6b7280" },
+            ].sort((a, b) => b.value - a.value);
+
+            // Generate AI-like executive insights
+            const riskCount = (statusSummary["At Risk"] || 0) + (statusSummary["Behind"] || 0);
+            const completionRate = reportHedefler.length > 0 ? Math.round(((statusSummary["Achieved"] || 0) / reportHedefler.length) * 100) : 0;
+            const worstDept = deptBreakdown.length > 0 ? deptBreakdown.reduce((worst, [, d]) => d.avgProg < worst.avgProg ? d : worst, deptBreakdown[0][1]) : null;
+            const worstDeptName = deptBreakdown.find(([, d]) => d === worstDept)?.[0] || "";
+            const bestDept = deptBreakdown.length > 0 ? deptBreakdown.reduce((best, [, d]) => d.avgProg > best.avgProg ? d : best, deptBreakdown[0][1]) : null;
+            const bestDeptName = deptBreakdown.find(([, d]) => d === bestDept)?.[0] || "";
+
+            const insights: { icon: string; text: string; type: "success" | "warning" | "info" }[] = [];
+            if (avgProgress >= 70) insights.push({ icon: "✅", text: `Genel ilerleme %${avgProgress} ile hedef doğrultusunda ilerliyor.`, type: "success" });
+            else if (avgProgress >= 40) insights.push({ icon: "⚠️", text: `Genel ilerleme %${avgProgress} seviyesinde — ivme kazanılması gerekiyor.`, type: "warning" });
+            else insights.push({ icon: "🔴", text: `Genel ilerleme %${avgProgress} ile kritik seviyede düşük. Acil aksiyon gerekli.`, type: "warning" });
+
+            if (riskCount > 0) insights.push({ icon: "⚠️", text: `${riskCount} hedef risk altında veya gecikmeli durumda — dikkat gerektiriyor.`, type: "warning" });
+            if (completionRate > 0) insights.push({ icon: "📊", text: `Hedef tamamlanma oranı %${completionRate}. ${statusSummary["Achieved"] || 0} hedef başarıyla tamamlanmış.`, type: "info" });
+            if (worstDept && worstDept.avgProg < avgProgress) insights.push({ icon: "📉", text: `${worstDeptName} departmanı %${worstDept.avgProg} ortalama ilerleme ile en düşük performansı sergiliyor.`, type: "warning" });
+            if (bestDept && bestDept.avgProg > avgProgress) insights.push({ icon: "🏆", text: `${bestDeptName} departmanı %${bestDept.avgProg} ile en yüksek performansı gösteriyor.`, type: "success" });
+
+            // Circular progress SVG
+            const circR = 60;
+            const circC = 2 * Math.PI * circR;
+            const circOffset = circC * (1 - avgProgress / 100);
+
+            return (
+              <Section num={1} title="Yönetici Özeti">
+                {/* AI Insights */}
+                <div className="glass-card rounded-xl p-4 mb-4">
+                  <p className="text-[11px] font-bold text-tyro-text-muted uppercase tracking-wider mb-2">Yapay Zeka İçgörüleri</p>
+                  <div className="space-y-2">
+                    {insights.map((ins, i) => (
+                      <div key={i} className="flex items-start gap-2.5">
+                        <span className="text-[14px] mt-0.5 shrink-0">{ins.icon}</span>
+                        <p className={`text-[12px] leading-relaxed ${ins.type === "warning" ? "text-amber-700 dark:text-amber-400" : ins.type === "success" ? "text-emerald-700 dark:text-emerald-400" : "text-tyro-text-primary"}`}>
+                          {ins.text}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              {/* Progress bar */}
-              <div className="glass-card rounded-xl p-4 mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[12px] font-semibold text-tyro-text-secondary">Ortalama İlerleme</span>
-                  <span className="text-[18px] font-extrabold tabular-nums" style={{ color: progressColor(avgProgress) }}>{avgProgress}%</span>
                 </div>
-                <div className="h-3 rounded-full bg-tyro-border/10 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all bg-gradient-to-r from-red-400 via-amber-400 via-yellow-400 to-emerald-500"
-                    style={{ width: `${avgProgress}%` }}
-                  />
+
+                {/* Status cards — 4+4 grid, sorted by value */}
+                <div className="grid grid-cols-4 gap-2.5 mb-4">
+                  {statusCards.slice(0, 4).map((k) => (
+                    <div key={k.label} className="glass-card text-center py-3.5 px-2 rounded-xl">
+                      <p className="text-[12px] font-semibold text-tyro-text-secondary mb-1">{k.label}</p>
+                      <p className="text-[26px] font-extrabold tabular-nums leading-none" style={{ color: k.color }}>{k.value}</p>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </Section>
-          )}
+                <div className="grid grid-cols-4 gap-2.5 mb-4">
+                  {statusCards.slice(4).map((k) => (
+                    <div key={k.label} className="glass-card text-center py-3.5 px-2 rounded-xl">
+                      <p className="text-[12px] font-semibold text-tyro-text-secondary mb-1">{k.label}</p>
+                      <p className="text-[26px] font-extrabold tabular-nums leading-none" style={{ color: k.color }}>{k.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Circular Progress + Progress Distribution — side by side */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Circular Progress */}
+                  <div className="glass-card rounded-xl p-5 flex flex-col items-center justify-center">
+                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">Ortalama İlerleme</p>
+                    <svg width="150" height="150" viewBox="0 0 150 150">
+                      <circle cx="75" cy="75" r={circR} fill="none" stroke="#e2e8f0" strokeWidth="10" />
+                      <circle
+                        cx="75" cy="75" r={circR} fill="none"
+                        stroke={progressColor(avgProgress)} strokeWidth="10"
+                        strokeLinecap="round"
+                        strokeDasharray={circC} strokeDashoffset={circOffset}
+                        transform="rotate(-90 75 75)"
+                      />
+                      <text x="75" y="70" textAnchor="middle" className="text-[28px] font-extrabold" fill={progressColor(avgProgress)}>%{avgProgress}</text>
+                      <text x="75" y="90" textAnchor="middle" className="text-[11px]" fill="#64748b">tamamlanma</text>
+                    </svg>
+                  </div>
+
+                  {/* Progress Distribution */}
+                  <div className="glass-card rounded-xl p-5">
+                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">İlerleme Dağılımı</p>
+                    <div className="space-y-2.5">
+                      {[
+                        { label: "Tamamlandı", count: progressDist.full, color: "#059669" },
+                        { label: "İlerlemiş (75%+)", count: progressDist.high, color: "#10b981" },
+                        { label: "Orta (50-74%)", count: progressDist.mid, color: "#3b82f6" },
+                        { label: "Düşük (1-49%)", count: progressDist.low, color: "#f59e0b" },
+                        { label: "Başlamadı", count: progressDist.zero, color: "#94a3b8" },
+                      ].map((row) => {
+                        const pct = reportHedefler.length > 0 ? Math.round((row.count / reportHedefler.length) * 100) : 0;
+                        return (
+                          <div key={row.label} className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: row.color }} />
+                            <span className="text-[12px] text-tyro-text-secondary flex-1">{row.label}</span>
+                            <span className="text-[12px] font-bold tabular-nums" style={{ color: row.color }}>{row.count}</span>
+                            <span className="text-[11px] text-tyro-text-muted w-8 text-right">{pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </Section>
+            );
+          })()}
 
           {/* STATUS PIE CHART */}
           {sections.statusPie && (() => {
@@ -1021,35 +1142,7 @@ ${clone.innerHTML}
             );
           })()}
 
-          {/* İLERLEME DAĞILIMI */}
-          {sections.progressChart && (
-            <Section num={2} title="İlerleme Dağılımı">
-              <div className="glass-card rounded-xl p-4 space-y-3">
-                {[
-                  { label: "Tamamlandı (100%)", count: progressDist.full, color: "#059669" },
-                  { label: "İlerlemiş (75-99%)", count: progressDist.high, color: "#10b981" },
-                  { label: "Orta (50-74%)", count: progressDist.mid, color: "#3b82f6" },
-                  { label: "Düşük (1-49%)", count: progressDist.low, color: "#f59e0b" },
-                  { label: "Başlamadı (0%)", count: progressDist.zero, color: "#94a3b8" },
-                ].map((row) => {
-                  const pct = reportHedefler.length > 0 ? Math.round((row.count / reportHedefler.length) * 100) : 0;
-                  return (
-                    <div key={row.label} className="flex items-center gap-3">
-                      <span className="w-[140px] text-[12px] text-tyro-text-secondary shrink-0 flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: row.color }} />
-                        {row.label}
-                      </span>
-                      <div className="flex-1 h-5 rounded-lg bg-tyro-border/8 overflow-hidden">
-                        <div className="h-full rounded-lg transition-all" style={{ width: `${pct}%`, backgroundColor: row.color }} />
-                      </div>
-                      <span className="text-[12px] font-bold w-7 text-right tabular-nums" style={{ color: row.color }}>{row.count}</span>
-                      <span className="text-[12px] text-tyro-text-secondary w-10 text-right tabular-nums">{pct}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </Section>
-          )}
+          {/* İlerleme Dağılımı artık Yönetici Özeti içinde — kaldırıldı */}
 
           {/* 3. DEPARTMAN TABLOSU */}
           {sections.deptTable && deptBreakdown.length > 0 && (
