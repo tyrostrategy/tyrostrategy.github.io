@@ -282,17 +282,17 @@ function DetailPanel({
             {hedef.description}
           </p>
         )}
-        <div className="mt-1.5">
+        <div className="flex items-center flex-wrap gap-2 mt-1.5">
           <StatusBadge status={hedef.status} />
+          {hedef.tags && hedef.tags.length > 0 && (
+            <>
+              <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
+              {hedef.tags.map((tag) => (
+                <TagChip key={tag} name={tag} size="sm" />
+              ))}
+            </>
+          )}
         </div>
-        {/* Tags */}
-        {hedef.tags && hedef.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {hedef.tags.map((tag) => (
-              <TagChip key={tag} name={tag} size="sm" />
-            ))}
-          </div>
-        )}
       </div>
 
       {/* === OBJECTIVE INFO — expandable glass card === */}
