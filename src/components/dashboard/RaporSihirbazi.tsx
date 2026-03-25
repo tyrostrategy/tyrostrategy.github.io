@@ -1014,12 +1014,10 @@ ${clone.innerHTML}
                 {/* AI Insights */}
                 <div className="glass-card rounded-xl p-4 mb-4">
                   <p className="text-[11px] font-bold text-tyro-text-muted uppercase tracking-wider mb-2">Yapay Zeka İçgörüleri</p>
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {insights.map((ins, i) => (
-                      <div key={i} className="flex items-start gap-2.5">
-                        <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: `${ins.color}12` }}>
-                          <ins.Icon size={14} style={{ color: ins.color }} />
-                        </div>
+                      <div key={i} className="flex items-center gap-2">
+                        <ins.Icon size={15} style={{ color: ins.color }} className="shrink-0" />
                         <p className={`text-[12px] leading-relaxed ${ins.type === "warning" ? "text-amber-700 dark:text-amber-400" : ins.type === "success" ? "text-emerald-700 dark:text-emerald-400" : "text-tyro-text-primary"}`}>
                           {ins.text}
                         </p>
