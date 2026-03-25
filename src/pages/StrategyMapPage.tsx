@@ -403,7 +403,7 @@ export default function StrategyMapPage() {
         className="flex-1 overflow-auto rounded-card glass-card p-4 sm:p-8"
       >
         <div
-          className="min-w-[600px] transition-transform duration-200"
+          className="min-w-0 sm:min-w-[600px] transition-transform duration-200"
           style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}
         >
           <motion.div
@@ -423,15 +423,15 @@ export default function StrategyMapPage() {
             {/* Vertical stem from company down to horizontal bar */}
             <motion.div variants={fadeUp} className="w-0.5 h-6" style={{ backgroundColor: sidebarTheme.accentColor ?? sidebarTheme.bg, opacity: 0.5 }} />
 
-            {/* Horizontal connecting bar across all themes */}
+            {/* Horizontal connecting bar across all themes — desktop only */}
             <motion.div
               variants={fadeUp}
-              className="h-0.5 rounded-full"
+              className="h-0.5 rounded-full hidden sm:block"
               style={{ width: `${Math.max(activeThemes.length * 260 + (activeThemes.length - 1) * 48 - 100, 200)}px`, backgroundColor: sidebarTheme.accentColor ?? sidebarTheme.bg, opacity: 0.35 }}
             />
 
             {/* Level 2: Theme columns */}
-            <motion.div variants={fadeUp} className="flex items-stretch justify-center gap-12">
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-stretch justify-center gap-6 sm:gap-12">
               {activeThemes.map(([source, list]) => {
                 const themeColor = THEME_COLORS[source]?.border ?? "#cbd5e1";
                 return (

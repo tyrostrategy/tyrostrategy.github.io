@@ -769,18 +769,18 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
   // ===== RIGHT PANEL =====
   const rightPanel = (
     <div
-      className={`flex-1 min-w-0 bg-tyro-surface/30 rounded-xl border border-tyro-border/20 overflow-hidden ${
-        !mobileDetail ? "hidden lg:flex lg:flex-col" : "flex flex-col"
+      className={`min-w-0 bg-tyro-surface/30 rounded-xl border border-tyro-border/20 overflow-hidden ${
+        !mobileDetail ? "hidden lg:flex lg:flex-col lg:flex-1" : "flex flex-col w-full lg:flex-1"
       }`}
     >
       {/* Mobile back button */}
-      <div className="lg:hidden px-4 pt-3">
+      <div className="lg:hidden px-4 pt-3 pb-2 border-b border-tyro-border/20">
         <button
           type="button"
           onClick={() => setMobileDetail(false)}
-          className="flex items-center gap-1.5 text-[12px] font-medium text-tyro-text-secondary hover:text-tyro-navy cursor-pointer"
+          className="flex items-center gap-2 text-[13px] font-semibold text-tyro-navy cursor-pointer active:opacity-70"
         >
-          <ArrowLeft size={14} /> {t("detail.backToObjective", "Geri")}
+          <ArrowLeft size={16} /> {t("detail.backToList", "Hedef Listesi")}
         </button>
       </div>
 
@@ -814,8 +814,8 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
 
   return (
     <div className="flex h-[calc(100vh-200px)] min-h-[500px] relative">
-      {/* Left: 360px on desktop, full on mobile */}
-      <div className="w-full lg:w-[360px] lg:shrink-0 h-full">
+      {/* Left: 360px on desktop, full on mobile — hidden when detail open on mobile */}
+      <div className={`lg:w-[360px] lg:shrink-0 h-full ${mobileDetail ? "hidden lg:block" : "w-full lg:w-[360px]"}`}>
         {leftPanel}
       </div>
       {/* Panel divider */}

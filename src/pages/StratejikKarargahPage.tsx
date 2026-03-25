@@ -110,10 +110,10 @@ export default function StratejikKarargahPage() {
   return (
     <div>
       {/* Header with tabs on the right */}
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-[22px] font-bold text-tyro-text-primary">{t("pages.strategicHQ.title")}</h1>
-          <p className="text-[13px] text-tyro-text-muted mt-0.5">{t("pages.strategicHQ.subtitle")}</p>
+          <h1 className="text-[20px] sm:text-[22px] font-bold text-tyro-text-primary">{t("pages.strategicHQ.title")}</h1>
+          <p className="text-[12px] sm:text-[13px] text-tyro-text-muted mt-0.5">{t("pages.strategicHQ.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex bg-tyro-bg rounded-button p-0.5 gap-0.5">
