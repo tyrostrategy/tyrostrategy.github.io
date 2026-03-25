@@ -191,7 +191,7 @@ export const useDataStore = create<DataState>()(
         ),
     }),
     {
-      name: "tyro-data-store-v4",
+      name: "tyro-data-store-v5",
       skipHydration: true,
     }
   )

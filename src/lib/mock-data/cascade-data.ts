@@ -46,7 +46,7 @@ export interface CascadeGorev {
 export const turkiyeHedefler: CascadeHedef[] = [
 {
   id: "turkiye-1",
-  name: "TR Antep Fıstığı ile Çin pazarına giriş",
+  name: "Antep Fıstığı Ürünlerinin Çin Pazarına Girişi",
   source: "Türkiye",
   status: "On Track",
   leader: "Ozan Yeşilyer",
@@ -115,7 +115,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
 },
 {
   id: "turkiye-9",
-  name: "Muş Sulama Sistemi",
+  name: "Muş Bölgesi Sulama Altyapısı Modernizasyonu",
   source: "Türkiye",
   status: "On Track",
   leader: "Recep Mergen",
@@ -124,7 +124,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-10",
-    name: "Muş Sulama Sistemi devreye alınması ve verimli kullanma",
+    name: "Muş Bölgesi Sulama Altyapısı Modernizasyonu devreye alınması ve verimli kullanma",
     status: "On Track",
     leader: "Recep Mergen",
     startDate: "2020-12-07",
@@ -320,7 +320,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
 },
 {
   id: "turkiye-34",
-  name: "Muş Tarımsal Mekanizasyon Projesi",
+  name: "Muş Arazisi Tarımsal Mekanizasyon Kapasitesinin Güçlendirilmesi",
   source: "Türkiye",
   status: "On Track",
   leader: "Recep Mergen",
@@ -373,7 +373,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
 },
 {
   id: "turkiye-40",
-  name: "Rejeneratif Tarım Projesi",
+  name: "Rejeneratif Tarım Uygulamalarının Yaygınlaştırılması",
   source: "Türkiye",
   status: "On Track",
   leader: "Recep Mergen",
@@ -460,7 +460,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
 },
 {
   id: "turkiye-50",
-  name: "Yem katkı ihracat satışlarının arttırılması",
+  name: "Yem Katkı Ürünleri İhracat Satışlarının Artırılması",
   source: "Türkiye",
   status: "On Track",
   leader: "Taylan Eğilmez",
@@ -585,7 +585,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
 export const kurumsalHedefler: CascadeHedef[] = [
 {
   id: "kurumsal-64",
-  name: "2 Adet (ek) Deniz-Nehir tipi gemi inşa projesi",
+  name: "Deniz-Nehir Tipi Gemi İnşa Yatırımının Gerçekleştirilmesi",
   source: "Kurumsal",
   status: "On Track",
   leader: "İdris İlhan Telci",
@@ -638,7 +638,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-70",
-  name: "Bireysel Performans Yönetimi",
+  name: "Bireysel Performans Yönetim Sisteminin Kurulması",
   source: "Kurumsal",
   status: "On Track",
   leader: "Güven Emrah Erenler",
@@ -699,7 +699,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-77",
-  name: "Buğday Derin İşleme",
+  name: "Buğday Derin İşleme Tesisi Yatırımının Hayata Geçirilmesi",
   source: "Kurumsal",
   status: "On Track",
   leader: "Suat Söbüçovalı",
@@ -708,7 +708,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-78",
-    name: "Buğday Derin İşleme",
+    name: "Buğday Derin İşleme Tesisi Yatırımının Hayata Geçirilmesi",
     status: "On Track",
     leader: "Suat Söbüçovalı",
     startDate: "2024-06-01",
@@ -760,7 +760,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-84",
-  name: "Çiftlik Yönetimi FarmERP",
+  name: "Çiftlik Yönetim Sistemi FarmERP Entegrasyonu",
   source: "Kurumsal",
   status: "At Risk",
   leader: "Kerime İkizler",
@@ -769,7 +769,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-85",
-    name: "Çiftlik Yönetimi FarmERP",
+    name: "Çiftlik Yönetim Sistemi FarmERP Entegrasyonu",
     status: "At Risk",
     leader: "Kerime İkizler",
     startDate: "2026-02-02",
@@ -853,7 +853,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-95",
-  name: "Giresun Protein Tesisi Kapasite Arttırım",
+  name: "Giresun Protein Tesisi Kapasite Artırımı",
   source: "Kurumsal",
   status: "On Track",
   leader: "Murat Solak",
@@ -1275,7 +1275,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-144",
-  name: "İntranet Kurulumu",
+  name: "Kurumsal İntranet Portalının Devreye Alınması",
   source: "Kurumsal",
   status: "On Track",
   leader: "Arzu Örsel",
@@ -1284,7 +1284,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-145",
-    name: "İntranet Kurulumu - Tedarikçi belirlenmesi ve satınalma süreci",
+    name: "Kurumsal İntranet Portalının Devreye Alınması - Tedarikçi belirlenmesi ve satınalma süreci",
     status: "On Track",
     leader: "Arzu Örsel",
     startDate: "2025-05-11",
@@ -1461,7 +1461,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-166",
-  name: "Kazakistan Buğday Tesisi Kurulumu",
+  name: "Kazakistan Buğday İşleme Tesisi Kurulumu",
   source: "Kurumsal",
   status: "On Track",
   leader: "Yiğit Karacı",
@@ -1530,7 +1530,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-174",
-  name: "Mamul Depo Konveyör Hattının Uzatılması",
+  name: "Mamul Depo Konveyör Hattı Uzatım Projesi",
   source: "Kurumsal",
   status: "On Track",
   leader: "Emre Padar",
@@ -1539,7 +1539,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-175",
-    name: "Mamul Depo Konveyör Hattının Uzatılması projesi",
+    name: "Mamul Depo Konveyör Hattı Uzatım Projesi projesi",
     status: "On Track",
     leader: "Emre Padar",
     startDate: "2024-08-09",
@@ -1591,7 +1591,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-181",
-  name: "NOLA İskele Projesi",
+  name: "NOLA İskele Altyapı Yatırımı",
   source: "Kurumsal",
   status: "On Track",
   leader: "Yiğit Karacı",
@@ -1779,7 +1779,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-203",
-  name: "Organik İzlenebilirlik Dijitalizasyonu",
+  name: "Organik Ürün İzlenebilirlik Sisteminin Dijitalleştirilmesi",
   source: "Kurumsal",
   status: "At Risk",
   leader: "Kübra Dömbek",
@@ -1933,7 +1933,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-221",
-  name: "Risk Survey Çalışması (sigorta)",
+  name: "Sigorta Risk Değerlendirme Çalışması",
   source: "Kurumsal",
   status: "On Track",
   leader: "Nazlı Deniz Çetin",
@@ -1978,7 +1978,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-226",
-  name: "Sharepoint Migration",
+  name: "SharePoint Altyapı Göçü ve Modernizasyonu",
   source: "Kurumsal",
   status: "On Track",
   leader: "Kerime İkizler",
@@ -1987,7 +1987,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-227",
-    name: "Sharepoint Migration",
+    name: "SharePoint Altyapı Göçü ve Modernizasyonu",
     status: "On Track",
     leader: "Kerime İkizler",
     startDate: "2024-06-24",
@@ -2039,7 +2039,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-233",
-  name: "Sıfır İş Kazası",
+  name: "Sıfır İş Kazası Hedefine Ulaşılması",
   source: "Kurumsal",
   status: "On Track",
   leader: "Ahmet Kalkan / Halil İbrahim Öztürk",
@@ -2048,7 +2048,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-234",
-    name: "Sıfır İş Kazası Projesi",
+    name: "Sıfır İş Kazası Hedefine Ulaşılması Projesi",
     status: "On Track",
     leader: "Ahmet Kalkan / Halil İbrahim Öztürk",
     startDate: "2024-01-01",
@@ -2169,7 +2169,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-248",
-  name: "Sürdürülebilirlik Raporu",
+  name: "Kurumsal Sürdürülebilirlik Raporlamasının Standartlaştırılması",
   source: "Kurumsal",
   status: "On Track",
   leader: "Arzu Örsel",
@@ -2178,7 +2178,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-249",
-    name: "Sürdürülebilirlik Raporu",
+    name: "Kurumsal Sürdürülebilirlik Raporlamasının Standartlaştırılması",
     status: "On Track",
     leader: "Arzu Örsel",
     startDate: "2024-07-02",
@@ -2543,7 +2543,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-291",
-  name: "Ukrayna Orijinli Organik Ürün",
+  name: "Ukrayna Kaynaklı Organik Ürün Tedarik Zincirinin Kurulması",
   source: "Kurumsal",
   status: "On Track",
   leader: "Raif Karacı",
@@ -2641,7 +2641,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-302",
-  name: "Web Sitelerinin Güncellenmesi / Oluşturulması (19 adet)",
+  name: "Grup Web Sitelerinin Yenilenmesi ve Oluşturulması",
   source: "Kurumsal",
   status: "On Track",
   leader: "Arzu Örsel",
@@ -2754,7 +2754,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 },
 {
   id: "kurumsal-315",
-  name: "Yetkilendirilmiş Yükümlü Sistemi Projesi",
+  name: "Yetkilendirilmiş Yükümlü Statüsü (AEO) Sertifikasyonu",
   source: "Kurumsal",
   status: "On Track",
   leader: "Tamer Latifoğlu",
@@ -2826,7 +2826,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 export const internationalHedefler: CascadeHedef[] = [
 {
   id: "international-323",
-  name: "Carbon Trading",
+  name: "Karbon Ticareti Programının Hayata Geçirilmesi",
   source: "International",
   status: "On Track",
   leader: "Kemal Yıldız",
@@ -2835,7 +2835,7 @@ export const internationalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-324",
-    name: "Carbon Trading",
+    name: "Karbon Ticareti Programının Hayata Geçirilmesi",
     status: "On Track",
     leader: "Kemal Yıldız",
     startDate: "2022-10-15",
@@ -2903,7 +2903,7 @@ export const internationalHedefler: CascadeHedef[] = [
 },
 {
   id: "international-332",
-  name: "Djibouti Port Investment",
+  name: "Cibuti Liman Yatırımının Değerlendirilmesi",
   source: "International",
   status: "On Track",
   leader: "Nevzat Çakmak",
@@ -3004,7 +3004,7 @@ export const internationalHedefler: CascadeHedef[] = [
 },
 {
   id: "international-344",
-  name: "Grand Al Faw Port Project",
+  name: "Büyük El Fav Liman Projesi Katılımı",
   source: "International",
   status: "On Track",
   leader: "Fatih Tiryakioğlu",
@@ -3013,7 +3013,7 @@ export const internationalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-345",
-    name: "Grand Al Faw Port Project",
+    name: "Büyük El Fav Liman Projesi Katılımı",
     status: "On Track",
     leader: "Fatih Tiryakioğlu",
     startDate: "2023-07-01",
@@ -3073,7 +3073,7 @@ export const internationalHedefler: CascadeHedef[] = [
 },
 {
   id: "international-352",
-  name: "Investment in Sugar Refinery Plant in Venezuela",
+  name: "Venezuela Şeker Rafinerisi Yatırımı",
   source: "International",
   status: "At Risk",
   leader: "Nevzat Çakmak",
@@ -3082,7 +3082,7 @@ export const internationalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-353",
-    name: "Investment in Sugar Refinery Plant in Venezuela",
+    name: "Venezuela Şeker Rafinerisi Yatırımı",
     status: "At Risk",
     leader: "Nevzat Çakmak",
     startDate: "2024-08-19",
@@ -3142,7 +3142,7 @@ export const internationalHedefler: CascadeHedef[] = [
 },
 {
   id: "international-360",
-  name: "Iraq Agro Holding",
+  name: "Irak Tarım Holding Yapılanmasının Kurulması",
   source: "International",
   status: "On Track",
   leader: "Bahadır Açık",
@@ -3151,7 +3151,7 @@ export const internationalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-361",
-    name: "Iraq Agro Holding",
+    name: "Irak Tarım Holding Yapılanmasının Kurulması",
     status: "On Track",
     leader: "Bahadır Açık",
     startDate: "2026-01-01",
@@ -3227,7 +3227,7 @@ export const internationalHedefler: CascadeHedef[] = [
 },
 {
   id: "international-370",
-  name: "Organisational Alignment and Training Programme in Iraq",
+  name: "Irak Organizasyonel Uyum ve Eğitim Programı",
   source: "International",
   status: "At Risk",
   leader: "Güven Emrah Erenler",
@@ -3236,7 +3236,7 @@ export const internationalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-371",
-    name: "Organisational Alignment and Training Programme in Iraq",
+    name: "Irak Organizasyonel Uyum ve Eğitim Programı",
     status: "At Risk",
     leader: "Güven Emrah Erenler",
     startDate: "2024-05-31",
@@ -3280,7 +3280,7 @@ export const internationalHedefler: CascadeHedef[] = [
 },
 {
   id: "international-376",
-  name: "Review of African country structures",
+  name: "Afrika Ülke Yapılanmalarının Gözden Geçirilmesi",
   source: "International",
   status: "On Track",
   leader: "Güven Emrah Erenler",
@@ -3289,7 +3289,7 @@ export const internationalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-377",
-    name: "Review of African country structures and organisational apl.",
+    name: "Afrika Ülke Yapılanmalarının Gözden Geçirilmesi and organisational apl.",
     status: "On Track",
     leader: "Güven Emrah Erenler",
     startDate: "2026-03-01",
@@ -3341,7 +3341,7 @@ export const internationalHedefler: CascadeHedef[] = [
 },
 {
   id: "international-383",
-  name: "Venezuela Coal Facility Project",
+  name: "Venezuela Kömür Tesisi Projesi",
   source: "International",
   status: "At Risk",
   leader: "Bahadır Açık",
@@ -3350,7 +3350,7 @@ export const internationalHedefler: CascadeHedef[] = [
   projects: [
   {
     id: "prj-384",
-    name: "Venezuela Coal Facility Project",
+    name: "Venezuela Kömür Tesisi Projesi",
     status: "At Risk",
     leader: "Bahadır Açık",
     startDate: "2025-07-01",
