@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   // House replaced with custom HomeIcon
   BarChart3,
+  LayoutDashboard,
   Crosshair,
   CircleCheckBig,
   CalendarRange,
@@ -73,13 +74,7 @@ function getNavSections(t: (key: string) => string) {
       title: t("sections.mainMenu"),
       items: [
         { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace" },
-        { id: "dashboard", label: t("nav.kpi"), icon: BarChart3, path: "/dashboard", pageKey: "kpi" as const },
-      ],
-    },
-    {
-      title: t("sections.data"),
-      items: [
-        { id: "stratejik-karargah", label: t("nav.strategicHQ"), icon: Map, path: "/stratejik-karargah", pageKey: "stratejikKarargah" as const },
+        { id: "stratejik-karargah", label: t("nav.strategicHQ"), icon: LayoutDashboard, path: "/stratejik-karargah", pageKey: "stratejikKarargah" as const },
         { id: "hedefler", label: t("nav.objectives"), icon: Crosshair, path: "/hedefler", pageKey: "hedefler" as const },
         { id: "aksiyonlar", label: t("nav.actions"), icon: CircleCheckBig, path: "/aksiyonlar", pageKey: "aksiyonlar" as const },
       ],
@@ -87,6 +82,7 @@ function getNavSections(t: (key: string) => string) {
     {
       title: t("sections.views"),
       items: [
+        { id: "dashboard", label: t("nav.kpi"), icon: BarChart3, path: "/dashboard", pageKey: "kpi" as const },
         { id: "strategy-map", label: "T-Map", icon: Map, path: "/strategy-map", pageKey: "wbs" as const },
         { id: "t-alignment", label: t("nav.tAlignment"), icon: GitMerge, path: "/t-alignment", pageKey: "hedefler" as const },
         { id: "gantt", label: t("nav.gantt"), icon: CalendarRange, path: "/gantt", pageKey: "gantt" as const },
@@ -97,8 +93,8 @@ function getNavSections(t: (key: string) => string) {
       title: t("sections.system"),
       items: [
         { id: "users", label: t("nav.users"), icon: UsersRound, path: "/kullanicilar", pageKey: "kullanicilar" as const },
-        { id: "settings", label: t("nav.settings"), icon: SlidersHorizontal, path: "/ayarlar", pageKey: "ayarlar" as const },
         { id: "guvenlik", label: t("nav.security"), icon: Shield, path: "/guvenlik", pageKey: "guvenlik" as const },
+        { id: "settings", label: t("nav.settings"), icon: SlidersHorizontal, path: "/ayarlar", pageKey: "ayarlar" as const },
       ],
     },
   ];
