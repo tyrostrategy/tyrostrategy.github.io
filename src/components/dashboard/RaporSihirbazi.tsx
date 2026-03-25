@@ -907,7 +907,7 @@ ${clone.innerHTML}
                   <div className="flex items-center gap-3">
                     <TyroLogo size={36} variant="sidebar" isDark />
                     <div>
-                      <p className="text-[16px] font-extrabold tracking-tight"><span className="text-tyro-gold">tyro</span><span className="text-white/90">strategy</span></p>
+                      <p className="text-[16px] font-extrabold tracking-tight"><span className="text-white/90">tyro</span><span className="text-tyro-gold">strategy</span></p>
                       <p className="text-[11px] text-white/40">Stratejik Hedef Yönetim Platformu</p>
                     </div>
                   </div>
