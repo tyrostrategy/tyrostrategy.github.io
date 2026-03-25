@@ -316,8 +316,28 @@ export default function RaporSihirbazi() {
 
   const handleExportHTML = () => {
     if (!reportRef.current) return;
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${getFileName("html")}</title><style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:900px;margin:0 auto;padding:2rem;color:#0f172a}table{border-collapse:collapse;width:100%}th,td{padding:8px 12px;border:1px solid #e2e8f0;text-align:left}th{background:#f8fafc;font-weight:600}</style></head><body>${reportRef.current.innerHTML}</body></html>`;
-    const blob = new Blob([html], { type: "text/html" });
+    // Deep clone and inline all computed styles so the HTML is self-contained
+    const clone = reportRef.current.cloneNode(true) as HTMLElement;
+    const inlineStyles = (source: HTMLElement, target: HTMLElement) => {
+      const cs = getComputedStyle(source);
+      const important = ["font-family", "font-size", "font-weight", "color", "background-color", "background", "border", "border-left", "border-radius", "padding", "margin", "display", "flex-direction", "align-items", "justify-content", "gap", "width", "max-width", "min-width", "height", "text-align", "line-height", "letter-spacing", "white-space", "overflow", "box-shadow", "opacity"];
+      important.forEach((p) => {
+        const v = cs.getPropertyValue(p);
+        if (v && v !== "none" && v !== "normal" && v !== "0px" && v !== "auto" && v !== "rgba(0, 0, 0, 0)") {
+          target.style.setProperty(p, v);
+        }
+      });
+      const srcChildren = source.children;
+      const tgtChildren = target.children;
+      for (let i = 0; i < srcChildren.length; i++) {
+        if (srcChildren[i] instanceof HTMLElement && tgtChildren[i] instanceof HTMLElement) {
+          inlineStyles(srcChildren[i] as HTMLElement, tgtChildren[i] as HTMLElement);
+        }
+      }
+    };
+    inlineStyles(reportRef.current, clone);
+    const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><title>${reportTitle}</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sans-serif;max-width:900px;margin:0 auto;padding:2rem;color:#0f172a;background:#fff}table{border-collapse:collapse;width:100%}th,td{padding:8px 12px;border:1px solid #e2e8f0;text-align:left;font-size:12px}th{background:#f8fafc;font-weight:600}svg{display:inline-block}@media print{@page{margin:1.5cm}}</style></head><body>${clone.outerHTML}</body></html>`;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = getFileName("html"); a.click();
@@ -779,8 +799,6 @@ export default function RaporSihirbazi() {
                       { label: "PDF", icon: FileText, desc: "Yüksek kalite görsel", handler: handleExportPDF, color: "#ef4444" },
                       { label: "Yazdır / PDF", icon: Printer, desc: "Tarayıcı yazdırma", handler: handlePrint, color: "#64748b" },
                       { label: "Excel (.xlsx)", icon: FileSpreadsheet, desc: "Veri tablosu", handler: handleExportExcel, color: "#10b981" },
-                      { label: "Word (.docx)", icon: FileText, desc: "Düzenlenebilir belge", handler: handleExportWord, color: "#3b82f6" },
-                      { label: "PowerPoint", icon: Presentation, desc: "Sunum slaytları", handler: handleExportPPTX, color: "#f59e0b" },
                       { label: "HTML", icon: FileCode, desc: "Web sayfası", handler: handleExportHTML, color: "#8b5cf6" },
                     ].map((item) => (
                       <button
@@ -804,7 +822,7 @@ export default function RaporSihirbazi() {
       </div>
 
       {/* Report Content — Apple macOS style, print-optimized */}
-      <div ref={reportRef} className="rounded-2xl overflow-hidden print:border-0 print:rounded-none print:shadow-none bg-white dark:bg-tyro-surface">
+      <div ref={reportRef} data-report-content className="rounded-2xl overflow-hidden print:border-0 print:rounded-none print:shadow-none bg-white dark:bg-tyro-surface">
         <div className="max-w-[900px] mx-auto px-6 py-6 print:max-w-full print:px-10">
           {/* COVER PAGE */}
           {sections.cover && (

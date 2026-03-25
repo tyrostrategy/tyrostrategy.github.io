@@ -666,14 +666,26 @@ tr[data-hover=true]:not([data-selected=true]) {
   body { background: white !important; color: #0f172a !important; }
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
-  /* Hide app chrome — sidebar, topbar, bottomnav, toolbar */
+  /* Hide ALL app chrome — sidebar, topbar, bottomnav, toolbar, tabs, page footer */
   nav, aside,
   .print\:hidden,
   [data-sidebar],
   header.fixed,
   .fixed.bottom-0,
   .fixed.z-30,
-  .fixed.z-40 { display: none !important; }
+  .fixed.z-40,
+  .sticky,
+  [class*="sidebar"],
+  [class*="bottom-nav"] { display: none !important; }
+
+  /* Hide page-level footer (Powered by TTECH at bottom of pages) */
+  body > #root footer:not([class*="report"]) { display: none !important; }
+
+  /* Hide all fixed/sticky positioned elements (sidebar icons, FABs) */
+  .fixed, .sticky { display: none !important; }
+
+  /* But keep the report content itself visible */
+  [data-report-content] { display: block !important; }
 
   /* Remove layout constraints — make content flow naturally */
   body, #root, #root > div, main,

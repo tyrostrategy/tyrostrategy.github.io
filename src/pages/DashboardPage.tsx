@@ -145,7 +145,7 @@ export default function DashboardPage() {
 
   // ===== Tab render helper =====
   const renderTabs = () => (
-    <div className="flex items-center gap-1 text-[12px]">
+    <div className="flex items-center gap-1 text-[12px] print:hidden">
       {[
         { id: "dashboard", label: "Dashboard", icon: BarChart3 },
         { id: "rapor", label: "Rapor Sihirbazı", icon: FileText },
@@ -174,7 +174,7 @@ export default function DashboardPage() {
   if (activeTab === "rapor") {
     return (
       <div>
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-5 print:hidden">
           {renderTabs()}
         </div>
         <Suspense fallback={<div className="flex items-center justify-center py-20 text-tyro-text-muted">Yükleniyor...</div>}>

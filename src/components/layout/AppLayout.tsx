@@ -55,7 +55,7 @@ export default function AppLayout() {
           </motion.div>
 
           {/* TTECH Footer — page bottom */}
-          <div className="mt-16 pb-6 flex flex-col items-center gap-2">
+          <div className="mt-16 pb-6 flex flex-col items-center gap-2 print:hidden">
             <div className="w-12 h-px bg-gradient-to-r from-transparent via-tyro-border to-transparent" />
             <p className="text-[11px] text-tyro-text-muted tracking-wide">
               {t("footer.poweredBy")} <span className="font-semibold text-tyro-text-secondary">TTECH Business Solutions</span>
