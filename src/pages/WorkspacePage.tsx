@@ -74,17 +74,6 @@ export default function WorkspacePage() {
           </div>
 
           <div className="flex items-center gap-2 self-start w-full sm:w-auto">
-            {/* Wizard trigger button — expandable icon */}
-            <motion.button
-              type="button"
-              onClick={() => setWizardOpen(true)}
-              className="btn-expandable bg-gradient-to-r from-tyro-gold to-tyro-gold-light text-white font-semibold text-[13px] shadow-sm shadow-tyro-gold/20 cursor-pointer"
-              whileTap={{ scale: 0.95 }}
-            >
-              <Wand2 size={14} className="shrink-0" />
-              <span>Hedef Sihirbazı</span>
-            </motion.button>
-
             {/* Search button */}
             <button
               type="button"
@@ -97,6 +86,17 @@ export default function WorkspacePage() {
                 ⌘K
               </kbd>
             </button>
+
+            {/* Wizard trigger button — right of search */}
+            <motion.button
+              type="button"
+              onClick={() => setWizardOpen(true)}
+              className="btn-expandable bg-gradient-to-r from-tyro-gold to-tyro-gold-light text-white font-semibold text-[13px] shadow-sm shadow-tyro-gold/20 cursor-pointer shrink-0"
+              whileTap={{ scale: 0.95 }}
+            >
+              <Wand2 size={14} className="shrink-0" />
+              <span>Hedef Sihirbazı</span>
+            </motion.button>
           </div>
         </div>
       </motion.div>
