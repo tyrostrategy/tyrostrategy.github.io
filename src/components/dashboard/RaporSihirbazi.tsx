@@ -770,7 +770,8 @@ ${clone.outerHTML}
           </button>
           <button
             onClick={handleGenerate}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-tyro-navy text-white text-[12px] font-semibold hover:bg-tyro-navy-light transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[12px] font-semibold cursor-pointer transition-all hover:brightness-110"
+            style={{ backgroundColor: theme.accentColor }}
           >
             <Play size={14} />
             Yenile
