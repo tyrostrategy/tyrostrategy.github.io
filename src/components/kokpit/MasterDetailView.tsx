@@ -34,7 +34,17 @@ const STATUS_BAR: Record<EntityStatus, string> = {
 };
 
 // ===== QUICK PROGRESS STEPS =====
-const PROGRESS_STEPS = [0, 25, 50, 75, 100];
+const PROGRESS_STEPS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+const STATUS_HEX: Record<string, string> = {
+  "On Track": "#10b981",
+  "At Risk": "#f59e0b",
+  "Behind": "#ef4444",
+  "Achieved": "#059669",
+  "Not Started": "#94a3b8",
+  "Cancelled": "#6b7280",
+  "On Hold": "#8b5cf6",
+};
 
 interface MasterDetailViewProps {
   projeler: Proje[];
@@ -139,13 +149,9 @@ function MasterListCard({
 // QUICK PROGRESS BUTTONS
 // ========================================
 // Chip color matching AksiyonForm gradient palette
-function chipBg(v: number, selected: boolean): string {
-  if (!selected) return "bg-white/60 dark:bg-white/10 text-tyro-text-muted hover:text-tyro-text-muted border border-tyro-border/15 hover:border-tyro-border/30";
-  if (v === 0) return "bg-slate-400 text-white shadow-md";
-  if (v <= 25) return "bg-red-500 text-white shadow-md";
-  if (v <= 50) return "bg-amber-500 text-white shadow-md";
-  if (v <= 75) return "bg-yellow-500 text-white shadow-md";
-  return "bg-emerald-500 text-white shadow-md";
+function chipBg(_v: number, selected: boolean): string {
+  if (!selected) return "bg-tyro-bg text-tyro-text-muted hover:bg-tyro-border/20";
+  return "bg-slate-600 text-white shadow-sm";
 }
 
 function QuickProgressButtons({
@@ -166,7 +172,7 @@ function QuickProgressButtons({
             key={step}
             type="button"
             onClick={(e) => { e.stopPropagation(); onChange(step); }}
-            className={`relative min-w-[34px] h-[24px] rounded-lg text-[11px] font-bold tabular-nums cursor-pointer transition-all ${
+            className={`relative min-w-[28px] h-[22px] rounded-md text-[9px] font-bold tabular-nums cursor-pointer transition-all ${
               isExact
                 ? chipBg(step, true) + " scale-110"
                 : isPassed
@@ -502,25 +508,17 @@ function AksiyonRow({
       {/* Progress bar + Quick buttons */}
       {(() => {
         const p = aksiyon.progress;
-        const barGrad = p <= 25 ? "from-red-400 to-red-500"
-          : p <= 50 ? "from-amber-400 to-amber-500"
-          : p <= 75 ? "from-yellow-400 to-emerald-400"
-          : "from-emerald-400 to-emerald-500";
-        const txtColor = p === 0 ? "text-tyro-text-muted"
-          : p <= 25 ? "text-red-500"
-          : p <= 50 ? "text-amber-500"
-          : p <= 75 ? "text-yellow-600"
-          : "text-emerald-500";
+        const statusColor = STATUS_HEX[aksiyon.status] ?? "#94a3b8";
         return (
           <div className="flex items-center gap-3 ml-7">
             {canEdit && <QuickProgressButtons current={p} onChange={onQuickProgress} />}
             <div className="flex-1 h-2 rounded-full bg-tyro-border/15 overflow-hidden">
               <div
-                className={`h-full rounded-full bg-gradient-to-r ${barGrad}`}
-                style={{ width: `${p}%`, transition: "width 500ms ease" }}
+                className="h-full rounded-full"
+                style={{ width: `${p}%`, backgroundColor: statusColor, transition: "width 500ms ease" }}
               />
             </div>
-            <span className={`text-[11px] font-bold tabular-nums shrink-0 ${txtColor}`}>
+            <span className="text-[11px] font-bold tabular-nums shrink-0" style={{ color: statusColor }}>
               %{p}
             </span>
           </div>
