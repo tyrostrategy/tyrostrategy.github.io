@@ -104,7 +104,7 @@ export default function RaporSihirbazi() {
   const [sourceFilter, setSourceFilter] = useState<Source | "all">("all");
   const [statusFilters, setStatusFilters] = useState<Set<EntityStatus>>(new Set());
   const [deptFilter, setDeptFilter] = useState("all");
-  const [selectedProjeIds, setSelectedHedefIds] = useState<Set<string> | null>(null); // null = all
+  const [selectedProjeIds, setSelectedProjeIds] = useState<Set<string> | null>(null); // null = all
   const [sections, setSections] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(REPORT_SECTIONS.map((s) => [s.id, s.defaultOn]))
   );
@@ -184,7 +184,9 @@ export default function RaporSihirbazi() {
   }, [reportProjeler, aksiyonlar]);
 
   const attentionItems = useMemo(
-    () => reportProjeler.filter((h) => h.status === "Behind" || h.status === "At Risk"),
+    () => reportProjeler.filter((h) =>
+      h.status === "Behind" || h.status === "At Risk" || (h.tags && h.tags.includes("Uygulama"))
+    ),
     [reportProjeler]
   );
 
@@ -221,8 +223,8 @@ export default function RaporSihirbazi() {
     });
   };
 
-  const toggleHedef = useCallback((id: string) => {
-    setSelectedHedefIds((prev) => {
+  const toggleProje = useCallback((id: string) => {
+    setSelectedProjeIds((prev) => {
       if (prev === null) {
         const all = new Set(filteredProjeler.map((h) => h.id));
         all.delete(id);
@@ -241,7 +243,7 @@ export default function RaporSihirbazi() {
   const getFileName = (ext: string) => {
     const sourceName = sourceFilter === "all" ? "Tum_Kaynaklar" : sourceFilter;
     const dateStr = new Date().toISOString().slice(0, 10);
-    return `Stratejik_Hedef_Raporu_${sourceName}_${dateStr}.${ext}`;
+    return `Stratejik_Proje_Raporu_${sourceName}_${dateStr}.${ext}`;
   };
 
   const handlePrint = () => {
@@ -376,7 +378,7 @@ ${clone.outerHTML}
     (Object.keys(STATUS_TR) as EntityStatus[]).forEach((s) => {
       ws1.addRow([STATUS_TR[s], statusSummary[s] || 0]);
     });
-    // Sheet 2: Hedefler
+    // Sheet 2: Projeler
     const ws2 = wb.addWorksheet("Projeler");
     ws2.addRow(["Proje", "Açıklama", "Lider", "Departman", "Kaynak", "Durum", "İlerleme %", "Başlangıç", "Bitiş"]);
     reportProjeler.forEach((h) => {
@@ -517,7 +519,7 @@ ${clone.outerHTML}
                   {SOURCES.map((src) => (
                     <button
                       key={src.id}
-                      onClick={() => { setSourceFilter(src.id); setSelectedHedefIds(null); }}
+                      onClick={() => { setSourceFilter(src.id); setSelectedProjeIds(null); }}
                       className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                         sourceFilter === src.id
                           ? "text-white shadow-sm"
@@ -574,10 +576,10 @@ ${clone.outerHTML}
               {/* Proje Seçimi */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[11px] font-bold text-tyro-text-secondary uppercase tracking-wider">Hedefler ({filteredProjeler.length})</label>
+                  <label className="text-[11px] font-bold text-tyro-text-secondary uppercase tracking-wider">Projeler ({filteredProjeler.length})</label>
                   <div className="flex gap-2">
-                    <button onClick={() => setSelectedHedefIds(null)} className="text-[10px] text-tyro-gold font-semibold hover:underline cursor-pointer">Tümünü Seç</button>
-                    <button onClick={() => setSelectedHedefIds(new Set())} className="text-[10px] text-tyro-text-muted hover:underline cursor-pointer">Temizle</button>
+                    <button onClick={() => setSelectedProjeIds(null)} className="text-[10px] text-tyro-gold font-semibold hover:underline cursor-pointer">Tümünü Seç</button>
+                    <button onClick={() => setSelectedProjeIds(new Set())} className="text-[10px] text-tyro-text-muted hover:underline cursor-pointer">Temizle</button>
                   </div>
                 </div>
                 <div className="max-h-[165px] overflow-y-auto rounded-lg border border-tyro-border/30 divide-y divide-tyro-border/10">
@@ -586,7 +588,7 @@ ${clone.outerHTML}
                     return (
                       <button
                         key={h.id}
-                        onClick={() => toggleHedef(h.id)}
+                        onClick={() => toggleProje(h.id)}
                         className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-tyro-bg/50 cursor-pointer transition-colors"
                       >
                         {isChecked ? <CheckSquare size={14} className="text-tyro-gold shrink-0" /> : <Square size={14} className="text-tyro-text-muted shrink-0" />}
@@ -780,7 +782,7 @@ ${clone.outerHTML}
             <button
               onClick={() => setExportOpen(!exportOpen)}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[12px] font-semibold cursor-pointer transition-all hover:brightness-110"
-              style={{ backgroundColor: theme.accentColor }}
+              style={{ backgroundColor: theme.brandStrategy ?? theme.accentColor }}
             >
               <Download size={14} />
               Dışa Aktar
@@ -1118,7 +1120,7 @@ ${clone.outerHTML}
 
           {/* 4. DİKKAT GEREKTİREN */}
           {sections.attention && attentionItems.length > 0 && (
-            <Section num={4} title="Dikkat Gerektiren Hedefler" titleColor="#ef4444">
+            <Section num={4} title="Dikkat Gerektiren Projeler" titleColor="#ef4444">
               <div className="space-y-2">
                 {attentionItems.map((h) => (
                   <div key={h.id} className="glass-card rounded-xl px-4 py-3 flex items-center justify-between" style={{ borderLeft: `3px solid ${STATUS_COLOR[h.status]}` }}>
@@ -1135,7 +1137,7 @@ ${clone.outerHTML}
             </Section>
           )}
 
-          {/* 5. HEDEF DETAYLARI — sorted by progress desc */}
+          {/* 5. PROJE DETAYLARI — sorted by progress desc */}
           {sections.details && (
             <Section num={5} title="Proje Detayları">
               <div className="space-y-3">
