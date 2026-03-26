@@ -180,10 +180,8 @@ export default function MyProjectsList() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-tyro-navy/10 flex items-center justify-center">
-              <TrendingUp size={16} className="text-tyro-navy" />
-            </div>
-            <h3 className="text-[13px] font-bold text-tyro-text-primary">{t("workspace.personalKPI")}</h3>
+            <TrendingUp size={18} className="text-tyro-navy" />
+            <h3 className="text-[14px] font-bold text-tyro-text-primary">{t("workspace.personalKPI")}</h3>
           </div>
           <div>
           </div>
@@ -298,7 +296,7 @@ export default function MyProjectsList() {
       {/* RIGHT — Progress List Card */}
       <GlassCard className="p-4 sm:p-5 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-[13px] font-bold text-tyro-text-primary">
+          <h4 className="text-[14px] font-bold text-tyro-text-primary">
             {t("workspace.objectiveProgress")}
           </h4>
           {hasMore && (

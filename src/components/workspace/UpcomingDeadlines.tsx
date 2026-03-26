@@ -193,16 +193,14 @@ export default function UpcomingDeadlines() {
     <>
       <GlassCard className="p-3 sm:p-5 flex-1 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Clock size={14} className="text-amber-500" />
-            </div>
-            <h3 className="text-[13px] font-bold text-tyro-text-primary">{t("workspace.upcomingDates")}</h3>
+          <div className="flex items-center gap-2.5">
+            <Clock size={18} className="text-amber-500" />
+            <h3 className="text-[14px] font-bold text-tyro-text-primary">{t("workspace.upcomingDates")}</h3>
           </div>
           {upcomingDeadlines.length > 3 && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-1 text-[11px] font-semibold text-tyro-navy hover:text-tyro-navy-light transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-[12px] font-semibold text-tyro-navy hover:text-tyro-navy-light transition-colors cursor-pointer"
             >
               {t("common.viewAll")}
               <ChevronRight size={12} />
