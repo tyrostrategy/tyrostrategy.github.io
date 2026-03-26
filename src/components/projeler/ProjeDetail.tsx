@@ -115,57 +115,90 @@ export default function ProjeDetail({
     );
   }
 
+  const stColor = statusColor(currentHedef.status);
+
   return (
     <div className="flex flex-col gap-3 overflow-hidden">
-      {/* 1. Proje Adı + Düzenle — wrapping */}
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-[16px] font-bold text-tyro-text-primary leading-snug flex-1">
-          {currentHedef.name}
-        </h3>
-        <button
-          type="button"
-          onClick={() => setMode("editing")}
-          className="shrink-0 h-8 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 text-[12px] font-semibold text-tyro-text-primary hover:bg-tyro-navy/5 hover:border-tyro-navy/30 transition-all cursor-pointer shadow-sm"
-        >
-          <Pencil size={13} />
-          Düzenle
-        </button>
-      </div>
+      {/* ===== Themed Header Banner ===== */}
+      <div
+        className="relative rounded-xl overflow-hidden px-4 py-3"
+        style={{ background: sidebarTheme.bg }}
+      >
+        {/* Dot pattern overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, ${sidebarTheme.accentColor ?? "rgba(255,255,255,0.4)"} 1px, transparent 0)`,
+            backgroundSize: "20px 20px",
+          }}
+        />
+        {/* Decorative glow */}
+        <div
+          className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20"
+          style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }}
+        />
 
-      {/* 2. Açıklama */}
-      {currentHedef.description && (
-        <p className="text-[12px] text-tyro-text-secondary leading-relaxed -mt-1">
-          {currentHedef.description}
-        </p>
-      )}
+        <div className="relative z-10">
+          {/* Row 1: Title + Düzenle */}
+          <div className="flex items-start justify-between gap-3">
+            <h3
+              className="text-[15px] font-bold leading-snug flex-1"
+              style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}
+            >
+              {currentHedef.name}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setMode("editing")}
+              className="shrink-0 h-7 px-3 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold transition-all cursor-pointer backdrop-blur-sm"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.15)",
+                color: sidebarTheme.textPrimary ?? "#ffffff",
+                border: "1px solid rgba(255,255,255,0.2)",
+              }}
+            >
+              <Pencil size={12} />
+              Düzenle
+            </button>
+          </div>
 
-      {/* 3. Statü + Etiketler — yan yana */}
-      <div className="flex items-center flex-wrap gap-2">
-        <StatusBadge status={currentHedef.status} />
-        {currentHedef.tags && currentHedef.tags.length > 0 && (
-          <>
-            <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
-            {currentHedef.tags.map((tag) => (
-              <TagChip key={tag} name={tag} size="md" showIcon />
-            ))}
-          </>
-        )}
-      </div>
+          {/* Row 2: Açıklama (varsa) */}
+          {currentHedef.description && (
+            <p
+              className="text-[11px] leading-relaxed mt-1 line-clamp-2"
+              style={{ color: sidebarTheme.textSecondary ?? "rgba(255,255,255,0.6)" }}
+            >
+              {currentHedef.description}
+            </p>
+          )}
 
-      {/* 4. İlerleme çubuğu — renk statüye göre */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 rounded-full bg-tyro-bg overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{
-              width: `${currentHedef.progress}%`,
-              backgroundColor: statusColor(currentHedef.status),
-            }}
-          />
+          {/* Row 3: Statü + Tag + İlerleme */}
+          <div className="flex items-center flex-wrap gap-2 mt-2">
+            <StatusBadge status={currentHedef.status} />
+            {currentHedef.tags && currentHedef.tags.length > 0 && (
+              <>
+                <span className="w-px h-3.5 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.2)" }} />
+                {currentHedef.tags.map((tag) => (
+                  <TagChip key={tag} name={tag} size="md" showIcon />
+                ))}
+              </>
+            )}
+            <span className="ml-auto text-[13px] font-extrabold tabular-nums" style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}>
+              %{currentHedef.progress}
+            </span>
+          </div>
+
+          {/* Row 4: İlerleme bar */}
+          <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${currentHedef.progress}%`,
+                backgroundColor: stColor,
+              }}
+            />
+          </div>
         </div>
-        <span className="text-[13px] font-bold tabular-nums shrink-0" style={{ color: statusColor(currentHedef.status) }}>
-          %{currentHedef.progress}
-        </span>
       </div>
 
       {/* 5. Bilgi Grid — tüm alanlar */}
@@ -299,7 +332,7 @@ export default function ProjeDetail({
                         className="h-full rounded-full transition-all duration-500"
                         style={{
                           width: `${rh.progress}%`,
-                          background: progressColor(rh.progress),
+                          background: statusColor(rh.status),
                         }}
                       />
                     </div>
@@ -356,7 +389,7 @@ export default function ProjeDetail({
                       className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${aksiyon.progress}%`,
-                        background: progressColor(aksiyon.progress),
+                        background: statusColor(aksiyon.status),
                       }}
                     />
                   </div>
