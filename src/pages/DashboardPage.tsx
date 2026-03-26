@@ -237,11 +237,11 @@ export default function DashboardPage() {
 
       {/* Row 2: İş Grubu Bazlı Proje Dağılımı (7) + Tag Gauge (5) */}
       <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="col-span-12 lg:col-span-7 h-64 rounded-2xl bg-tyro-surface animate-pulse" /><div className="col-span-12 lg:col-span-5 h-64 rounded-2xl bg-tyro-surface animate-pulse" /></div>}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
-          <motion.div variants={fadeUp} className="col-span-1 lg:col-span-7 flex">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-5 items-stretch">
+          <motion.div variants={fadeUp} className="lg:col-span-3 flex">
             <SourceChart />
           </motion.div>
-          <motion.div variants={fadeUp} className="col-span-1 lg:col-span-5 flex">
+          <motion.div variants={fadeUp} className="lg:col-span-1 flex">
             <TagActivityGauge />
           </motion.div>
         </div>
