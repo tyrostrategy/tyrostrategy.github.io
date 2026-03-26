@@ -252,7 +252,7 @@ function DetailPanel({
     onUpdateAksiyon(aksiyonId, { progress, status });
     const aksName = aksiyon?.name ?? "";
     const statusLabel = getStatusLabel(status, t);
-    toast.success(t("karargah.actionUpdated"), {
+    toast.success(t("kokpit.actionUpdated"), {
       message: aksName,
       details: [
         { label: "İlerleme", value: `%${progress}` },
@@ -400,7 +400,7 @@ function DetailPanel({
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[13px] font-bold text-tyro-text-primary">
-            {t("karargah.actionsCount", { count: totalCount })}
+            {t("kokpit.actionsCount", { count: totalCount })}
           </h3>
           {/* Aksiyon Ekle butonu kaldırıldı — FAB üzerinden erişiliyor */}
         </div>
@@ -711,10 +711,10 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
           onChange={(e) => setSortBy(e.target.value as any)}
           className="text-[11px] px-2 py-1 rounded-md border border-tyro-border bg-tyro-bg text-tyro-text-secondary cursor-pointer focus:outline-none focus:ring-1 focus:ring-tyro-navy/30 flex-1 min-w-0"
         >
-          <option value="progress">{t("karargah.sortByProgress")}</option>
-          <option value="name">{t("karargah.sortByName")}</option>
-          <option value="date">{t("karargah.sortByDate")}</option>
-          <option value="status">{t("karargah.sortByStatus")}</option>
+          <option value="progress">{t("kokpit.sortByProgress")}</option>
+          <option value="name">{t("kokpit.sortByName")}</option>
+          <option value="date">{t("kokpit.sortByDate")}</option>
+          <option value="status">{t("kokpit.sortByStatus")}</option>
         </select>
         {/* Sort direction toggle */}
         <button
@@ -731,7 +731,7 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
             onClick={clearFilters}
             className="text-[11px] px-1.5 py-1 rounded-md bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer font-medium shrink-0"
           >
-            {t("karargah.clearFilters")}
+            {t("kokpit.clearFilters")}
           </button>
         )}
       </div>
@@ -752,14 +752,14 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
         ))}
         {filtered.length === 0 && (
           <div className="text-center py-10">
-            <p className="text-[12px] text-tyro-text-muted mb-2">{t("karargah.noObjectivesFound")}</p>
+            <p className="text-[12px] text-tyro-text-muted mb-2">{t("kokpit.noObjectivesFound")}</p>
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={clearFilters}
                 className="text-[11px] text-tyro-navy font-semibold hover:underline cursor-pointer"
               >
-                {t("karargah.clearFilters")}
+                {t("kokpit.clearFilters")}
               </button>
             )}
           </div>
@@ -809,10 +809,10 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
             <Target size={28} className="text-tyro-text-muted/40" />
           </div>
           <h3 className="text-[14px] font-semibold text-tyro-text-muted">
-            {t("karargah.selectObjective")}
+            {t("kokpit.selectObjective")}
           </h3>
           <p className="text-[12px] text-tyro-text-muted max-w-[280px]">
-            {t("karargah.selectObjectiveDesc")}
+            {t("kokpit.selectObjectiveDesc")}
           </p>
         </div>
       )}

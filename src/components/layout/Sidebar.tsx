@@ -75,7 +75,7 @@ function getNavSections(t: (key: string) => string) {
       title: t("sections.mainMenu"),
       items: [
         { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace" },
-        { id: "stratejik-karargah", label: t("nav.strategicHQ"), icon: LayoutDashboard, path: "/stratejik-karargah", pageKey: "stratejikKarargah" as const },
+        { id: "stratejik-kokpit", label: t("nav.strategicHQ"), icon: LayoutDashboard, path: "/stratejik-kokpit", pageKey: "stratejikKokpit" as const },
         { id: "projeler", label: t("nav.objectives"), icon: Crosshair, path: "/projeler", pageKey: "projeler" as const },
         { id: "aksiyonlar", label: t("nav.actions"), icon: CircleCheckBig, path: "/aksiyonlar", pageKey: "aksiyonlar" as const },
       ],
@@ -87,7 +87,6 @@ function getNavSections(t: (key: string) => string) {
         { id: "strategy-map", label: "T-Map", icon: Map, path: "/strategy-map", pageKey: "wbs" as const },
         { id: "t-alignment", label: t("nav.tAlignment"), icon: GitMerge, path: "/t-alignment", pageKey: "projeler" as const },
         { id: "gantt", label: t("nav.gantt"), icon: CalendarRange, path: "/gantt", pageKey: "gantt" as const },
-        { id: "tree", label: t("nav.wbs"), icon: GitBranch, path: "/tree", pageKey: "wbs" as const },
       ],
     },
     {

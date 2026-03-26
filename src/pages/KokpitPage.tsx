@@ -19,14 +19,14 @@ import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { useDataStore } from "@/stores/dataStore";
 import ProjeAksiyonWizard from "@/components/wizard/ProjeAksiyonWizard";
 import WizardHeader from "@/components/wizard/WizardHeader";
-import MasterDetailView from "@/components/karargah/MasterDetailView";
+import MasterDetailView from "@/components/kokpit/MasterDetailView";
 import { getStatusLabel } from "@/lib/constants";
 import { formatDate } from "@/lib/dateUtils";
 import type { Proje, Aksiyon, EntityStatus, Source } from "@/types";
 import i18n from "@/lib/i18n";
 
 // ─── Tab types ────────────────────────────────────────────────
-type TabId = "master" | "tablo" | "kanban";
+type TabId = "master" | "tablo";
 
 // ─── Shared colour maps ──────────────────────────────────────
 const sourceColors: Record<string, string> = {
@@ -62,7 +62,7 @@ type ZoomLevel = "quarter" | "year" | "all";
 const LABEL_COL_W = 240;
 
 // ─── Main Component ──────────────────────────────────────────
-export default function StratejikKarargahPage() {
+export default function KokpitPage() {
   const { t } = useTranslation();
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
@@ -102,9 +102,8 @@ export default function StratejikKarargahPage() {
 
   // ─── Tabs ────────────────────────────────────────────────
   const tabs: { id: TabId; label: string }[] = [
-    { id: "master", label: t("karargah.master") },
-    { id: "tablo", label: t("karargah.tablo") },
-    { id: "kanban", label: t("common.kanban") },
+    { id: "master", label: "Genel" },
+    { id: "tablo", label: "Liste" },
   ];
 
   return (
@@ -161,14 +160,7 @@ export default function StratejikKarargahPage() {
           onAksiyonClick={openAksiyonPanel}
         />
       )}
-      {activeTab === "kanban" && (
-        <KanbanView
-          projeler={projeler}
-          aksiyonlar={aksiyonlar}
-          updateAksiyon={updateAksiyon}
-          onAksiyonClick={openAksiyonPanel}
-        />
-      )}
+      {/* Kanban view removed */}
       {/* Detail panel */}
       <SlidingPanel isOpen={panelOpen} onClose={closePanel} title={panelTitle}>
         {panelHedef && (

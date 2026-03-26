@@ -20,7 +20,7 @@ export interface PagePermissions {
   aksiyonlar: boolean;
   gantt: boolean;
   wbs: boolean;
-  stratejikKarargah: boolean;
+  stratejikKokpit: boolean;
   kullanicilar: boolean;
   ayarlar: boolean;
   guvenlik: boolean;

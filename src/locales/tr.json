@@ -15,7 +15,7 @@
     "theme": "Tema",
     "sidebarTheme": "Menü Teması",
     "appTheme": "Uygulama Teması",
-    "strategicHQ": "Karargah",
+    "strategicHQ": "Kokpit",
     "tAlignment": "T-Align"
   },
   "sections": {
@@ -120,7 +120,7 @@
       "subtitle": "Projeler arası ilişkileri görselleştirin"
     },
     "strategicHQ": {
-      "title": "Karargah",
+      "title": "Kokpit",
       "subtitle": "Kurumsal stratejik genel görünüm"
     },
     "users": {
@@ -383,7 +383,7 @@
     "parentObjective": "Ana Proje",
     "relatedObjectives": "İlişkili Projeler"
   },
-  "karargah": {
+  "kokpit": {
     "tablo": "Tablo",
     "master": "Master",
     "selectObjective": "Proje seçin",
@@ -431,7 +431,7 @@
     "minOneAction": "En az bir aksiyon eklemelisiniz",
     "successTitle": "Proje Başarıyla Oluşturuldu!",
     "successActions": "{{count}} aksiyon eklendi",
-    "goToWorkspace": "Karargah'a Dön",
+    "goToWorkspace": "Kokpit'a Dön",
     "goToDetail": "Detaya Git",
     "reviewProje": "Proje Özeti",
     "reviewAksiyonlar": "Aksiyonlar Özeti",

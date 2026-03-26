@@ -13,9 +13,9 @@ const WorkspacePage = lazy(() => import("@/pages/WorkspacePage"));
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 const ProjelerPage = lazy(() => import("@/pages/ProjelerPage"));
 const AksiyonlarPage = lazy(() => import("@/pages/AksiyonlarPage"));
-const StratejikKarargahPage = lazy(() => import("@/pages/StratejikKarargahPage"));
+const KokpitPage = lazy(() => import("@/pages/KokpitPage"));
 const GanttPage = lazy(() => import("@/pages/GanttPage"));
-const TreePage = lazy(() => import("@/pages/TreePage"));
+// TreePage (WBS) removed
 const StrategyMapPage = lazy(() => import("@/pages/StrategyMapPage"));
 const TAlignmentPage = lazy(() => import("@/pages/TAlignmentPage"));
 const KullanicilarPage = lazy(() => import("@/pages/KullanicilarPage"));
@@ -61,9 +61,9 @@ export default function App() {
             <Route path="/dashboard" element={<ProtectedRoute pageKey="kpi"><DashboardPage /></ProtectedRoute>} />
             <Route path="/projeler" element={<ProjelerPage />} />
             <Route path="/aksiyonlar" element={<ProtectedRoute pageKey="aksiyonlar"><AksiyonlarPage /></ProtectedRoute>} />
-            <Route path="/stratejik-karargah" element={<ProtectedRoute pageKey="stratejikKarargah"><StratejikKarargahPage /></ProtectedRoute>} />
+            <Route path="/stratejik-kokpit" element={<ProtectedRoute pageKey="stratejikKokpit"><KokpitPage /></ProtectedRoute>} />
             <Route path="/gantt" element={<GanttPage />} />
-            <Route path="/tree" element={<TreePage />} />
+            {/* WBS/Tree page removed */}
             <Route path="/strategy-map" element={<StrategyMapPage />} />
             <Route path="/t-alignment" element={<TAlignmentPage />} />
             <Route path="/kullanicilar" element={<ProtectedRoute pageKey="kullanicilar"><KullanicilarPage /></ProtectedRoute>} />
