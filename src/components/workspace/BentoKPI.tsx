@@ -40,10 +40,10 @@ export default function BentoKPI() {
   const statusCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const h of ws.myProjeler) counts.set(h.status, (counts.get(h.status) ?? 0) + 1);
-    return STATUS_ORDER.filter((s) => counts.has(s)).map((s) => ({
+    return STATUS_ORDER.map((s) => ({
       status: s,
       label: getStatusLabel(s, t),
-      count: counts.get(s)!,
+      count: counts.get(s) ?? 0,
       color: STATUS_COLORS[s] ?? "#94a3b8",
     }));
   }, [ws.myProjeler, t]);
@@ -55,7 +55,7 @@ export default function BentoKPI() {
   const circumference = 2 * Math.PI * radius;
   let accOffset = 0;
   const total = ws.myProjeler.length || 1;
-  const arcs = statusCounts.map((seg) => {
+  const arcs = statusCounts.filter((s) => s.count > 0).map((seg) => {
     const pct = (seg.count / total) * 100;
     const dashLen = (pct / 100) * circumference;
     const dashOffset = circumference - accOffset;
@@ -119,13 +119,13 @@ export default function BentoKPI() {
             </div>
           </div>
 
-          {/* Row 2: Status mini cards */}
+          {/* Row 2: Status mini cards — first 4 */}
           <div className="grid grid-cols-4 gap-2">
             {statusCounts.slice(0, 4).map((s) => (
               <div
                 key={s.status}
                 onClick={() => navigate("/projeler")}
-                className="rounded-xl p-2.5 cursor-pointer hover:brightness-95 transition-all text-center"
+                className={`rounded-xl p-2.5 cursor-pointer hover:brightness-95 transition-all text-center ${s.count === 0 ? "opacity-40" : ""}`}
                 style={{ backgroundColor: `${s.color}10` }}
               >
                 <span className="text-[18px] font-extrabold tabular-nums leading-none" style={{ color: s.color }}>
@@ -138,26 +138,24 @@ export default function BentoKPI() {
             ))}
           </div>
 
-          {/* Row 3: Remaining statuses if any */}
-          {statusCounts.length > 4 && (
-            <div className="grid grid-cols-4 gap-2">
-              {statusCounts.slice(4).map((s) => (
-                <div
-                  key={s.status}
-                  onClick={() => navigate("/projeler")}
-                  className="rounded-xl p-2.5 cursor-pointer hover:brightness-95 transition-all text-center"
-                  style={{ backgroundColor: `${s.color}10` }}
-                >
-                  <span className="text-[18px] font-extrabold tabular-nums leading-none" style={{ color: s.color }}>
-                    {s.count}
-                  </span>
-                  <p className="text-[9px] font-semibold mt-1 truncate" style={{ color: s.color }}>
-                    {s.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* Row 3: Remaining statuses */}
+          <div className="grid grid-cols-4 gap-2">
+            {statusCounts.slice(4).map((s) => (
+              <div
+                key={s.status}
+                onClick={() => navigate("/projeler")}
+                className={`rounded-xl p-2.5 cursor-pointer hover:brightness-95 transition-all text-center ${s.count === 0 ? "opacity-40" : ""}`}
+                style={{ backgroundColor: `${s.color}10` }}
+              >
+                <span className="text-[18px] font-extrabold tabular-nums leading-none" style={{ color: s.color }}>
+                  {s.count}
+                </span>
+                <p className="text-[9px] font-semibold mt-1 truncate" style={{ color: s.color }}>
+                  {s.label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Right: Donut + Legend (4 col) */}
