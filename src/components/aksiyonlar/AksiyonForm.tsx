@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Textarea, Select, SelectItem, DatePicker, Autocomplete, AutocompleteItem } from "@heroui/react";
 import { Check } from "lucide-react";
+import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useDataStore } from "@/stores/dataStore";
@@ -44,6 +45,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess }: Aksi
   const addAksiyon = useDataStore((s) => s.addAksiyon);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
   const [isLoading, setIsLoading] = useState(false);
+  const accentColor = useSidebarTheme().accentColor ?? "#c8922a";
 
   const aksiyonSchema = createAksiyonSchema(t);
 
@@ -423,10 +425,10 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess }: Aksi
 
       <Button
         type="submit"
-        color="primary"
         isLoading={isLoading}
         startContent={<Check size={14} />}
-        className="mt-2 rounded-button font-semibold relative overflow-hidden group"
+        className="mt-2 rounded-button font-semibold relative overflow-hidden group text-white"
+        style={{ backgroundColor: accentColor }}
       >
         <span className="relative z-10">{aksiyon ? t("common.save") : t("common.create")}</span>
         <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">

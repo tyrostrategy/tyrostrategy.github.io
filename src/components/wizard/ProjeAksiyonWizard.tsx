@@ -242,14 +242,17 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
             animate="center"
             exit="exit"
           >
-            {/* Step header banner */}
+            {/* Step header banner — accent color themed */}
             {(() => {
               const theme = STEP_THEMES[currentStep];
               const StepIcon = theme.icon;
               return (
-                <div className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl ${theme.bg} mb-5`}>
-                  <StepIcon size={16} className={theme.color} />
-                  <span className={`text-[12px] font-semibold ${theme.color}`}>{theme.label}</span>
+                <div
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl mb-5"
+                  style={{ backgroundColor: `${accentColor}12` }}
+                >
+                  <StepIcon size={16} style={{ color: accentColor }} />
+                  <span className="text-[12px] font-semibold" style={{ color: accentColor }}>{theme.label}</span>
                 </div>
               );
             })()}

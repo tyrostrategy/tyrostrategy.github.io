@@ -13,6 +13,7 @@ import { getStatusOptions, getSourceOptions } from "@/lib/constants";
 import { departments } from "@/config/departments";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import TagChip from "@/components/ui/TagChip";
+import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import type { Proje } from "@/types";
 
 const CURRENT_USER = "Cenk \u015eayli";
@@ -48,6 +49,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
   const updateProje = useDataStore((s) => s.updateProje);
   const projeler = useDataStore((s) => s.projeler);
   const [isLoading, setIsLoading] = useState(false);
+  const accentColor = useSidebarTheme().accentColor ?? "#c8922a";
 
   const hedefSchema = createHedefSchema(t);
 
@@ -475,10 +477,10 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
 
       <Button
         type="submit"
-        color="primary"
         isLoading={isLoading}
         startContent={<Check size={14} />}
-        className="mt-2 rounded-button font-semibold relative overflow-hidden group"
+        className="mt-2 rounded-button font-semibold relative overflow-hidden group text-white"
+        style={{ backgroundColor: accentColor }}
       >
         <span className="relative z-10">{proje ? t("common.save") : t("common.create")}</span>
         <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">

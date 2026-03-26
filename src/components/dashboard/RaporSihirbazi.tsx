@@ -630,7 +630,8 @@ ${clone.outerHTML}
               </button>
               <button
                 onClick={() => { setFilterOpen(false); setReportGenerated(true); }}
-                className="px-5 py-2 rounded-lg bg-tyro-navy text-white text-[12px] font-semibold hover:bg-tyro-navy-light cursor-pointer transition-colors"
+                className="px-5 py-2 rounded-lg text-white text-[12px] font-semibold cursor-pointer transition-all hover:brightness-110"
+                style={{ backgroundColor: theme.accentColor }}
               >
                 Raporu Çalıştır
               </button>
@@ -777,7 +778,8 @@ ${clone.outerHTML}
           <div className="relative">
             <button
               onClick={() => setExportOpen(!exportOpen)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-tyro-gold text-white text-[12px] font-semibold hover:bg-tyro-gold-dark transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-[12px] font-semibold cursor-pointer transition-all hover:brightness-110"
+              style={{ backgroundColor: theme.accentColor }}
             >
               <Download size={14} />
               Dışa Aktar
