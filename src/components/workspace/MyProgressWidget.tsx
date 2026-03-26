@@ -70,13 +70,12 @@ export default function MyProgressWidget() {
         <h3 className="text-[13px] font-bold text-tyro-text-primary">{t("workspace.individualProgress")}</h3>
       </div>
 
-      {/* Donut chart — status segments */}
-      <div className="flex items-center justify-center mb-4">
-        <div className="relative" style={{ width: 140, height: 140 }}>
-          <svg width={140} height={140} viewBox="0 0 140 140" className="-rotate-90">
-            {/* Background circle */}
+      {/* Donut + Legend side by side */}
+      <div className="flex items-center gap-5 flex-1">
+        {/* Donut chart */}
+        <div className="relative shrink-0" style={{ width: 120, height: 120 }}>
+          <svg width={120} height={120} viewBox="0 0 140 140" className="-rotate-90">
             <circle cx={70} cy={70} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={10} />
-            {/* Status segments */}
             {arcs.map((arc) => (
               <circle
                 key={arc.status}
@@ -92,30 +91,30 @@ export default function MyProgressWidget() {
             ))}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[22px] font-extrabold tabular-nums text-tyro-text-primary leading-none">
+            <span className="text-[20px] font-extrabold tabular-nums text-tyro-text-primary leading-none">
               %{avgProgress}
             </span>
-            <span className="text-[10px] font-semibold text-tyro-text-muted mt-1 uppercase tracking-wider">
+            <span className="text-[9px] font-semibold text-tyro-text-muted mt-1 uppercase tracking-wider">
               {t("workspace.overall")}
             </span>
           </div>
         </div>
-      </div>
 
-      {/* Legend — all statuses */}
-      <div className="space-y-1.5 mt-auto">
-        {segments.map((seg) => (
-          <div key={seg.status} className="flex items-center justify-between py-1 px-1.5 -mx-1.5 rounded-lg hover:bg-tyro-bg/50 transition-colors">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
-              <span className="text-[11px] font-medium text-tyro-text-secondary">{seg.label}</span>
+        {/* Legend — all statuses */}
+        <div className="flex-1 space-y-1.5">
+          {segments.map((seg) => (
+            <div key={seg.status} className="flex items-center justify-between py-1 px-1.5 -mx-1.5 rounded-lg hover:bg-tyro-bg/50 transition-colors">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+                <span className="text-[11px] font-medium text-tyro-text-secondary">{seg.label}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-tyro-text-muted tabular-nums">{seg.count}</span>
+                <span className="text-[11px] font-bold text-tyro-text-primary tabular-nums">{seg.pct}%</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-tyro-text-muted tabular-nums">{seg.count}</span>
-              <span className="text-[11px] font-bold text-tyro-text-primary tabular-nums">{seg.pct}%</span>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </GlassCard>
   );

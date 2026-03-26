@@ -104,10 +104,10 @@ export default function WorkspacePage() {
       {/* Row 1: Bento KPI (5) + Bireysel İlerleme (7) */}
       <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5"><div className="col-span-12 lg:col-span-5 h-48 rounded-2xl bg-tyro-surface animate-pulse" /><div className="col-span-12 lg:col-span-7 h-48 rounded-2xl bg-tyro-surface animate-pulse" /></div>}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-5 items-stretch">
-          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-5 flex">
+          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-9 flex">
             <BentoKPI />
           </motion.div>
-          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-7 flex">
+          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-3 flex">
             <MyProgressWidget />
           </motion.div>
         </div>
