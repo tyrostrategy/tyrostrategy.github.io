@@ -40,7 +40,7 @@ const STATUS_HEX: Record<string, string> = {
   "On Track": "#10b981",
   "At Risk": "#f59e0b",
   "Behind": "#ef4444",
-  "Achieved": "#059669",
+  "Achieved": "#3b82f6",
   "Not Started": "#94a3b8",
   "Cancelled": "#6b7280",
   "On Hold": "#8b5cf6",

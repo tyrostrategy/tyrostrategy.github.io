@@ -65,7 +65,7 @@ export function getSourceOptions(_t: TFunction): { key: Source; label: string }[
 /** Status → nokta/badge renk class'ı */
 export const STATUS_DOT_COLOR: Record<EntityStatus, string> = {
   "On Track": "bg-emerald-500",
-  "Achieved": "bg-emerald-600",
+  "Achieved": "bg-blue-500",
   "Behind": "bg-red-500",
   "At Risk": "bg-amber-500",
   "Not Started": "bg-slate-400",

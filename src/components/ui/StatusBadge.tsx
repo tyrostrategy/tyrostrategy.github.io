@@ -10,9 +10,9 @@ const statusConfig: Record<EntityStatus, { bg: string; text: string; dot: string
     dot: "bg-emerald-500",
   },
   Achieved: {
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    dot: "bg-emerald-600",
+    bg: "bg-blue-50",
+    text: "text-blue-600",
+    dot: "bg-blue-500",
   },
   Behind: {
     bg: "bg-red-50",
