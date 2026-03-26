@@ -832,7 +832,7 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
 
       {/* ===== ACTIONS FAB — İşlemler ===== */}
       {selectedProje && (
-      <div className="fixed bottom-24 right-20 lg:bottom-6 lg:right-24 z-40">
+      <div className="fixed bottom-24 right-6 lg:bottom-6 lg:right-[140px] z-40">
         <AnimatePresence>
           {actionsFabOpen && (
             <>
@@ -942,13 +942,13 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
         <motion.button
           type="button"
           onClick={() => { setActionsFabOpen((v) => !v); setFabOpen(false); }}
-          className="w-14 h-14 rounded-full bg-tyro-navy text-white flex items-center justify-center shadow-[0_4px_12px_rgba(30,58,95,0.3)] cursor-pointer z-40 relative"
-          whileHover={{ scale: 1.1 }}
+          className="h-12 rounded-full bg-tyro-navy text-white flex items-center justify-center shadow-[0_4px_12px_rgba(30,58,95,0.3)] cursor-pointer z-40 relative w-12 lg:w-auto lg:h-11 lg:px-4 lg:gap-2 lg:rounded-xl"
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          animate={{ rotate: actionsFabOpen ? 90 : 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-          <MoreVertical size={22} />
+          <MoreVertical size={18} />
+          <span className="hidden lg:inline text-[12px] font-semibold">Düzenle</span>
         </motion.button>
       </div>
       )}
@@ -1009,13 +1009,13 @@ export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetai
         <motion.button
           type="button"
           onClick={() => { setFabOpen((v) => !v); setActionsFabOpen(false); }}
-          className="w-14 h-14 rounded-full bg-tyro-gold text-white flex items-center justify-center shadow-[0_4px_12px_rgba(200,146,42,0.35)] cursor-pointer z-40 relative"
-          whileHover={{ scale: 1.1 }}
+          className="h-12 rounded-full bg-tyro-gold text-white flex items-center justify-center shadow-[0_4px_12px_rgba(200,146,42,0.35)] cursor-pointer z-40 relative w-12 lg:w-auto lg:h-11 lg:px-4 lg:gap-2 lg:rounded-xl"
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          animate={{ rotate: fabOpen ? 45 : 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
-          <Plus size={24} />
+          <Plus size={20} />
+          <span className="hidden lg:inline text-[12px] font-semibold">Yeni</span>
         </motion.button>
       </div>
 
