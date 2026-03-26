@@ -12,7 +12,7 @@ const MyHedeflerList = lazy(() => import("@/components/workspace/MyProjectsList"
 const UpcomingDeadlines = lazy(() => import("@/components/workspace/UpcomingDeadlines"));
 const MyProgressWidget = lazy(() => import("@/components/workspace/MyProgressWidget"));
 const BentoKPI = lazy(() => import("@/components/workspace/BentoKPI"));
-import HedefAksiyonWizard from "@/components/wizard/HedefAksiyonWizard";
+import ProjeAksiyonWizard from "@/components/wizard/ProjeAksiyonWizard";
 import WizardHeader from "@/components/wizard/WizardHeader";
 
 function getGreetingKey(): string {
@@ -42,7 +42,7 @@ export default function WorkspacePage() {
 
   const summaryText = useMemo(() => {
     const parts: string[] = [];
-    if (ws.myHedefler.length > 0) parts.push(`${ws.myHedefler.length} ${t("workspace.objectivesCount")}`);
+    if (ws.myProjeler.length > 0) parts.push(`${ws.myProjeler.length} ${t("workspace.objectivesCount")}`);
     if (ws.achievedAksiyonlar > 0) parts.push(`${ws.achievedAksiyonlar} ${t("workspace.actionsCompleted")}`);
     if (ws.behindAksiyonlar + ws.atRiskAksiyonlar > 0)
       parts.push(`${ws.behindAksiyonlar + ws.atRiskAksiyonlar} ${t("workspace.actionsNeedAttention")}`);
@@ -95,7 +95,7 @@ export default function WorkspacePage() {
               whileTap={{ scale: 0.95 }}
             >
               <Wand2 size={14} className="shrink-0" />
-              <span>Hedef Sihirbazı</span>
+              <span>Proje Sihirbazı</span>
             </motion.button>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function WorkspacePage() {
         maxWidth={680}
         headerContent={<WizardHeader />}
       >
-        {wizardOpen && <HedefAksiyonWizard onClose={() => setWizardOpen(false)} />}
+        {wizardOpen && <ProjeAksiyonWizard onClose={() => setWizardOpen(false)} />}
       </SlidingPanel>
     </motion.div>
   );

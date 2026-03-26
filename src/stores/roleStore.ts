@@ -6,7 +6,7 @@ import type { UserRole, RolePermissions } from "@/types";
 const ADMIN_DEFAULTS: RolePermissions = {
   pages: {
     kpi: true,
-    hedefler: true,
+    projeler: true,
     aksiyonlar: true,
     gantt: true,
     wbs: true,
@@ -15,7 +15,7 @@ const ADMIN_DEFAULTS: RolePermissions = {
     ayarlar: true,
     guvenlik: true,
   },
-  hedef: { create: true, edit: true, delete: true },
+  proje: { create: true, edit: true, delete: true },
   aksiyon: { create: true, edit: true, delete: true },
   editOnlyOwn: false,
   viewOnlyOwn: false,
@@ -24,7 +24,7 @@ const ADMIN_DEFAULTS: RolePermissions = {
 const PROJE_LIDERI_DEFAULTS: RolePermissions = {
   pages: {
     kpi: false,
-    hedefler: true,
+    projeler: true,
     aksiyonlar: true,
     gantt: true,
     wbs: true,
@@ -33,7 +33,7 @@ const PROJE_LIDERI_DEFAULTS: RolePermissions = {
     ayarlar: false,
     guvenlik: false,
   },
-  hedef: { create: false, edit: false, delete: false },
+  proje: { create: false, edit: false, delete: false },
   aksiyon: { create: true, edit: true, delete: false },
   editOnlyOwn: true,
   viewOnlyOwn: true,
@@ -42,7 +42,7 @@ const PROJE_LIDERI_DEFAULTS: RolePermissions = {
 const KULLANICI_DEFAULTS: RolePermissions = {
   pages: {
     kpi: false,
-    hedefler: true,
+    projeler: true,
     aksiyonlar: true,
     gantt: true,
     wbs: true,
@@ -51,7 +51,7 @@ const KULLANICI_DEFAULTS: RolePermissions = {
     ayarlar: false,
     guvenlik: false,
   },
-  hedef: { create: false, edit: false, delete: false },
+  proje: { create: false, edit: false, delete: false },
   aksiyon: { create: true, edit: true, delete: false },
   editOnlyOwn: true,
   viewOnlyOwn: true,

@@ -10,19 +10,19 @@ export default function BentoKPI() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const ws = useMyWorkspace();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
 
-  // Kontrol tarihi 1 ay veya daha fazla güncel olmayan hedefler
-  const overdueReviewHedefler = useMemo(() => {
+  // Kontrol tarihi 1 ay veya daha fazla güncel olmayan projeler
+  const overdueReviewProjeler = useMemo(() => {
     const now = new Date();
     const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    return hedefler.filter((h) => {
+    return projeler.filter((h) => {
       if (!h.reviewDate) return true; // reviewDate yoksa güncel değil
       if (h.status === "Achieved" || h.status === "Cancelled") return false;
       const rd = new Date(h.reviewDate);
       return rd <= oneMonthAgo;
     });
-  }, [hedefler]);
+  }, [projeler]);
 
   const aksiyonPct = ws.totalAksiyonlar > 0
     ? Math.round((ws.achievedAksiyonlar / ws.totalAksiyonlar) * 100) : 0;
@@ -33,11 +33,11 @@ export default function BentoKPI() {
       <div className="grid grid-cols-2 gap-2">
         {/* Hedeflerim */}
         <div
-          onClick={() => navigate("/hedefler")}
+          onClick={() => navigate("/projeler")}
           className="flex flex-col items-center gap-1 p-3 rounded-xl bg-tyro-navy/5 cursor-pointer hover:bg-tyro-navy/10 transition-colors"
         >
           <Crosshair size={18} className="text-tyro-navy mb-1" />
-          <span className="text-[22px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{ws.myHedefler.length}</span>
+          <span className="text-[22px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{ws.myProjeler.length}</span>
           <span className="text-[11px] font-medium text-tyro-text-muted">{t("workspace.myObjectives")}</span>
         </div>
 
@@ -93,11 +93,11 @@ export default function BentoKPI() {
 
         {/* Kontrol tarihi güncel olmayan */}
         <div
-          onClick={() => navigate("/hedefler?reviewOverdue=true")}
+          onClick={() => navigate("/projeler?reviewOverdue=true")}
           className="flex flex-col items-center gap-1 p-3 rounded-xl bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 transition-colors"
         >
           <CalendarClock size={18} className="text-amber-500 mb-0.5" />
-          <span className="text-[20px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{overdueReviewHedefler.length}</span>
+          <span className="text-[20px] font-extrabold text-tyro-text-primary tabular-nums leading-none">{overdueReviewProjeler.length}</span>
           <span className="text-[10px] text-tyro-text-muted text-center leading-tight">kontrol tarihi güncel değil</span>
         </div>
       </div>

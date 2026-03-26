@@ -5,16 +5,16 @@ import { useDataStore } from "../dataStore";
 beforeEach(() => {
   // Clear all items for a clean slate
   useDataStore.setState({
-    hedefler: [],
+    projeler: [],
     projeler: [],
     gorevler: [],
   });
 });
 
-describe("Hedef CRUD", () => {
-  it("addHedef adds a new hedef with generated id", () => {
-    useDataStore.getState().addHedef({
-      name: "Test Hedef",
+describe("Proje CRUD", () => {
+  it("addProje adds a new proje with generated id", () => {
+    useDataStore.getState().addProje({
+      name: "Test Proje",
       source: "Kurumsal",
       status: "On Track",
       leader: "Test Leader",
@@ -22,15 +22,15 @@ describe("Hedef CRUD", () => {
       endDate: "2024-12-31",
     });
 
-    const hedefler = useDataStore.getState().hedefler;
-    expect(hedefler).toHaveLength(1);
-    expect(hedefler[0].name).toBe("Test Hedef");
-    expect(hedefler[0].id).toBeTruthy();
-    expect(hedefler[0].id).toMatch(/^gen-/);
+    const projeler = useDataStore.getState().projeler;
+    expect(projeler).toHaveLength(1);
+    expect(projeler[0].name).toBe("Test Proje");
+    expect(projeler[0].id).toBeTruthy();
+    expect(projeler[0].id).toMatch(/^gen-/);
   });
 
-  it("updateHedef updates an existing hedef", () => {
-    useDataStore.getState().addHedef({
+  it("updateProje updates an existing proje", () => {
+    useDataStore.getState().addProje({
       name: "Original",
       source: "Türkiye",
       status: "Not Started",
@@ -39,17 +39,17 @@ describe("Hedef CRUD", () => {
       endDate: "2024-06-30",
     });
 
-    const id = useDataStore.getState().hedefler[0].id;
-    useDataStore.getState().updateHedef(id, { name: "Updated", status: "Achieved" });
+    const id = useDataStore.getState().projeler[0].id;
+    useDataStore.getState().updateProje(id, { name: "Updated", status: "Achieved" });
 
-    const updated = useDataStore.getState().hedefler[0];
+    const updated = useDataStore.getState().projeler[0];
     expect(updated.name).toBe("Updated");
     expect(updated.status).toBe("Achieved");
     expect(updated.leader).toBe("Leader"); // unchanged field
   });
 
-  it("deleteHedef removes a hedef by id", () => {
-    useDataStore.getState().addHedef({
+  it("deleteProje removes a proje by id", () => {
+    useDataStore.getState().addProje({
       name: "To Delete",
       source: "International",
       status: "Behind",
@@ -58,15 +58,15 @@ describe("Hedef CRUD", () => {
       endDate: "2024-06-30",
     });
 
-    const id = useDataStore.getState().hedefler[0].id;
-    expect(useDataStore.getState().hedefler).toHaveLength(1);
+    const id = useDataStore.getState().projeler[0].id;
+    expect(useDataStore.getState().projeler).toHaveLength(1);
 
-    useDataStore.getState().deleteHedef(id);
-    expect(useDataStore.getState().hedefler).toHaveLength(0);
+    useDataStore.getState().deleteProje(id);
+    expect(useDataStore.getState().projeler).toHaveLength(0);
   });
 
-  it("getHedefById returns the correct hedef", () => {
-    useDataStore.getState().addHedef({
+  it("getHedefById returns the correct proje", () => {
+    useDataStore.getState().addProje({
       name: "Find Me",
       source: "Kurumsal",
       status: "On Track",
@@ -75,7 +75,7 @@ describe("Hedef CRUD", () => {
       endDate: "2024-12-31",
     });
 
-    const id = useDataStore.getState().hedefler[0].id;
+    const id = useDataStore.getState().projeler[0].id;
     const found = useDataStore.getState().getHedefById(id);
     expect(found).toBeDefined();
     expect(found!.name).toBe("Find Me");
@@ -89,7 +89,7 @@ describe("Hedef CRUD", () => {
 describe("Proje CRUD", () => {
   it("addProje adds a new proje with generated id", () => {
     useDataStore.getState().addProje({
-      hedefId: "h1",
+      projeId: "h1",
       name: "Test Proje",
       department: "IT",
       projectLeader: "Leader",
@@ -104,12 +104,12 @@ describe("Proje CRUD", () => {
     expect(projeler).toHaveLength(1);
     expect(projeler[0].name).toBe("Test Proje");
     expect(projeler[0].id).toMatch(/^gen-/);
-    expect(projeler[0].hedefId).toBe("h1");
+    expect(projeler[0].projeId).toBe("h1");
   });
 
   it("updateProje updates an existing proje", () => {
     useDataStore.getState().addProje({
-      hedefId: "h1",
+      projeId: "h1",
       name: "Original Proje",
       department: "HR",
       projectLeader: "Leader",
@@ -131,7 +131,7 @@ describe("Proje CRUD", () => {
 
   it("deleteProje removes a proje by id", () => {
     useDataStore.getState().addProje({
-      hedefId: "h1",
+      projeId: "h1",
       name: "To Delete",
       department: "IT",
       projectLeader: "Leader",
@@ -149,7 +149,7 @@ describe("Proje CRUD", () => {
 
   it("getProjelerByHedefId returns matching projeler", () => {
     useDataStore.getState().addProje({
-      hedefId: "h1",
+      projeId: "h1",
       name: "Proje A",
       department: "IT",
       projectLeader: "Leader",
@@ -160,7 +160,7 @@ describe("Proje CRUD", () => {
       progress: 0,
     });
     useDataStore.getState().addProje({
-      hedefId: "h2",
+      projeId: "h2",
       name: "Proje B",
       department: "HR",
       projectLeader: "Leader",

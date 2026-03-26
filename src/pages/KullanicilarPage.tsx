@@ -25,14 +25,14 @@ interface UserRow {
   department: string;
   active: boolean;
   role: YetkiRol;
-  hedefCount: number;
+  projeCount: number;
   aksiyonCount: number;
   achievedCount: number;
 }
 
-function assignRole(hedefCount: number): YetkiRol {
-  if (hedefCount >= 5) return "Admin";
-  if (hedefCount >= 1) return "Proje Lideri";
+function assignRole(projeCount: number): YetkiRol {
+  if (projeCount >= 5) return "Admin";
+  if (projeCount >= 1) return "Proje Lideri";
   return "Kullan\u0131c\u0131";
 }
 
@@ -50,15 +50,15 @@ const columns = [
   { uid: "status", name: "Durum" },
   { uid: "email", name: "E-posta" },
   { uid: "department", name: "Departman" },
-  { uid: "hedefCount", name: "Hedefler" },
+  { uid: "projeCount", name: "Projeler" },
   { uid: "actions", name: "İşlemler" },
 ];
 
-const INITIAL_VISIBLE = new Set(["name", "role", "status", "email", "department", "hedefCount", "actions"]);
+const INITIAL_VISIBLE = new Set(["name", "role", "status", "email", "department", "projeCount", "actions"]);
 
 export default function KullanicilarPage() {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const sidebarTheme = useSidebarTheme();
 
@@ -86,19 +86,19 @@ export default function KullanicilarPage() {
 
   // Build users from data
   const users: UserRow[] = useMemo(() => {
-    const ownerMap = new Map<string, { hedefCount: number; aksiyonCount: number; achievedCount: number; departments: Set<string> }>();
-    for (const h of hedefler) {
+    const ownerMap = new Map<string, { projeCount: number; aksiyonCount: number; achievedCount: number; departments: Set<string> }>();
+    for (const h of projeler) {
       const owner = h.owner;
       if (!owner) continue;
-      const existing = ownerMap.get(owner) || { hedefCount: 0, aksiyonCount: 0, achievedCount: 0, departments: new Set<string>() };
-      existing.hedefCount += 1;
+      const existing = ownerMap.get(owner) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0, departments: new Set<string>() };
+      existing.projeCount += 1;
       if (h.department) existing.departments.add(h.department);
       ownerMap.set(owner, existing);
     }
     for (const a of aksiyonlar) {
       const owner = a.owner;
       if (!owner) continue;
-      const existing = ownerMap.get(owner) || { hedefCount: 0, aksiyonCount: 0, achievedCount: 0, departments: new Set<string>() };
+      const existing = ownerMap.get(owner) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0, departments: new Set<string>() };
       existing.aksiyonCount += 1;
       if (a.status === "Achieved") existing.achievedCount += 1;
       ownerMap.set(owner, existing);
@@ -110,8 +110,8 @@ export default function KullanicilarPage() {
       email: nameToEmail(name),
       department: Array.from(stats.departments).join(", "),
       active: true,
-      role: assignRole(stats.hedefCount),
-      hedefCount: stats.hedefCount,
+      role: assignRole(stats.projeCount),
+      projeCount: stats.projeCount,
       aksiyonCount: stats.aksiyonCount,
       achievedCount: stats.achievedCount,
     }));
@@ -124,12 +124,12 @@ export default function KullanicilarPage() {
       department: "IT",
       active: true,
       role: "Admin",
-      hedefCount: hedefler.length,
+      projeCount: projeler.length,
       aksiyonCount: aksiyonlar.length,
       achievedCount: aksiyonlar.filter((a) => a.status === "Achieved").length,
     };
     return [currentUser, ...fromData];
-  }, [hedefler, aksiyonlar]);
+  }, [projeler, aksiyonlar]);
 
   // Filter
   const filtered = useMemo(() => {
@@ -216,8 +216,8 @@ export default function KullanicilarPage() {
         return <span className="text-[13px] text-tyro-text-secondary">{user.email}</span>;
       case "department":
         return <span className="text-[13px] text-tyro-text-secondary">{user.department}</span>;
-      case "hedefCount":
-        return <span className="text-[13px] font-bold" style={{ color: sidebarTheme.accentColor }}>{user.hedefCount}</span>;
+      case "projeCount":
+        return <span className="text-[13px] font-bold" style={{ color: sidebarTheme.accentColor }}>{user.projeCount}</span>;
       case "actions":
         return (
           <div className="relative flex items-center gap-2 justify-center">
@@ -536,8 +536,8 @@ export default function KullanicilarPage() {
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-tyro-bg rounded-lg p-3 text-center">
                 <Briefcase size={14} className="mx-auto mb-1" style={{ color: sidebarTheme.accentColor }} />
-                <div className="text-lg font-bold" style={{ color: sidebarTheme.accentColor }}>{selectedUser.hedefCount}</div>
-                <div className="text-[11px] text-tyro-text-muted">Hedef</div>
+                <div className="text-lg font-bold" style={{ color: sidebarTheme.accentColor }}>{selectedUser.projeCount}</div>
+                <div className="text-[11px] text-tyro-text-muted">Proje</div>
               </div>
               <div className="bg-tyro-bg rounded-lg p-3 text-center">
                 <ListChecks size={14} className="mx-auto mb-1 text-tyro-text-secondary" />

@@ -19,7 +19,7 @@ const STATUS_COLORS: Record<string, string> = {
   "On Track": "#10b981", "Achieved": "#3b82f6", "Behind": "#ef4444", "At Risk": "#f59e0b", "Not Started": "#94a3b8",
 };
 
-type Tab = "hedef" | "aksiyon";
+type Tab = "proje" | "aksiyon";
 
 /* ── Radial Gauge (compact) ── */
 function RadialGauge({ value, total, avgProgress: _avgProgress, color }: { value: number; total: number; avgProgress: number; color: string }) {
@@ -140,33 +140,33 @@ export default function MyProjectsList() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const ws = useMyWorkspace();
-  const [tab, setTab] = useState<Tab>("hedef");
+  const [tab, setTab] = useState<Tab>("proje");
   const [showAll, setShowAll] = useState(false);
 
   // Stats
   const hedefSourceMap = new Map<string, number>();
-  for (const h of ws.myHedefler) hedefSourceMap.set(h.source, (hedefSourceMap.get(h.source) ?? 0) + 1);
+  for (const h of ws.myProjeler) hedefSourceMap.set(h.source, (hedefSourceMap.get(h.source) ?? 0) + 1);
   const hedefTagMap = new Map<string, number>();
-  for (const h of ws.myHedefler) {
+  for (const h of ws.myProjeler) {
     for (const tag of (h.tags ?? [])) hedefTagMap.set(tag, (hedefTagMap.get(tag) ?? 0) + 1);
   }
   const getTagColor = useDataStore((s) => s.getTagColor);
-  const hedefAvg = ws.myHedefler.length > 0
-    ? Math.round(ws.myHedefler.reduce((s, h) => s + h.progress, 0) / ws.myHedefler.length) : 0;
-  const hedefAchieved = ws.myHedefler.filter((h) => h.status === "Achieved").length;
+  const hedefAvg = ws.myProjeler.length > 0
+    ? Math.round(ws.myProjeler.reduce((s, h) => s + h.progress, 0) / ws.myProjeler.length) : 0;
+  const hedefAchieved = ws.myProjeler.filter((h) => h.status === "Achieved").length;
   const aksiyonAvg = ws.myAksiyonlar.length > 0
     ? Math.round(ws.myAksiyonlar.reduce((s, a) => s + a.progress, 0) / ws.myAksiyonlar.length) : 0;
 
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const hedefNameMap = new Map(ws.myHedefler.map((h) => [h.id, h.name]));
-  const aksiyonlarWithParent = ws.myAksiyonlar.map((a) => ({ ...a, parentName: hedefNameMap.get(a.hedefId) ?? "" }));
+  const hedefNameMap = new Map(ws.myProjeler.map((h) => [h.id, h.name]));
+  const aksiyonlarWithParent = ws.myAksiyonlar.map((a) => ({ ...a, parentName: hedefNameMap.get(a.projeId) ?? "" }));
 
-  // Count aksiyonlar per hedef for display
+  // Count aksiyonlar per proje for display
   const aksiyonCountMap = new Map<string, number>();
-  for (const a of aksiyonlar) aksiyonCountMap.set(a.hedefId, (aksiyonCountMap.get(a.hedefId) ?? 0) + 1);
+  for (const a of aksiyonlar) aksiyonCountMap.set(a.projeId, (aksiyonCountMap.get(a.projeId) ?? 0) + 1);
 
-  const currentItems = (tab === "hedef"
-    ? ws.myHedefler.map((h) => ({ ...h, parentName: "", aksiyonCount: aksiyonCountMap.get(h.id) ?? 0 }))
+  const currentItems = (tab === "proje"
+    ? ws.myProjeler.map((h) => ({ ...h, parentName: "", aksiyonCount: aksiyonCountMap.get(h.id) ?? 0 }))
     : aksiyonlarWithParent
   ).sort((a, b) => b.progress - a.progress);
 
@@ -189,7 +189,7 @@ export default function MyProjectsList() {
             className="flex items-center rounded-full p-1 border border-white/20"
             style={{ background: "rgba(255,255,255,0.25)", backdropFilter: "blur(16px) saturate(1.6)", WebkitBackdropFilter: "blur(16px) saturate(1.6)" }}
           >
-            {(["hedef", "aksiyon"] as const).map((t2) => (
+            {(["proje", "aksiyon"] as const).map((t2) => (
               <button
                 key={t2}
                 type="button"
@@ -198,8 +198,8 @@ export default function MyProjectsList() {
                   tab === t2 ? "bg-white/90 shadow-md text-tyro-navy" : "text-tyro-text-muted hover:text-tyro-text-secondary hover:bg-white/15"
                 }`}
               >
-                {t2 === "hedef" ? <Crosshair size={13} /> : <CircleCheckBig size={13} />}
-                {t2 === "hedef" ? t("nav.objectives") : t("nav.actions")}
+                {t2 === "proje" ? <Crosshair size={13} /> : <CircleCheckBig size={13} />}
+                {t2 === "proje" ? t("nav.objectives") : t("nav.actions")}
               </button>
             ))}
           </div>
@@ -217,9 +217,9 @@ export default function MyProjectsList() {
             {/* Gauge + Status bars */}
             <div className="flex items-start gap-6">
               <RadialGauge
-                value={tab === "hedef" ? hedefAchieved : ws.achievedAksiyonlar}
-                total={tab === "hedef" ? ws.myHedefler.length : ws.totalAksiyonlar}
-                avgProgress={tab === "hedef" ? hedefAvg : aksiyonAvg}
+                value={tab === "proje" ? hedefAchieved : ws.achievedAksiyonlar}
+                total={tab === "proje" ? ws.myProjeler.length : ws.totalAksiyonlar}
+                avgProgress={tab === "proje" ? hedefAvg : aksiyonAvg}
                 color="var(--tyro-success)"
               />
               <div className="flex-1 min-w-0">
@@ -229,28 +229,28 @@ export default function MyProjectsList() {
                   </span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-[11px] text-tyro-text-muted">{t("workspace.avgProgress")}</span>
-                    <span className="text-[16px] font-extrabold text-tyro-navy tabular-nums">%{tab === "hedef" ? hedefAvg : aksiyonAvg}</span>
+                    <span className="text-[16px] font-extrabold text-tyro-navy tabular-nums">%{tab === "proje" ? hedefAvg : aksiyonAvg}</span>
                   </div>
                 </div>
                 <StackedStatusBar
-                  items={tab === "hedef" ? ws.myHedefler : ws.myAksiyonlar}
+                  items={tab === "proje" ? ws.myProjeler : ws.myAksiyonlar}
                   getStatus={(s) => getStatusLabel(s as EntityStatus, t)}
                 />
               </div>
             </div>
 
-            {/* Source distribution (hedef only) */}
-            {tab === "hedef" && ws.myHedefler.length > 0 && (
+            {/* Source distribution (proje only) */}
+            {tab === "proje" && ws.myProjeler.length > 0 && (
               <div>
                 <p className="text-[12px] font-bold text-tyro-text-primary mb-2">{t("workspace.sourceDistribution")}</p>
                 <div className="flex items-center gap-1 h-5 rounded-lg overflow-hidden bg-tyro-bg/40">
                   {Array.from(hedefSourceMap.entries()).map(([source, count]) => {
-                    const pct = Math.round((count / ws.myHedefler.length) * 100);
+                    const pct = Math.round((count / ws.myProjeler.length) * 100);
                     return (
                       <Tooltip key={source} content={`${source}: ${count} (${pct}%)`} placement="top" size="sm">
                         <div
                           className="h-full rounded-lg flex items-center justify-center cursor-help hover:brightness-110 transition-all"
-                          style={{ width: `${(count / ws.myHedefler.length) * 100}%`, backgroundColor: SOURCE_COLORS[source] ?? "#94a3b8", minWidth: 28 }}
+                          style={{ width: `${(count / ws.myProjeler.length) * 100}%`, backgroundColor: SOURCE_COLORS[source] ?? "#94a3b8", minWidth: 28 }}
                         >
                           <span className="text-[10px] font-bold text-white/90 drop-shadow-sm truncate px-0.5">{pct >= 20 ? `${source} · ${pct}%` : `${pct}%`}</span>
                         </div>
@@ -269,13 +269,13 @@ export default function MyProjectsList() {
               </div>
             )}
 
-            {/* Tag distribution (hedef only) */}
-            {tab === "hedef" && hedefTagMap.size > 0 && (
+            {/* Tag distribution (proje only) */}
+            {tab === "proje" && hedefTagMap.size > 0 && (
               <div>
                 <p className="text-[12px] font-bold text-tyro-text-primary mb-2">{t("workspace.tagDistribution", "Etiket Dağılımı")}</p>
                 {(() => {
                   const sortedTags = Array.from(hedefTagMap.entries()).sort((a, b) => b[1] - a[1]);
-                  const total = ws.myHedefler.length;
+                  const total = ws.myProjeler.length;
                   return (
                     <>
                       <div className="flex items-center gap-1 h-5 rounded-lg overflow-hidden bg-tyro-bg/40">
@@ -315,12 +315,12 @@ export default function MyProjectsList() {
       <GlassCard className="p-4 sm:p-5 flex flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-[13px] font-bold text-tyro-text-primary">
-            {tab === "hedef" ? t("workspace.objectiveProgress") : t("workspace.actionProgress")}
+            {tab === "proje" ? t("workspace.objectiveProgress") : t("workspace.actionProgress")}
           </h4>
           {hasMore && (
             <button
               type="button"
-              onClick={() => navigate(tab === "hedef" ? "/hedefler" : "/aksiyonlar")}
+              onClick={() => navigate(tab === "proje" ? "/projeler" : "/aksiyonlar")}
               className="flex items-center gap-1 text-[12px] font-semibold text-tyro-navy hover:text-tyro-navy-light transition-colors cursor-pointer"
             >
               {t("common.viewAll")}
@@ -343,7 +343,7 @@ export default function MyProjectsList() {
                 <ProgressCard
                   key={item.id}
                   item={item as any}
-                  onClick={() => navigate(tab === "hedef" ? `/hedefler?selected=${item.id}` : `/aksiyonlar?selected=${item.id}`)}
+                  onClick={() => navigate(tab === "proje" ? `/projeler?selected=${item.id}` : `/aksiyonlar?selected=${item.id}`)}
                   showParent={tab === "aksiyon"}
                 />
               ))}

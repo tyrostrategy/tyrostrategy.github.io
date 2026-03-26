@@ -11,7 +11,7 @@ import { useDataStore } from "@/stores/dataStore";
 import { toast } from "@/stores/toastStore";
 import WizardStepper from "./WizardStepper";
 import WizardSuccess from "./WizardSuccess";
-import StepHedefBasics from "./steps/StepHedefBasics";
+import StepProjeBasics from "./steps/StepProjeBasics";
 import StepOwnershipDates from "./steps/StepOwnershipDates";
 import StepAksiyonlar from "./steps/StepAksiyonlar";
 import StepReview from "./steps/StepReview";
@@ -78,7 +78,7 @@ const stepVariants = {
 };
 
 const STEP_THEMES = [
-  { icon: Target, color: "text-tyro-navy", bg: "bg-tyro-navy/8", label: "Hedef bilgilerini tanımlayın" },
+  { icon: Target, color: "text-tyro-navy", bg: "bg-tyro-navy/8", label: "Proje bilgilerini tanımlayın" },
   { icon: Users, color: "text-emerald-600", bg: "bg-emerald-500/8", label: "Ekip ve zaman planı belirleyin" },
   { icon: ListChecks, color: "text-violet-600", bg: "bg-violet-500/8", label: "Hedefe bağlı aksiyonları ekleyin" },
   { icon: ClipboardCheck, color: "text-tyro-gold", bg: "bg-tyro-gold/8", label: "Her şey doğru mu kontrol edin" },
@@ -88,9 +88,9 @@ interface Props {
   onClose: () => void;
 }
 
-export default function HedefAksiyonWizard({ onClose }: Props) {
+export default function ProjeAksiyonWizard({ onClose }: Props) {
   const { t } = useTranslation();
-  const addHedef = useDataStore((s) => s.addHedef);
+  const addProje = useDataStore((s) => s.addProje);
   const addAksiyon = useDataStore((s) => s.addAksiyon);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -169,7 +169,7 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
   const onSubmit = useCallback(
     (data: WizardFormData) => {
       try {
-        addHedef({
+        addProje({
           name: data.name,
           description: data.description || undefined,
           source: data.source,
@@ -184,11 +184,11 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
           progress: 0,
         });
 
-        const newHedefId = useDataStore.getState().hedefler.at(-1)!.id;
+        const newHedefId = useDataStore.getState().projeler.at(-1)!.id;
 
         (data.aksiyonlar ?? []).forEach((a, i) => {
           addAksiyon({
-            hedefId: newHedefId,
+            projeId: newHedefId,
             name: a.name,
             description: a.description || undefined,
             owner: a.owner,
@@ -218,7 +218,7 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
         );
       }
     },
-    [addHedef, addAksiyon, t],
+    [addProje, addAksiyon, t],
   );
 
   const isLastStep = currentStep === steps.length - 1;
@@ -251,7 +251,7 @@ export default function HedefAksiyonWizard({ onClose }: Props) {
               );
             })()}
 
-            {currentStep === 0 && <StepHedefBasics control={control} errors={errors} />}
+            {currentStep === 0 && <StepProjeBasics control={control} errors={errors} />}
             {currentStep === 1 && <StepOwnershipDates control={control} errors={errors} />}
             {currentStep === 2 && <StepAksiyonlar control={control} errors={errors} />}
             {currentStep === 3 && <StepReview control={control} />}

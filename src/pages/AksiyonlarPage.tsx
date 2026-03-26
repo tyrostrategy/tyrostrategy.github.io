@@ -35,7 +35,7 @@ function formatDate(dateStr: string): string {
   }
 }
 
-const INITIAL_VISIBLE = new Set(["name", "owner", "hedef", "progress", "status", "startDate", "endDate", "actions"]);
+const INITIAL_VISIBLE = new Set(["name", "owner", "proje", "progress", "status", "startDate", "endDate", "actions"]);
 
 export default function AksiyonlarPage() {
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ export default function AksiyonlarPage() {
     { uid: "name", name: t("forms.action.name") },
     { uid: "description", name: t("common.description") },
     { uid: "owner", name: t("common.owner") },
-    { uid: "hedef", name: t("nav.objectives") },
+    { uid: "proje", name: t("nav.objectives") },
     { uid: "progress", name: t("common.progress") },
     { uid: "status", name: t("common.status") },
     { uid: "startDate", name: t("common.startDate") },
@@ -55,7 +55,7 @@ export default function AksiyonlarPage() {
   const sidebarTheme = useSidebarTheme();
   const { canCreateAksiyon, canEditAksiyon, canDeleteAksiyon, filterAksiyonlar } = usePermissions();
   const { data: aksiyonlar } = useAksiyonlar();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const deleteAksiyon = useDataStore((s) => s.deleteAksiyon);
 
   const [search, setSearch] = useState("");
@@ -92,11 +92,11 @@ export default function AksiyonlarPage() {
 
   const hedefNameMap = useMemo(() => {
     const map = new Map<string, string>();
-    for (const h of hedefler) {
+    for (const h of projeler) {
       map.set(h.id, h.name);
     }
     return map;
-  }, [hedefler]);
+  }, [projeler]);
 
   const filtered = useMemo(() => {
     let result = filterAksiyonlar(aksiyonlar ?? []);
@@ -106,7 +106,7 @@ export default function AksiyonlarPage() {
     if (search.trim()) {
       const q = search.toLocaleLowerCase("tr");
       result = result.filter((a) => {
-        const searchStr = [a.name, a.description, a.owner, hedefNameMap.get(a.hedefId) ?? "", `%${a.progress}`, a.status, formatDate(a.startDate), formatDate(a.endDate)].join(" ").toLocaleLowerCase("tr");
+        const searchStr = [a.name, a.description, a.owner, hedefNameMap.get(a.projeId) ?? "", `%${a.progress}`, a.status, formatDate(a.startDate), formatDate(a.endDate)].join(" ").toLocaleLowerCase("tr");
         return searchStr.includes(q);
       });
     }
@@ -119,9 +119,9 @@ export default function AksiyonlarPage() {
       const col = sortDescriptor.column;
       let va: string | number = "";
       let vb: string | number = "";
-      if (col === "hedef") {
-        va = hedefNameMap.get(a.hedefId) ?? "";
-        vb = hedefNameMap.get(b.hedefId) ?? "";
+      if (col === "proje") {
+        va = hedefNameMap.get(a.projeId) ?? "";
+        vb = hedefNameMap.get(b.projeId) ?? "";
       } else if (col === "progress") {
         va = a.progress;
         vb = b.progress;
@@ -165,8 +165,8 @@ export default function AksiyonlarPage() {
         return <span className="text-[13px] text-tyro-text-secondary line-clamp-2">{aksiyon.description || "-"}</span>;
       case "owner":
         return <span className="text-[13px] text-tyro-text-primary">{aksiyon.owner || "-"}</span>;
-      case "hedef":
-        return <span className="text-[13px] text-tyro-text-secondary">{hedefNameMap.get(aksiyon.hedefId) ?? "-"}</span>;
+      case "proje":
+        return <span className="text-[13px] text-tyro-text-secondary">{hedefNameMap.get(aksiyon.projeId) ?? "-"}</span>;
       case "progress":
         return (
           <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ export default function AksiyonlarPage() {
                   <p className="text-xs text-tyro-text-secondary line-clamp-2 mb-1.5">{aksiyon.description}</p>
                 )}
                 <div className="flex items-center gap-3 text-xs text-tyro-text-muted mb-2">
-                  <span>{hedefNameMap.get(aksiyon.hedefId) ?? "-"}</span>
+                  <span>{hedefNameMap.get(aksiyon.projeId) ?? "-"}</span>
                 </div>
                 <div className="flex items-center gap-2 mb-3">
                   <div className="flex-1 h-1.5 rounded-full bg-tyro-bg overflow-hidden">
@@ -455,7 +455,7 @@ export default function AksiyonlarPage() {
               className="glass-card cursor-pointer rounded-card p-3 transition-colors hover:bg-tyro-surface/30"
             >
               <p className="text-sm font-semibold text-tyro-text-primary truncate">{a.name}</p>
-              <p className="mt-1 text-xs text-tyro-text-muted truncate">{hedefNameMap.get(a.hedefId) ?? "-"}</p>
+              <p className="mt-1 text-xs text-tyro-text-muted truncate">{hedefNameMap.get(a.projeId) ?? "-"}</p>
               <div className="mt-2 flex items-center gap-2">
                 <div className="flex-1 h-1.5 rounded-full bg-default-100 overflow-hidden">
                   <div className="h-full rounded-full transition-all duration-500" style={{ width: `${a.progress}%`, background: progressColor(a.progress) }} />

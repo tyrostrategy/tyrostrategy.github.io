@@ -5,7 +5,7 @@ import { ChevronRight, Target, ListChecks, Search } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useDataStore } from "@/stores/dataStore";
-import type { Hedef, Aksiyon } from "@/types";
+import type { Proje, Aksiyon } from "@/types";
 import { clsx } from "clsx";
 
 function AksiyonNode({ aksiyon }: { aksiyon: Aksiyon }) {
@@ -22,10 +22,10 @@ function AksiyonNode({ aksiyon }: { aksiyon: Aksiyon }) {
   );
 }
 
-function HedefNode({ hedef }: { hedef: Hedef }) {
+function HedefNode({ proje }: { proje: Proje }) {
   const [expanded, setExpanded] = useState(false);
   const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const aksiyonlar = allAksiyonlar.filter((a) => a.hedefId === hedef.id);
+  const aksiyonlar = allAksiyonlar.filter((a) => a.projeId === proje.id);
 
   return (
     <div className="mb-1">
@@ -41,12 +41,12 @@ function HedefNode({ hedef }: { hedef: Hedef }) {
           <Target size={14} className="text-tyro-gold" />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-sm font-bold text-tyro-text-primary block">{hedef.name}</span>
+          <span className="text-sm font-bold text-tyro-text-primary block">{proje.name}</span>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[11px] text-tyro-text-muted truncate">{hedef.source} · {hedef.owner}</span>
+            <span className="text-[11px] text-tyro-text-muted truncate">{proje.source} · {proje.owner}</span>
           </div>
           <div className="flex items-center gap-2 mt-1 sm:hidden">
-            <StatusBadge status={hedef.status} />
+            <StatusBadge status={proje.status} />
             <span className="text-[11px] font-semibold text-tyro-text-muted bg-tyro-bg px-2 py-0.5 rounded-full">
               {aksiyonlar.length} aksiyon
             </span>
@@ -54,10 +54,10 @@ function HedefNode({ hedef }: { hedef: Hedef }) {
         </div>
         <div className="hidden sm:flex items-center gap-2 shrink-0">
           <div className="w-16 h-1.5 rounded-full bg-tyro-border/50 overflow-hidden">
-            <div className="h-full rounded-full bg-tyro-navy transition-all" style={{ width: `${hedef.progress}%` }} />
+            <div className="h-full rounded-full bg-tyro-navy transition-all" style={{ width: `${proje.progress}%` }} />
           </div>
-          <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums w-8 text-right">%{hedef.progress}</span>
-          <StatusBadge status={hedef.status} />
+          <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums w-8 text-right">%{proje.progress}</span>
+          <StatusBadge status={proje.status} />
           <span className="text-xs font-semibold text-tyro-text-muted bg-tyro-bg px-2 py-0.5 rounded-full">
             {aksiyonlar.length} aksiyon
           </span>
@@ -85,25 +85,25 @@ function HedefNode({ hedef }: { hedef: Hedef }) {
 
 export default function TreePage() {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
   const [search, setSearch] = useState("");
 
-  const filteredHedefler = useMemo(() => {
-    if (!search.trim()) return hedefler;
+  const filteredProjeler = useMemo(() => {
+    if (!search.trim()) return projeler;
     const q = search.toLowerCase();
-    return hedefler.filter((h) => {
+    return projeler.filter((h) => {
       if (h.name.toLowerCase().includes(q) || h.owner.toLowerCase().includes(q)) return true;
-      const aksiyonlar = allAksiyonlar.filter((a) => a.hedefId === h.id);
+      const aksiyonlar = allAksiyonlar.filter((a) => a.projeId === h.id);
       if (aksiyonlar.some((a) => a.name.toLowerCase().includes(q))) return true;
       return false;
     });
-  }, [hedefler, allAksiyonlar, search]);
+  }, [projeler, allAksiyonlar, search]);
 
   const grouped = {
-    "T\u00fcrkiye": filteredHedefler.filter((h) => h.source === "T\u00fcrkiye"),
-    "Kurumsal": filteredHedefler.filter((h) => h.source === "Kurumsal"),
-    "International": filteredHedefler.filter((h) => h.source === "International"),
+    "T\u00fcrkiye": filteredProjeler.filter((h) => h.source === "T\u00fcrkiye"),
+    "Kurumsal": filteredProjeler.filter((h) => h.source === "Kurumsal"),
+    "International": filteredProjeler.filter((h) => h.source === "International"),
   };
 
   return (
@@ -136,11 +136,11 @@ export default function TreePage() {
                 {source}
               </span>
               <span className="text-[11px] text-tyro-text-muted bg-tyro-bg px-2 py-0.5 rounded-full">
-                {items.length} hedef
+                {items.length} proje
               </span>
             </div>
             {items.map((h) => (
-              <HedefNode key={h.id} hedef={h} />
+              <HedefNode key={h.id} proje={h} />
             ))}
           </div>
         ))}

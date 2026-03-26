@@ -18,9 +18,9 @@ export default function MyProgressWidget() {
 
   const rings = useMemo(() => {
     // Hedeflerim: owner olduğum hedeflerin tamamlanma oranı
-    const hedefCompleted = ws.myHedefler.filter((h) => h.status === "Achieved").length;
-    const hedefProgress = ws.myHedefler.length > 0
-      ? Math.round((hedefCompleted / ws.myHedefler.length) * 100)
+    const projeCompleted = ws.myProjeler.filter((h) => h.status === "Achieved").length;
+    const projeProgress = ws.myProjeler.length > 0
+      ? Math.round((projeCompleted / ws.myProjeler.length) * 100)
       : 0;
 
     // Aksiyonlarım: bana atanan aksiyonların tamamlanma oranı
@@ -30,7 +30,7 @@ export default function MyProgressWidget() {
       : 0;
 
     return [
-      { label: t("nav.objectives"), progress: hedefProgress, color: "var(--tyro-navy)", actual: hedefCompleted, total: ws.myHedefler.length },
+      { label: t("nav.objectives"), progress: projeProgress, color: "var(--tyro-navy)", actual: projeCompleted, total: ws.myProjeler.length },
       { label: t("workspace.myActions"), progress: aksiyonProgress, color: "var(--tyro-success)", actual: aksiyonCompleted, total: ws.myAksiyonlar.length },
     ];
   }, [ws, t]);

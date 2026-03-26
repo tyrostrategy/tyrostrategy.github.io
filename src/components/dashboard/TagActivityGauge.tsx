@@ -38,7 +38,7 @@ function CustomTooltip({
         <span className="font-bold text-tyro-text-primary">{d.name}</span>
       </div>
       <div className="text-tyro-text-secondary">
-        {d.count} hedef · ort. %{d.value} ilerleme
+        {d.count} proje · ort. %{d.value} ilerleme
       </div>
     </div>
   );
@@ -47,12 +47,12 @@ function CustomTooltip({
 /* ---------- Main Component ---------- */
 export default function TagActivityGauge() {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const tagDefinitions = useDataStore((s) => s.tagDefinitions);
 
   const tagStats: TagStat[] = useMemo(() => {
     const map = new Map<string, { total: number; count: number }>();
-    for (const h of hedefler) {
+    for (const h of projeler) {
       for (const tag of h.tags ?? []) {
         const entry = map.get(tag) ?? { total: 0, count: 0 };
         entry.total += h.progress;
@@ -76,15 +76,15 @@ export default function TagActivityGauge() {
           fill: def?.color ?? DEFAULT_TAG_COLOR,
         };
       });
-  }, [hedefler, tagDefinitions]);
+  }, [projeler, tagDefinitions]);
 
   const totalTaggedHedef = useMemo(() => {
     const ids = new Set<string>();
-    for (const h of hedefler) {
+    for (const h of projeler) {
       if (h.tags && h.tags.length > 0) ids.add(h.id);
     }
     return ids.size;
-  }, [hedefler]);
+  }, [projeler]);
 
   if (tagStats.length === 0) return null;
 
@@ -94,7 +94,7 @@ export default function TagActivityGauge() {
   return (
     <GlassCard className="flex-1 flex flex-col p-5 min-h-0">
       <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">
-        {t("dashboard.tagDistribution", "Tag Bazlı Hedef Dağılımı")}
+        {t("dashboard.tagDistribution", "Tag Bazlı Proje Dağılımı")}
       </h3>
       <p className="text-[11px] text-tyro-text-secondary mb-3">
         {t("dashboard.tagDistributionDesc", "Etiket bazında ortalama ilerleme")}
@@ -160,7 +160,7 @@ export default function TagActivityGauge() {
                   {stat.name}
                 </p>
                 <p className="text-[10px] text-tyro-text-secondary leading-tight">
-                  {stat.count} hedef · %{stat.value}
+                  {stat.count} proje · %{stat.value}
                 </p>
               </div>
             </div>

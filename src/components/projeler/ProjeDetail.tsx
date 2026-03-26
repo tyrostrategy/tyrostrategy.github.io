@@ -6,28 +6,28 @@ import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import StatusBadge from "@/components/ui/StatusBadge";
-import HedefForm from "@/components/hedefler/HedefForm";
+import ProjeForm from "@/components/projeler/ProjeForm";
 import AksiyonForm from "@/components/aksiyonlar/AksiyonForm";
 import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { progressColor } from "@/lib/colorUtils";
 import { formatDate } from "@/lib/dateUtils";
-import type { Hedef, Aksiyon } from "@/types";
+import type { Proje, Aksiyon } from "@/types";
 
 type DetailMode = "detail" | "editing" | "addAksiyon" | "aksiyonDetail";
 
-interface HedefDetailProps {
-  hedef: Hedef;
+interface ProjeDetailProps {
+  proje: Proje;
   onEdit: () => void;
   onModeChange?: (mode: string) => void;
-  onSelectHedef?: (hedef: Hedef) => void;
+  onSelectHedef?: (proje: Proje) => void;
 }
 
-export default function HedefDetail({
-  hedef,
+export default function ProjeDetail({
+  proje,
   onEdit: _onEdit,
   onModeChange,
   onSelectHedef,
-}: HedefDetailProps) {
+}: ProjeDetailProps) {
   const { t } = useTranslation();
   const [mode, _setMode] = useState<DetailMode>("detail");
   const [selectedAksiyon, setSelectedAksiyon] = useState<Aksiyon | null>(null);
@@ -36,20 +36,20 @@ export default function HedefDetail({
     onModeChange?.(m);
   };
   const sidebarTheme = useSidebarTheme();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const getAksiyonlarByHedefId = useDataStore((s) => s.getAksiyonlarByHedefId);
-  const getHedefById = useDataStore((s) => s.getHedefById);
+  const getProjeById = useDataStore((s) => s.getProjeById);
   const getAksiyonById = useDataStore((s) => s.getAksiyonById);
-  const aksiyonlar = getAksiyonlarByHedefId(hedef.id);
+  const aksiyonlar = getAksiyonlarByHedefId(proje.id);
 
-  const currentHedef = getHedefById(hedef.id) ?? hedef;
+  const currentHedef = getProjeById(proje.id) ?? proje;
 
   const parentHedef = currentHedef.parentObjectiveId
-    ? getHedefById(currentHedef.parentObjectiveId)
+    ? getProjeById(currentHedef.parentObjectiveId)
     : undefined;
 
   const relatedHedefler = currentHedef.parentObjectiveId
-    ? hedefler.filter(
+    ? projeler.filter(
         (h) =>
           h.parentObjectiveId === currentHedef.parentObjectiveId &&
           h.id !== currentHedef.id
@@ -72,8 +72,8 @@ export default function HedefDetail({
           <ArrowLeft size={14} />
           {t("detail.backToObjective")}
         </button>
-        <HedefForm
-          hedef={currentHedef}
+        <ProjeForm
+          proje={currentHedef}
           onSuccess={() => setMode("detail")}
         />
       </div>
@@ -92,7 +92,7 @@ export default function HedefDetail({
           {t("detail.backToObjective")}
         </button>
         <AksiyonForm
-          defaultHedefId={currentHedef.id}
+          defaultProjeId={currentHedef.id}
           onSuccess={() => setMode("detail")}
         />
       </div>
@@ -245,7 +245,7 @@ export default function HedefDetail({
         </div>
       )}
 
-      {/* Ana Hedef (Parent Objective) */}
+      {/* Ana Proje (Parent Objective) */}
       {parentHedef && (
         <>
           <div className="h-px bg-gradient-to-r from-transparent via-tyro-border to-transparent my-3" />

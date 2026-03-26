@@ -14,13 +14,13 @@ import TagChip from "@/components/ui/TagChip";
 import SlidingPanel from "@/components/shared/SlidingPanel";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import AksiyonForm from "@/components/aksiyonlar/AksiyonForm";
-import HedefForm from "@/components/hedefler/HedefForm";
+import ProjeForm from "@/components/projeler/ProjeForm";
 import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { progressColor } from "@/lib/colorUtils";
 import { formatDate } from "@/lib/dateUtils";
 import { STATUS_DOT_COLOR, getStatusLabel } from "@/lib/constants";
 import { toast } from "@/stores/toastStore";
-import type { Hedef, Aksiyon, EntityStatus, Source } from "@/types";
+import type { Proje, Aksiyon, EntityStatus, Source } from "@/types";
 
 // ===== STATUS BAR COLORS =====
 const STATUS_BAR: Record<EntityStatus, string> = {
@@ -37,7 +37,7 @@ const STATUS_BAR: Record<EntityStatus, string> = {
 const PROGRESS_STEPS = [0, 25, 50, 75, 100];
 
 interface MasterDetailViewProps {
-  hedefler: Hedef[];
+  projeler: Proje[];
   onOpenWizard?: () => void;
 }
 
@@ -45,22 +45,22 @@ interface MasterDetailViewProps {
 // MASTER LIST CARD
 // ========================================
 function MasterListCard({
-  hedef,
+  proje,
   aksiyonCount,
   isSelected,
   onClick,
 }: {
-  hedef: Hedef;
+  proje: Proje;
   aksiyonCount: number;
   isSelected: boolean;
   onClick: () => void;
 }) {
   const { t } = useTranslation();
-  const pColor = progressColor(hedef.progress);
+  const pColor = progressColor(proje.progress);
   // Mini circular progress (SVG)
   const radius = 6;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (hedef.progress / 100) * circumference;
+  const offset = circumference - (proje.progress / 100) * circumference;
 
   return (
     <div
@@ -73,35 +73,35 @@ function MasterListCard({
           ? "moving-border shadow-[0_4px_16px_rgba(30,58,95,0.12)] scale-[1.01]"
           : "border border-transparent bg-tyro-bg/40 hover:bg-tyro-surface hover:border-tyro-border/30 hover:shadow-sm"
       }`}
-      style={isSelected ? { "--status-color": STATUS_BAR[hedef.status] || "#10b981" } as React.CSSProperties : undefined}
+      style={isSelected ? { "--status-color": STATUS_BAR[proje.status] || "#10b981" } as React.CSSProperties : undefined}
     >
       {/* Status bar left edge — 6px, vivid color */}
       <div
         className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl"
-        style={{ backgroundColor: STATUS_BAR[hedef.status] }}
+        style={{ backgroundColor: STATUS_BAR[proje.status] }}
       />
 
       <div className="pl-4 pr-3 py-2.5">
         {/* Row 1: Name + Mini circular progress + % */}
         <div className="flex items-start justify-between gap-2 mb-0.5">
           <h4 className="text-[12px] font-semibold text-tyro-text-primary leading-snug line-clamp-2 flex-1">
-            {hedef.name}
+            {proje.name}
           </h4>
           <div className="relative w-[36px] h-[36px] shrink-0 flex items-center justify-center">
             <svg width="36" height="36" className="-rotate-90">
               <defs>
-                <linearGradient id={`pg-${hedef.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id={`pg-${proje.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor={pColor} stopOpacity="0.5" />
                   <stop offset="100%" stopColor={pColor} />
                 </linearGradient>
               </defs>
               <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-tyro-border/10" />
-              <circle cx="18" cy="18" r="15" fill="none" stroke={`url(#pg-${hedef.id})`} strokeWidth="3"
-                strokeDasharray={2 * Math.PI * 15} strokeDashoffset={2 * Math.PI * 15 - (hedef.progress / 100) * 2 * Math.PI * 15} strokeLinecap="round"
+              <circle cx="18" cy="18" r="15" fill="none" stroke={`url(#pg-${proje.id})`} strokeWidth="3"
+                strokeDasharray={2 * Math.PI * 15} strokeDashoffset={2 * Math.PI * 15 - (proje.progress / 100) * 2 * Math.PI * 15} strokeLinecap="round"
                 style={{ transition: "stroke-dashoffset 0.6s cubic-bezier(0.4,0,0.2,1)" }}
               />
             </svg>
-            {hedef.progress >= 100 ? (
+            {proje.progress >= 100 ? (
               <span className="absolute inset-0 flex items-center justify-center">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={pColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
@@ -109,7 +109,7 @@ function MasterListCard({
               </span>
             ) : (
               <span className="absolute inset-0 flex items-center justify-center text-[11px] font-black tabular-nums" style={{ color: pColor }}>
-                {hedef.progress}
+                {proje.progress}
               </span>
             )}
           </div>
@@ -117,18 +117,18 @@ function MasterListCard({
 
         {/* Row 2: Owner + Source badge */}
         <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-[11px] text-tyro-text-muted truncate">{hedef.owner}</span>
+          <span className="text-[11px] text-tyro-text-muted truncate">{proje.owner}</span>
           <span className="text-[11px] px-1.5 py-0.5 rounded bg-tyro-border/20 text-tyro-text-muted font-medium shrink-0">
-            {hedef.source}
+            {proje.source}
           </span>
         </div>
 
         {/* Row 3: Dates + Status */}
         <div className="flex items-center justify-between gap-1">
           <span className="text-[11px] text-tyro-text-muted">
-            {formatDate(hedef.startDate)} → {formatDate(hedef.endDate)}
+            {formatDate(proje.startDate)} → {formatDate(proje.endDate)}
           </span>
-          <StatusBadge status={hedef.status} showTooltip={false} />
+          <StatusBadge status={proje.status} showTooltip={false} />
         </div>
       </div>
     </div>
@@ -186,7 +186,7 @@ function QuickProgressButtons({
 // DETAIL PANEL — RIGHT SIDE
 // ========================================
 function DetailPanel({
-  hedef,
+  proje,
   aksiyonlar,
   onUpdateAksiyon,
   onAddAksiyon,
@@ -197,14 +197,14 @@ function DetailPanel({
   onDeleteHedef,
   parentHedefName,
 }: {
-  hedef: Hedef;
+  proje: Proje;
   aksiyonlar: Aksiyon[];
   onUpdateAksiyon: (id: string, data: Partial<Aksiyon>) => void;
   onAddAksiyon?: () => void;
   onEditHedef?: () => void;
   onEditAksiyon?: (aksiyon: Aksiyon) => void;
   onClickAksiyon?: (aksiyon: Aksiyon) => void;
-  onUpdateHedef?: (data: Partial<Hedef>) => void;
+  onUpdateHedef?: (data: Partial<Proje>) => void;
   onDeleteHedef?: () => void;
   parentHedefName?: string;
 }) {
@@ -263,7 +263,7 @@ function DetailPanel({
 
   return (
     <motion.div
-      key={hedef.id}
+      key={proje.id}
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
@@ -273,21 +273,21 @@ function DetailPanel({
       <div>
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-[20px] font-bold text-tyro-text-primary leading-snug flex-1">
-            {hedef.name}
+            {proje.name}
           </h2>
           {/* Actions moved to FAB */}
         </div>
-        {hedef.description && (
+        {proje.description && (
           <p className="text-[12px] text-tyro-text-muted leading-relaxed mt-1 line-clamp-2">
-            {hedef.description}
+            {proje.description}
           </p>
         )}
         <div className="flex items-center flex-wrap gap-2 mt-1.5">
-          <StatusBadge status={hedef.status} />
-          {hedef.tags && hedef.tags.length > 0 && (
+          <StatusBadge status={proje.status} />
+          {proje.tags && proje.tags.length > 0 && (
             <>
               <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
-              {hedef.tags.map((tag) => (
+              {proje.tags.map((tag) => (
                 <TagChip key={tag} name={tag} size="sm" />
               ))}
             </>
@@ -299,9 +299,9 @@ function DetailPanel({
       <div className="rounded-2xl bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
         {/* Always visible: dates + review date */}
         <div className="grid grid-cols-3 divide-x divide-tyro-border/40">
-          <InfoCell icon={<Calendar size={12} />} label={t("common.startDate")} value={formatDate(hedef.startDate)} />
-          <InfoCell icon={<Calendar size={12} />} label={t("common.endDate")} value={formatDate(hedef.endDate)} />
-          <InfoCell icon={<Clock size={12} />} label={t("forms.objective.reviewDate", "Kontrol")} value={hedef.reviewDate ? formatDate(hedef.reviewDate) : "—"} />
+          <InfoCell icon={<Calendar size={12} />} label={t("common.startDate")} value={formatDate(proje.startDate)} />
+          <InfoCell icon={<Calendar size={12} />} label={t("common.endDate")} value={formatDate(proje.endDate)} />
+          <InfoCell icon={<Clock size={12} />} label={t("forms.objective.reviewDate", "Kontrol")} value={proje.reviewDate ? formatDate(proje.reviewDate) : "—"} />
         </div>
         {/* Expandable: owner, dept, source, participants */}
         <AnimatePresence>
@@ -314,22 +314,22 @@ function DetailPanel({
               className="overflow-hidden"
             >
               <div className="border-t border-tyro-border/15 grid grid-cols-3 divide-x divide-tyro-border/40">
-                <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={hedef.owner} />
-                <InfoCell icon={<Building2 size={12} />} label={t("common.department", "Departman")} value={hedef.department} />
-                <InfoCell icon={<Globe size={12} />} label={t("common.source")} value={hedef.source} />
+                <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={proje.owner} />
+                <InfoCell icon={<Building2 size={12} />} label={t("common.department", "Departman")} value={proje.department} />
+                <InfoCell icon={<Globe size={12} />} label={t("common.source")} value={proje.source} />
               </div>
               {/* Parent Objective */}
               {parentHedefName && (
                 <div className="border-t border-tyro-border/15 px-3 py-2">
-                  <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("forms.objective.parentObjective", "Ana Hedef")}</span>
+                  <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("forms.objective.parentObjective", "Ana Proje")}</span>
                   <p className="text-[11px] text-tyro-text-primary font-medium">{parentHedefName}</p>
                 </div>
               )}
               {/* Participants */}
-              {hedef.participants && hedef.participants.length > 0 && (
+              {proje.participants && proje.participants.length > 0 && (
                 <div className="border-t border-tyro-border/15 px-3 py-2">
                   <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block mb-1">{t("forms.objective.participants", "Katılımcılar")}</span>
-                  <p className="text-[11px] text-tyro-text-secondary">{hedef.participants.join(", ")}</p>
+                  <p className="text-[11px] text-tyro-text-secondary">{proje.participants.join(", ")}</p>
                 </div>
               )}
               {/* Tags already shown in header */}
@@ -337,12 +337,12 @@ function DetailPanel({
               <div className="border-t border-tyro-border/15 px-3 py-2 flex gap-4">
                 <div>
                   <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block">ID</span>
-                  <span className="text-[11px] font-mono text-tyro-text-secondary tabular-nums">{hedef.id}</span>
+                  <span className="text-[11px] font-mono text-tyro-text-secondary tabular-nums">{proje.id}</span>
                 </div>
-                {hedef.createdBy && (
+                {proje.createdBy && (
                   <div>
                     <span className="text-[11px] uppercase tracking-wider text-tyro-text-muted block">{t("common.createdBy", "Oluşturan")}</span>
-                    <span className="text-[11px] text-tyro-text-secondary">{hedef.createdBy}{hedef.createdAt ? ` · ${formatDate(hedef.createdAt)}` : ""}</span>
+                    <span className="text-[11px] text-tyro-text-secondary">{proje.createdBy}{proje.createdAt ? ` · ${formatDate(proje.createdAt)}` : ""}</span>
                   </div>
                 )}
               </div>
@@ -364,7 +364,7 @@ function DetailPanel({
 
       {/* === PROGRESS — gradient bar matching AksiyonForm style === */}
       {(() => {
-        const p = hedef.progress;
+        const p = proje.progress;
         const barGradient = p <= 25 ? "from-red-400 to-red-500"
           : p <= 50 ? "from-amber-400 to-amber-500"
           : p <= 75 ? "from-yellow-400 to-emerald-400"
@@ -533,10 +533,10 @@ function AksiyonRow({
 // ========================================
 // MAIN: MASTER-DETAIL VIEW
 // ========================================
-export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetailViewProps) {
+export default function MasterDetailView({ projeler, onOpenWizard }: MasterDetailViewProps) {
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
-  const { filterHedefler } = usePermissions();
+  const { filterProjeler } = usePermissions();
 
   // Filters
   const [search, setSearch] = useState("");
@@ -555,7 +555,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
 
   // Filtered + sorted list
   const filtered = useMemo(() => {
-    let list = filterHedefler(hedefler);
+    let list = filterProjeler(projeler);
     if (search.trim()) {
       const q = search.toLocaleLowerCase("tr");
       list = list.filter((h) => {
@@ -579,13 +579,13 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
       return sortAsc ? cmp : -cmp;
     });
     return sorted;
-  }, [hedefler, search, statusFilter, sourceFilter, sortBy, sortAsc, filterHedefler]);
+  }, [projeler, search, statusFilter, sourceFilter, sortBy, sortAsc, filterProjeler]);
 
   // Aksiyonlar from store — fetched once at top level
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
-  const updateHedef = useDataStore((s) => s.updateHedef);
-  const deleteHedef = useDataStore((s) => s.deleteHedef);
+  const updateProje = useDataStore((s) => s.updateProje);
+  const deleteProje = useDataStore((s) => s.deleteProje);
   const deleteAksiyon = useDataStore((s) => s.deleteAksiyon);
 
   // Confirm dialog state
@@ -595,7 +595,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
 
   // Panel state for forms
   const [aksiyonPanelOpen, setAksiyonPanelOpen] = useState(false);
-  const [hedefPanelOpen, setHedefPanelOpen] = useState(false);
+  const [projePanelOpen, setHedefPanelOpen] = useState(false);
   const [editingAksiyon, setEditingAksiyon] = useState<Aksiyon | null>(null);
   const [viewingAksiyon, setViewingAksiyon] = useState<Aksiyon | null>(null);
   const [fabOpen, setFabOpen] = useState(false);
@@ -605,7 +605,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
   const [reviewDateDraft, setReviewDateDraft] = useState(todayStr);
   const aksiyonCountMap = useMemo(() => {
     const map = new Map<string, number>();
-    for (const a of aksiyonlar) map.set(a.hedefId, (map.get(a.hedefId) ?? 0) + 1);
+    for (const a of aksiyonlar) map.set(a.projeId, (map.get(a.projeId) ?? 0) + 1);
     return map;
   }, [aksiyonlar]);
 
@@ -617,13 +617,13 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
     }
   }, [firstFilteredId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const selectedHedef = useMemo(
-    () => hedefler.find((h) => h.id === selectedId),
-    [hedefler, selectedId]
+  const selectedProje = useMemo(
+    () => projeler.find((h) => h.id === selectedId),
+    [projeler, selectedId]
   );
 
   const selectedAksiyonlar = useMemo(
-    () => selectedId ? aksiyonlar.filter((a) => a.hedefId === selectedId) : [],
+    () => selectedId ? aksiyonlar.filter((a) => a.projeId === selectedId) : [],
     [aksiyonlar, selectedId]
   );
 
@@ -744,7 +744,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
         {filtered.map((h) => (
           <MasterListCard
             key={h.id}
-            hedef={h}
+            proje={h}
             aksiyonCount={aksiyonCountMap.get(h.id) ?? 0}
             isSelected={h.id === selectedId}
             onClick={() => handleSelectHedef(h.id)}
@@ -768,7 +768,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
 
       {/* Count footer */}
       <div className="px-3 py-2 border-t border-tyro-border/20 text-[11px] text-tyro-text-secondary text-center font-medium">
-        <span className="text-tyro-text-primary font-bold">{filtered.length}</span> / {hedefler.length} hedef
+        <span className="text-tyro-text-primary font-bold">{filtered.length}</span> / {projeler.length} proje
       </div>
     </div>
   );
@@ -787,21 +787,21 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
           onClick={() => setMobileDetail(false)}
           className="flex items-center gap-2 text-[13px] font-semibold text-tyro-navy cursor-pointer active:opacity-70"
         >
-          <ArrowLeft size={16} /> {t("detail.backToList", "Hedef Listesi")}
+          <ArrowLeft size={16} /> {t("detail.backToList", "Proje Listesi")}
         </button>
       </div>
 
-      {selectedHedef ? (
+      {selectedProje ? (
         <DetailPanel
-          hedef={selectedHedef}
+          proje={selectedProje}
           aksiyonlar={selectedAksiyonlar}
           onUpdateAksiyon={updateAksiyon}
           onAddAksiyon={() => setAksiyonPanelOpen(true)}
           onEditHedef={() => setHedefPanelOpen(true)}
           onClickAksiyon={(a) => { setViewingAksiyon(a); }}
           onEditAksiyon={(a) => { setEditingAksiyon(a); }}
-          onUpdateHedef={(data) => selectedHedef && updateHedef(selectedHedef.id, data)}
-          parentHedefName={selectedHedef.parentObjectiveId ? hedefler.find((h) => h.id === selectedHedef.parentObjectiveId)?.name : undefined}
+          onUpdateHedef={(data) => selectedProje && updateProje(selectedProje.id, data)}
+          parentHedefName={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId)?.name : undefined}
         />
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
@@ -831,7 +831,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
       {rightPanel}
 
       {/* ===== ACTIONS FAB — İşlemler ===== */}
-      {selectedHedef && (
+      {selectedProje && (
       <div className="fixed bottom-24 right-20 lg:bottom-6 lg:right-24 z-40">
         <AnimatePresence>
           {actionsFabOpen && (
@@ -879,9 +879,9 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
                       className="w-full rounded-lg text-[11px] font-semibold bg-teal-500 text-white"
                       startContent={<Check size={13} />}
                       onPress={() => {
-                        updateHedef(selectedHedef.id, { reviewDate: reviewDateDraft });
+                        updateProje(selectedProje.id, { reviewDate: reviewDateDraft });
                         toast.success("Kontrol Tarihi Güncellendi", {
-                          message: selectedHedef.name,
+                          message: selectedProje.name,
                           details: [{ label: "Yeni Tarih", value: reviewDateDraft }],
                         });
                         setReviewPopoverOpen(false);
@@ -904,7 +904,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
                   </div>
                   <div className="text-left min-w-0">
                     <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">Düzenle</p>
-                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Hedef bilgilerini düzenle</p>
+                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Proje bilgilerini düzenle</p>
                   </div>
                 </button>
                 <div className="h-px bg-tyro-border/15 mx-4" />
@@ -913,11 +913,11 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
                   type="button"
                   onClick={() => {
                     setActionsFabOpen(false);
-                    setConfirmMessage(`"${selectedHedef.name}" hedefini silmek istediğinize emin misiniz?`);
+                    setConfirmMessage(`"${selectedProje.name}" hedefini silmek istediğinize emin misiniz?`);
                     setConfirmAction(() => () => {
-                      const ok = deleteHedef(selectedHedef.id);
+                      const ok = deleteProje(selectedProje.id);
                       if (ok) {
-                        toast.success("Silindi", { message: selectedHedef.name });
+                        toast.success("Silindi", { message: selectedProje.name });
                         setSelectedId(null);
                       } else {
                         toast.error("Silinemedi", { message: "Bu hedefe bağlı aksiyonlar var." });
@@ -983,8 +983,8 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
                     <Crosshair size={15} className="text-white" />
                   </div>
                   <div className="text-left min-w-0">
-                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">Hedef Sihirbazı</p>
-                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Adım adım hedef oluştur</p>
+                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">Proje Sihirbazı</p>
+                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Adım adım proje oluştur</p>
                   </div>
                 </button>
                 <div className="h-px bg-tyro-border/15 mx-4" />
@@ -1026,24 +1026,24 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
         title="Yeni Aksiyon Oluştur"
         icon={<CircleCheckBig size={16} className="text-emerald-500" />}
       >
-        {selectedHedef && (
+        {selectedProje && (
           <AksiyonForm
-            defaultHedefId={selectedHedef.id}
+            defaultProjeId={selectedProje.id}
             onSuccess={() => setAksiyonPanelOpen(false)}
           />
         )}
       </SlidingPanel>
 
-      {/* Hedef Düzenle SlidingPanel */}
+      {/* Proje Düzenle SlidingPanel */}
       <SlidingPanel
-        isOpen={hedefPanelOpen}
+        isOpen={projePanelOpen}
         onClose={() => setHedefPanelOpen(false)}
-        title="Hedef Kartını Düzenle"
+        title="Proje Kartını Düzenle"
         icon={<Pencil size={16} className="text-amber-500" />}
       >
-        {selectedHedef && (
-          <HedefForm
-            hedef={selectedHedef}
+        {selectedProje && (
+          <ProjeForm
+            proje={selectedProje}
             onSuccess={() => setHedefPanelOpen(false)}
           />
         )}
@@ -1084,7 +1084,7 @@ export default function MasterDetailView({ hedefler, onOpenWizard }: MasterDetai
         {editingAksiyon && (
           <AksiyonForm
             aksiyon={editingAksiyon}
-            defaultHedefId={editingAksiyon.hedefId}
+            defaultProjeId={editingAksiyon.projeId}
             onSuccess={() => setEditingAksiyon(null)}
           />
         )}

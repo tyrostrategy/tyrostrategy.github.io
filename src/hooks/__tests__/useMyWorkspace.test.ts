@@ -3,7 +3,7 @@ import { renderHook } from "@testing-library/react";
 import { useMyWorkspace } from "../useMyWorkspace";
 import { useDataStore } from "@/stores/dataStore";
 import { useUIStore } from "@/stores/uiStore";
-import type { Hedef, Proje, Gorev } from "@/types";
+import type { Proje, Proje, Gorev } from "@/types";
 
 // Mock i18n
 vi.mock("@/lib/i18n", () => ({
@@ -16,14 +16,14 @@ vi.mock("@/lib/i18n", () => ({
 
 // Mock mock-adapter
 vi.mock("@/lib/data/mock-adapter", () => ({
-  getInitialHedefler: () => [],
+  getInitialProjeler: () => [],
   getInitialProjeler: () => [],
   getInitialGorevler: () => [],
 }));
 
-const hedef1: Hedef = {
+const hedef1: Proje = {
   id: "h1",
-  name: "Hedef 1",
+  name: "Proje 1",
   source: "Kurumsal",
   status: "On Track",
   owner: "Cenk Şayli",
@@ -32,9 +32,9 @@ const hedef1: Hedef = {
   endDate: "2024-12-31",
 };
 
-const hedef2: Hedef = {
+const hedef2: Proje = {
   id: "h2",
-  name: "Hedef 2",
+  name: "Proje 2",
   source: "Türkiye",
   status: "On Track",
   owner: "Kemal Yıldız",
@@ -45,7 +45,7 @@ const hedef2: Hedef = {
 
 const proje1: Proje = {
   id: "p1",
-  hedefId: "h1",
+  projeId: "h1",
   name: "Proje 1",
   department: "IT",
   projectLeader: "Cenk Şayli",
@@ -58,7 +58,7 @@ const proje1: Proje = {
 
 const proje2: Proje = {
   id: "p2",
-  hedefId: "h2",
+  projeId: "h2",
   name: "Proje 2",
   department: "IT",
   projectLeader: "Kemal Yıldız",
@@ -71,7 +71,7 @@ const proje2: Proje = {
 
 const proje3: Proje = {
   id: "p3",
-  hedefId: "h2",
+  projeId: "h2",
   name: "Proje 3",
   department: "Finans",
   projectLeader: "Kemal Yıldız",
@@ -129,7 +129,7 @@ const gorev4: Gorev = {
 beforeEach(() => {
   useUIStore.setState({ mockUserName: "Cenk Şayli", mockUserRole: "Admin" });
   useDataStore.setState({
-    hedefler: [hedef1, hedef2],
+    projeler: [hedef1, hedef2],
     projeler: [proje1, proje2, proje3],
     gorevler: [gorev1, gorev2, gorev3, gorev4],
   });
@@ -249,10 +249,10 @@ describe("useMyWorkspace", () => {
       expect(result.current.upcomingDeadlines.some((d) => d.id === "g1")).toBe(false);
     });
 
-    it("includes non-achieved hedef, proje, gorev deadlines", () => {
+    it("includes non-achieved proje, proje, gorev deadlines", () => {
       const { result } = renderHook(() => useMyWorkspace());
       const types = result.current.upcomingDeadlines.map((d) => d.type);
-      // Should have hedef, proje, and gorev types
+      // Should have proje, proje, and gorev types
       expect(types).toContain("gorev");
       expect(types).toContain("proje");
     });

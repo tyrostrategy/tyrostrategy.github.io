@@ -33,10 +33,10 @@ export default function AksiyonDetail({
   };
   void useSidebarTheme();
   const getAksiyonById = useDataStore((s) => s.getAksiyonById);
-  const getHedefById = useDataStore((s) => s.getHedefById);
+  const getProjeById = useDataStore((s) => s.getProjeById);
 
   const currentAksiyon = getAksiyonById(aksiyon.id) ?? aksiyon;
-  const hedef = getHedefById(currentAksiyon.hedefId);
+  const proje = getProjeById(currentAksiyon.projeId);
 
   if (mode === "editing") {
     return (
@@ -51,7 +51,7 @@ export default function AksiyonDetail({
         </button>
         <AksiyonForm
           aksiyon={currentAksiyon}
-          defaultHedefId={currentAksiyon.hedefId}
+          defaultProjeId={currentAksiyon.projeId}
           onSuccess={() => setMode("detail")}
         />
       </div>
@@ -81,9 +81,9 @@ export default function AksiyonDetail({
           <div className="mt-1.5">
             <StatusBadge status={currentAksiyon.status} />
           </div>
-          {hedef && (
+          {proje && (
             <p className="mt-1 text-[12px] text-tyro-text-muted">
-              {t("nav.objectives")}: {hedef.name}
+              {t("nav.objectives")}: {proje.name}
             </p>
           )}
         </div>

@@ -14,7 +14,7 @@ vi.mock("@/lib/i18n", () => ({
 
 // Mock mock-adapter
 vi.mock("@/lib/data/mock-adapter", () => ({
-  getInitialHedefler: () => [],
+  getInitialProjeler: () => [],
   getInitialProjeler: () => [],
   getInitialGorevler: () => [],
 }));

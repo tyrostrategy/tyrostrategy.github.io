@@ -14,15 +14,15 @@ import { clsx } from "clsx";
 import PageHeader from "@/components/layout/PageHeader";
 import StatusBadge from "@/components/ui/StatusBadge";
 import SlidingPanel from "@/components/shared/SlidingPanel";
-import HedefDetail from "@/components/hedefler/HedefDetail";
+import ProjeDetail from "@/components/projeler/ProjeDetail";
 import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { useDataStore } from "@/stores/dataStore";
-import HedefAksiyonWizard from "@/components/wizard/HedefAksiyonWizard";
+import ProjeAksiyonWizard from "@/components/wizard/ProjeAksiyonWizard";
 import WizardHeader from "@/components/wizard/WizardHeader";
 import MasterDetailView from "@/components/karargah/MasterDetailView";
 import { getStatusLabel } from "@/lib/constants";
 import { formatDate } from "@/lib/dateUtils";
-import type { Hedef, Aksiyon, EntityStatus, Source } from "@/types";
+import type { Proje, Aksiyon, EntityStatus, Source } from "@/types";
 import i18n from "@/lib/i18n";
 
 // ─── Tab types ────────────────────────────────────────────────
@@ -64,7 +64,7 @@ const LABEL_COL_W = 240;
 // ─── Main Component ──────────────────────────────────────────
 export default function StratejikKarargahPage() {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
 
@@ -73,10 +73,10 @@ export default function StratejikKarargahPage() {
 
   // ─── Sliding panel state ─────────────────────────────────
   const [panelOpen, setPanelOpen] = useState(false);
-  const [panelHedef, setPanelHedef] = useState<Hedef | null>(null);
+  const [panelHedef, setPanelHedef] = useState<Proje | null>(null);
   const [panelAksiyon, setPanelAksiyon] = useState<Aksiyon | null>(null);
 
-  const openHedefPanel = useCallback((h: Hedef) => {
+  const openHedefPanel = useCallback((h: Proje) => {
     setPanelHedef(h);
     setPanelAksiyon(null);
     setPanelOpen(true);
@@ -149,13 +149,13 @@ export default function StratejikKarargahPage() {
       {/* Tab content */}
       {activeTab === "master" && (
         <MasterDetailView
-          hedefler={hedefler}
+          projeler={projeler}
           onOpenWizard={() => setWizardOpen(true)}
         />
       )}
       {activeTab === "tablo" && (
         <TabloView
-          hedefler={hedefler}
+          projeler={projeler}
           aksiyonlar={aksiyonlar}
           onHedefClick={openHedefPanel}
           onAksiyonClick={openAksiyonPanel}
@@ -163,7 +163,7 @@ export default function StratejikKarargahPage() {
       )}
       {activeTab === "kanban" && (
         <KanbanView
-          hedefler={hedefler}
+          projeler={projeler}
           aksiyonlar={aksiyonlar}
           updateAksiyon={updateAksiyon}
           onAksiyonClick={openAksiyonPanel}
@@ -172,8 +172,8 @@ export default function StratejikKarargahPage() {
       {/* Detail panel */}
       <SlidingPanel isOpen={panelOpen} onClose={closePanel} title={panelTitle}>
         {panelHedef && (
-          <HedefDetail
-            hedef={panelHedef}
+          <ProjeDetail
+            proje={panelHedef}
             onEdit={() => {}}
             onModeChange={() => {}}
           />
@@ -191,7 +191,7 @@ export default function StratejikKarargahPage() {
         maxWidth={680}
         headerContent={<WizardHeader />}
       >
-        {wizardOpen && <HedefAksiyonWizard onClose={() => setWizardOpen(false)} />}
+        {wizardOpen && <ProjeAksiyonWizard onClose={() => setWizardOpen(false)} />}
       </SlidingPanel>
     </div>
   );
@@ -202,14 +202,14 @@ export default function StratejikKarargahPage() {
 // ═══════════════════════════════════════════════════════════════
 
 function TabloView({
-  hedefler,
+  projeler,
   aksiyonlar,
   onHedefClick,
   onAksiyonClick,
 }: {
-  hedefler: Hedef[];
+  projeler: Proje[];
   aksiyonlar: Aksiyon[];
-  onHedefClick: (h: Hedef) => void;
+  onHedefClick: (h: Proje) => void;
   onAksiyonClick: (a: Aksiyon) => void;
 }) {
   const { t } = useTranslation();
@@ -228,13 +228,13 @@ function TabloView({
   };
 
   const filtered = useMemo(() => {
-    let result = hedefler;
+    let result = projeler;
     if (search.trim()) {
       const q = search.toLocaleLowerCase("tr");
       result = result.filter((h) => {
         const hedefStr = [h.name, h.description, h.owner, h.department, h.source, h.status, h.startDate, h.endDate, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
         if (hedefStr.includes(q)) return true;
-        const childActions = aksiyonlar.filter((a) => a.hedefId === h.id);
+        const childActions = aksiyonlar.filter((a) => a.projeId === h.id);
         return childActions.some((a) => [a.name, a.description, a.owner].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q));
       });
     }
@@ -245,7 +245,7 @@ function TabloView({
       result = result.filter((h) => h.source === sourceFilter);
     }
     return result;
-  }, [hedefler, aksiyonlar, search, statusFilter, sourceFilter]);
+  }, [projeler, aksiyonlar, search, statusFilter, sourceFilter]);
 
   return (
     <div>
@@ -302,15 +302,15 @@ function TabloView({
             {t("common.noResults")}
           </div>
         ) : (
-          filtered.map((hedef) => {
-            const childAksiyonlar = aksiyonlar.filter((a) => a.hedefId === hedef.id);
-            const isExpanded = expandedIds.has(hedef.id);
+          filtered.map((proje) => {
+            const childAksiyonlar = aksiyonlar.filter((a) => a.projeId === proje.id);
+            const isExpanded = expandedIds.has(proje.id);
             return (
-              <div key={hedef.id}>
-                {/* Hedef row */}
+              <div key={proje.id}>
+                {/* Proje row */}
                 <div
                   className="grid grid-cols-[minmax(250px,2fr)_100px_120px_130px_100px_100px_100px_100px] gap-2 px-4 py-3 hover:bg-tyro-bg/40 transition-colors items-center cursor-pointer"
-                  onClick={() => toggleExpand(hedef.id)}
+                  onClick={() => toggleExpand(proje.id)}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     {childAksiyonlar.length > 0 ? (
@@ -326,10 +326,10 @@ function TabloView({
                     )}
                     <Target size={14} className="text-tyro-gold shrink-0" />
                     <button
-                      onClick={(e) => { e.stopPropagation(); onHedefClick(hedef); }}
+                      onClick={(e) => { e.stopPropagation(); onHedefClick(proje); }}
                       className="text-sm font-semibold text-tyro-text-primary truncate hover:text-tyro-navy transition-colors text-left cursor-pointer"
                     >
-                      {hedef.name}
+                      {proje.name}
                     </button>
                     {childAksiyonlar.length > 0 && (
                       <span className="text-[11px] text-tyro-text-muted bg-tyro-bg px-1.5 py-0.5 rounded-full shrink-0">
@@ -337,20 +337,20 @@ function TabloView({
                       </span>
                     )}
                   </div>
-                  <span className={clsx("text-[11px] font-semibold px-2 py-0.5 rounded-full text-center", sourceBadgeClasses[hedef.source] || "bg-tyro-bg text-tyro-text-muted")}>
-                    {hedef.source}
+                  <span className={clsx("text-[11px] font-semibold px-2 py-0.5 rounded-full text-center", sourceBadgeClasses[proje.source] || "bg-tyro-bg text-tyro-text-muted")}>
+                    {proje.source}
                   </span>
-                  <StatusBadge status={hedef.status} />
-                  <span className="text-xs text-tyro-text-secondary truncate">{hedef.owner}</span>
+                  <StatusBadge status={proje.status} />
+                  <span className="text-xs text-tyro-text-secondary truncate">{proje.owner}</span>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-1.5 rounded-full bg-tyro-border/50 overflow-hidden">
-                      <div className="h-full rounded-full bg-tyro-navy transition-all" style={{ width: `${hedef.progress}%` }} />
+                      <div className="h-full rounded-full bg-tyro-navy transition-all" style={{ width: `${proje.progress}%` }} />
                     </div>
-                    <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums">%{hedef.progress}</span>
+                    <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums">%{proje.progress}</span>
                   </div>
-                  <span className="text-xs text-tyro-text-muted truncate">{hedef.department}</span>
-                  <span className="text-xs text-tyro-text-muted tabular-nums">{formatDate(hedef.startDate)}</span>
-                  <span className="text-xs text-tyro-text-muted tabular-nums">{formatDate(hedef.endDate)}</span>
+                  <span className="text-xs text-tyro-text-muted truncate">{proje.department}</span>
+                  <span className="text-xs text-tyro-text-muted tabular-nums">{formatDate(proje.startDate)}</span>
+                  <span className="text-xs text-tyro-text-muted tabular-nums">{formatDate(proje.endDate)}</span>
                 </div>
 
                 {/* Aksiyon sub-rows */}
@@ -407,12 +407,12 @@ function TabloView({
             {t("common.noResults")}
           </div>
         ) : (
-          filtered.map((hedef) => {
-            const childAksiyonlar = aksiyonlar.filter((a) => a.hedefId === hedef.id);
-            const isExpanded = expandedIds.has(hedef.id);
+          filtered.map((proje) => {
+            const childAksiyonlar = aksiyonlar.filter((a) => a.projeId === proje.id);
+            const isExpanded = expandedIds.has(proje.id);
             return (
-              <div key={hedef.id} className="glass-card p-4">
-                <div className="flex items-start gap-2 mb-2" onClick={() => toggleExpand(hedef.id)}>
+              <div key={proje.id} className="glass-card p-4">
+                <div className="flex items-start gap-2 mb-2" onClick={() => toggleExpand(proje.id)}>
                   {childAksiyonlar.length > 0 && (
                     <ChevronDown
                       size={14}
@@ -424,25 +424,25 @@ function TabloView({
                   )}
                   <div className="flex-1 min-w-0">
                     <button
-                      onClick={(e) => { e.stopPropagation(); onHedefClick(hedef); }}
+                      onClick={(e) => { e.stopPropagation(); onHedefClick(proje); }}
                       className="text-sm font-bold text-tyro-text-primary text-left cursor-pointer hover:text-tyro-navy"
                     >
-                      {hedef.name}
+                      {proje.name}
                     </button>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className={clsx("text-[11px] font-semibold px-2 py-0.5 rounded-full", sourceBadgeClasses[hedef.source])}>
-                        {hedef.source}
+                      <span className={clsx("text-[11px] font-semibold px-2 py-0.5 rounded-full", sourceBadgeClasses[proje.source])}>
+                        {proje.source}
                       </span>
-                      <StatusBadge status={hedef.status} />
-                      <span className="text-[11px] text-tyro-text-muted">{hedef.owner}</span>
+                      <StatusBadge status={proje.status} />
+                      <span className="text-[11px] text-tyro-text-muted">{proje.owner}</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
                   <div className="flex-1 h-1.5 rounded-full bg-tyro-border/50 overflow-hidden">
-                    <div className="h-full rounded-full bg-tyro-navy" style={{ width: `${hedef.progress}%` }} />
+                    <div className="h-full rounded-full bg-tyro-navy" style={{ width: `${proje.progress}%` }} />
                   </div>
-                  <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums">%{hedef.progress}</span>
+                  <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums">%{proje.progress}</span>
                 </div>
                 <AnimatePresence>
                   {isExpanded && childAksiyonlar.length > 0 && (
@@ -481,12 +481,12 @@ function TabloView({
 // ═══════════════════════════════════════════════════════════════
 
 function KanbanView({
-  hedefler,
+  projeler,
   aksiyonlar,
   updateAksiyon,
   onAksiyonClick,
 }: {
-  hedefler: Hedef[];
+  projeler: Proje[];
   aksiyonlar: Aksiyon[];
   updateAksiyon: (id: string, data: Partial<Aksiyon>) => void;
   onAksiyonClick: (a: Aksiyon) => void;
@@ -500,10 +500,10 @@ function KanbanView({
     if (!kanbanSearch.trim()) return aksiyonlar;
     const q = kanbanSearch.toLocaleLowerCase("tr");
     return aksiyonlar.filter((a) => {
-      const hedefName = hedefler.find((h) => h.id === a.hedefId)?.name ?? "";
+      const hedefName = projeler.find((h) => h.id === a.projeId)?.name ?? "";
       return [a.name, a.description, a.owner, hedefName, a.status].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
     });
-  }, [aksiyonlar, hedefler, kanbanSearch]);
+  }, [aksiyonlar, projeler, kanbanSearch]);
 
   const columns = useMemo(() => {
     const map: Record<EntityStatus, Aksiyon[]> = {
@@ -519,8 +519,8 @@ function KanbanView({
     return map;
   }, [filteredAksiyonlar]);
 
-  const getHedefName = (hedefId: string) =>
-    hedefler.find((h) => h.id === hedefId)?.name || "";
+  const getHedefName = (projeId: string) =>
+    projeler.find((h) => h.id === projeId)?.name || "";
 
   const handleDragStart = (e: React.DragEvent, aksiyonId: string) => {
     setDraggedId(aksiyonId);
@@ -609,9 +609,9 @@ function KanbanView({
                       isDragging && "opacity-40 scale-95"
                     )}
                   >
-                    {/* Hedef tag */}
+                    {/* Proje tag */}
                     <p className="text-[11px] font-medium text-tyro-text-muted truncate mb-1">
-                      {getHedefName(aksiyon.hedefId)}
+                      {getHedefName(aksiyon.projeId)}
                     </p>
                     {/* Aksiyon name */}
                     <button
@@ -659,10 +659,10 @@ function KanbanView({
 
 function GanttView({
   aksiyonlar,
-  hedefler,
+  projeler,
 }: {
   aksiyonlar: Aksiyon[];
-  hedefler: Hedef[];
+  projeler: Proje[];
 }) {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
@@ -773,8 +773,8 @@ function GanttView({
     return off >= 0 && off <= 100 ? off : -1;
   }, [tlMin, tlDays]);
 
-  const getHedefSource = (hedefId: string) =>
-    hedefler.find((h) => h.id === hedefId)?.source || "Kurumsal";
+  const getHedefSource = (projeId: string) =>
+    projeler.find((h) => h.id === projeId)?.source || "Kurumsal";
 
   const barPos = (task: Aksiyon) => {
     const s = Math.max(new Date(task.startDate).getTime(), tlMin.getTime());
@@ -872,13 +872,13 @@ function GanttView({
           </div>
         ) : (
           tasks.map((task) => {
-            const color = sourceColors[getHedefSource(task.hedefId)] || "var(--tyro-navy)";
+            const color = sourceColors[getHedefSource(task.projeId)] || "var(--tyro-navy)";
             return (
               <div key={task.id} className="glass-card px-4 py-3">
                 <div className="flex items-start gap-2 mb-2">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0 mt-1" style={{ backgroundColor: color }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-medium text-tyro-text-muted truncate">{hedefler.find((h) => h.id === task.hedefId)?.name}</p>
+                    <p className="text-[11px] font-medium text-tyro-text-muted truncate">{projeler.find((h) => h.id === task.projeId)?.name}</p>
                     <p className="text-sm font-semibold text-tyro-text-primary leading-snug">{task.name}</p>
                     <p className="text-[11px] text-tyro-text-muted mt-0.5">
                       {new Date(task.startDate).toLocaleDateString(i18n.language === "en" ? "en-US" : "tr-TR", { day: "2-digit", month: "short", year: "numeric" })}
@@ -928,7 +928,7 @@ function GanttView({
               <div className="flex flex-col gap-0.5 min-w-[900px] mt-1">
                 {tasks.map((task, idx) => {
                   const { left, width } = barPos(task);
-                  const color = sourceColors[getHedefSource(task.hedefId)] || "var(--tyro-navy)";
+                  const color = sourceColors[getHedefSource(task.projeId)] || "var(--tyro-navy)";
                   const realStart = new Date(task.startDate);
                   const isClipped = zoom === "all" && realStart.getTime() < tlMin.getTime();
                   const clippedYear = realStart.getFullYear();
@@ -940,8 +940,8 @@ function GanttView({
                     >
                       <div className="shrink-0 flex items-center gap-2 px-2" style={{ width: LABEL_COL_W }}>
                         <span className="w-2 h-2 rounded-full shrink-0 mt-1" style={{ backgroundColor: color }} />
-                        <div className="flex flex-col truncate flex-1 leading-tight" title={`${hedefler.find((h) => h.id === task.hedefId)?.name ?? ""} \u203A ${task.name}`}>
-                          <span className="text-[11px] text-tyro-text-muted truncate">{hedefler.find((h) => h.id === task.hedefId)?.name}</span>
+                        <div className="flex flex-col truncate flex-1 leading-tight" title={`${projeler.find((h) => h.id === task.projeId)?.name ?? ""} \u203A ${task.name}`}>
+                          <span className="text-[11px] text-tyro-text-muted truncate">{projeler.find((h) => h.id === task.projeId)?.name}</span>
                           <span className="text-[11px] text-tyro-text-secondary truncate">{task.name}</span>
                         </div>
                         {isClipped && (
@@ -1045,10 +1045,10 @@ function WBSAksiyonNode({ aksiyon }: { aksiyon: Aksiyon }) {
   );
 }
 
-function WBSHedefNode({ hedef }: { hedef: Hedef }) {
+function WBSHedefNode({ proje }: { proje: Proje }) {
   const [expanded, setExpanded] = useState(false);
   const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const childAksiyonlar = allAksiyonlar.filter((a) => a.hedefId === hedef.id);
+  const childAksiyonlar = allAksiyonlar.filter((a) => a.projeId === proje.id);
 
   return (
     <div className="mb-1">
@@ -1064,12 +1064,12 @@ function WBSHedefNode({ hedef }: { hedef: Hedef }) {
           <Target size={14} className="text-tyro-gold" />
         </div>
         <div className="flex-1 min-w-0">
-          <span className="text-sm font-bold text-tyro-text-primary block">{hedef.name}</span>
+          <span className="text-sm font-bold text-tyro-text-primary block">{proje.name}</span>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-[11px] text-tyro-text-muted truncate">{hedef.source} · {hedef.owner}</span>
+            <span className="text-[11px] text-tyro-text-muted truncate">{proje.source} · {proje.owner}</span>
           </div>
           <div className="flex items-center gap-2 mt-1 sm:hidden">
-            <StatusBadge status={hedef.status} />
+            <StatusBadge status={proje.status} />
             <span className="text-[11px] font-semibold text-tyro-text-muted bg-tyro-bg px-2 py-0.5 rounded-full">
               {childAksiyonlar.length} aksiyon
             </span>
@@ -1077,10 +1077,10 @@ function WBSHedefNode({ hedef }: { hedef: Hedef }) {
         </div>
         <div className="hidden sm:flex items-center gap-2 shrink-0">
           <div className="w-16 h-1.5 rounded-full bg-tyro-border/50 overflow-hidden">
-            <div className="h-full rounded-full bg-tyro-navy transition-all" style={{ width: `${hedef.progress}%` }} />
+            <div className="h-full rounded-full bg-tyro-navy transition-all" style={{ width: `${proje.progress}%` }} />
           </div>
-          <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums w-8 text-right">%{hedef.progress}</span>
-          <StatusBadge status={hedef.status} />
+          <span className="text-[11px] font-semibold text-tyro-text-muted tabular-nums w-8 text-right">%{proje.progress}</span>
+          <StatusBadge status={proje.status} />
           <span className="text-xs font-semibold text-tyro-text-muted bg-tyro-bg px-2 py-0.5 rounded-full">
             {childAksiyonlar.length} aksiyon
           </span>
@@ -1107,30 +1107,30 @@ function WBSHedefNode({ hedef }: { hedef: Hedef }) {
 }
 
 function WBSView({
-  hedefler,
+  projeler,
   aksiyonlar,
 }: {
-  hedefler: Hedef[];
+  projeler: Proje[];
   aksiyonlar: Aksiyon[];
 }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
 
-  const filteredHedefler = useMemo(() => {
-    if (!search.trim()) return hedefler;
+  const filteredProjeler = useMemo(() => {
+    if (!search.trim()) return projeler;
     const q = search.toLowerCase();
-    return hedefler.filter((h) => {
+    return projeler.filter((h) => {
       if (h.name.toLowerCase().includes(q) || h.owner.toLowerCase().includes(q)) return true;
-      const childAksiyonlar = aksiyonlar.filter((a) => a.hedefId === h.id);
+      const childAksiyonlar = aksiyonlar.filter((a) => a.projeId === h.id);
       if (childAksiyonlar.some((a) => a.name.toLowerCase().includes(q))) return true;
       return false;
     });
-  }, [hedefler, aksiyonlar, search]);
+  }, [projeler, aksiyonlar, search]);
 
   const grouped = {
-    "Türkiye": filteredHedefler.filter((h) => h.source === "Türkiye"),
-    Kurumsal: filteredHedefler.filter((h) => h.source === "Kurumsal"),
-    International: filteredHedefler.filter((h) => h.source === "International"),
+    "Türkiye": filteredProjeler.filter((h) => h.source === "Türkiye"),
+    Kurumsal: filteredProjeler.filter((h) => h.source === "Kurumsal"),
+    International: filteredProjeler.filter((h) => h.source === "International"),
   };
 
   return (
@@ -1157,11 +1157,11 @@ function WBSView({
                 {source}
               </span>
               <span className="text-[11px] text-tyro-text-muted bg-tyro-bg px-2 py-0.5 rounded-full">
-                {items.length} hedef
+                {items.length} proje
               </span>
             </div>
             {items.map((h) => (
-              <WBSHedefNode key={h.id} hedef={h} />
+              <WBSHedefNode key={h.id} proje={h} />
             ))}
           </div>
         ))}

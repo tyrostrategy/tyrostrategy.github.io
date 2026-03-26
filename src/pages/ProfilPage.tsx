@@ -10,17 +10,17 @@ export default function ProfilPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { locale, setLocale } = useUIStore();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
   const stats = useMemo(() => {
-    const toplamHedef = hedefler.length;
+    const toplamHedef = projeler.length;
     const aktifAksiyon = aksiyonlar.filter(
       (a) => a.status !== "Achieved" && a.status !== "Not Started"
     ).length;
     const tamamlanan = aksiyonlar.filter((a) => a.status === "Achieved").length;
     return { toplamHedef, aktifAksiyon, tamamlanan };
-  }, [hedefler, aksiyonlar]);
+  }, [projeler, aksiyonlar]);
 
   return (
     <div>
@@ -117,7 +117,7 @@ export default function ProfilPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div
-            onClick={() => navigate("/hedefler")}
+            onClick={() => navigate("/projeler")}
             className="glass-card rounded-card p-5 text-center cursor-pointer hover:shadow-md transition-shadow"
           >
             <p className="text-2xl font-bold text-tyro-navy">{stats.toplamHedef}</p>

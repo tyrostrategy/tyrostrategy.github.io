@@ -21,7 +21,7 @@ export default function AyarlarPage() {
 
   // Tag management state
   const tagDefinitions = useDataStore((s) => s.tagDefinitions);
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const addTagDefinition = useDataStore((s) => s.addTagDefinition);
   const updateTagDefinition = useDataStore((s) => s.updateTagDefinition);
   const deleteTagDefinition = useDataStore((s) => s.deleteTagDefinition);
@@ -36,7 +36,7 @@ export default function AyarlarPage() {
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   const getUsageCount = (tagName: string) =>
-    hedefler.filter((h) => h.tags?.includes(tagName)).length;
+    projeler.filter((h) => h.tags?.includes(tagName)).length;
 
   const handleAddTag = () => {
     const trimmed = newTagName.trim();
@@ -136,8 +136,8 @@ export default function AyarlarPage() {
           <h3 className="text-[13px] font-bold text-tyro-text-primary mb-3">Numara Serisi Şablonu</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Hedef ID Formatı</label>
-              <Input value="O{YY}-{NNNN}" isReadOnly variant="bordered" description="Örn: O26-0001" />
+              <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Proje ID Formatı</label>
+              <Input value="P{YY}-{NNNN}" isReadOnly variant="bordered" description="Örn: P26-0001" />
             </div>
             <div>
               <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Aksiyon ID Formatı</label>
@@ -145,7 +145,7 @@ export default function AyarlarPage() {
             </div>
           </div>
           <p className="text-[11px] text-tyro-text-muted mt-2">
-            O = Objective (Hedef), A = Action (Aksiyon), YY = Yıl, NNNN = Sıra numarası. Kayıtlar başlangıç tarihine göre sıralanır.
+            P = Project (Proje), A = Action (Aksiyon), YY = Yıl, NNNN = Sıra numarası. Kayıtlar başlangıç tarihine göre sıralanır.
           </p>
         </div>
       </div>
@@ -285,7 +285,7 @@ export default function AyarlarPage() {
                     </span>
                     {usageCount > 0 && (
                       <span className="text-[11px] text-tyro-text-muted shrink-0">
-                        {usageCount} hedef
+                        {usageCount} proje
                       </span>
                     )}
                     <button

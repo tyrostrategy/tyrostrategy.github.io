@@ -9,7 +9,7 @@ export const treeData: TreeNode[] = [
       {
         id: "turkiye-1",
         name: "TR Antep Fıstığı ile Çin pazarına giriş",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -68,7 +68,7 @@ export const treeData: TreeNode[] = [
       {
         id: "turkiye-9",
         name: "Muş Sulama Sistemi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -246,7 +246,7 @@ export const treeData: TreeNode[] = [
       {
         id: "turkiye-34",
         name: "Muş Tarımsal Mekanizasyon Projesi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -291,7 +291,7 @@ export const treeData: TreeNode[] = [
       {
         id: "turkiye-40",
         name: "Rejeneratif Tarım Projesi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -366,7 +366,7 @@ export const treeData: TreeNode[] = [
       {
         id: "turkiye-50",
         name: "Yem katkı ihracat satışlarının arttırılması",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -439,7 +439,7 @@ export const treeData: TreeNode[] = [
       {
         id: "turkiye-60",
         name: "Yıldız Alparslan Anıtkır Yatırımında Arsa Edinimi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -477,7 +477,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-64",
         name: "2 Adet (ek) Deniz-Nehir tipi gemi inşa projesi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -522,7 +522,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-70",
         name: "Bireysel Performans Yönetimi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -574,7 +574,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-77",
         name: "Buğday Derin İşleme",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -626,7 +626,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-84",
         name: "Çiftlik Yönetimi FarmERP",
-        type: "hedef",
+        type: "proje",
         status: "At Risk",
         children: [
           {
@@ -706,7 +706,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-95",
         name: "Giresun Protein Tesisi Kapasite Arttırım",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -772,7 +772,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-104",
         name: "Grup Sigorta Strateji ve Prosedürleri",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -824,7 +824,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-111",
         name: "Grup Şirketleri Sigorta Yönetimi ERP Modülü Entegrasyonu",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -883,7 +883,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-119",
         name: "Sigortalanabilir Değer Tespit & Güncelleme",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -935,7 +935,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-126",
         name: "HR & ADC Entegrasyonu",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1001,7 +1001,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-135",
         name: "Integrity Project",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1067,7 +1067,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-144",
         name: "İntranet Kurulumu",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1119,7 +1119,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-151",
         name: "ITSM Projesi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1227,7 +1227,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-166",
         name: "Kazakistan Buğday Tesisi Kurulumu",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1286,7 +1286,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-174",
         name: "Mamul Depo Konveyör Hattının Uzatılması",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1338,7 +1338,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-181",
         name: "NOLA İskele Projesi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1441,7 +1441,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-195",
         name: "Operasyonel KPK Belirleme ve Faaliyet Raporu",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1500,7 +1500,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-203",
         name: "Organik İzlenebilirlik Dijitalizasyonu",
-        type: "hedef",
+        type: "proje",
         status: "At Risk",
         children: [
           {
@@ -1580,7 +1580,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-214",
         name: "Pillar-2 Modeli",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1632,7 +1632,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-221",
         name: "Risk Survey Çalışması (sigorta)",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1670,7 +1670,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-226",
         name: "Sharepoint Migration",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1722,7 +1722,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-233",
         name: "Sıfır İş Kazası",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1802,7 +1802,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-244",
         name: "Sunrise Apollo Projesi",
-        type: "hedef",
+        type: "proje",
         status: "At Risk",
         children: [
           {
@@ -1833,7 +1833,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-248",
         name: "Sürdürülebilirlik Raporu",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1899,7 +1899,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-257",
         name: "Takdir ve Ödüllendirme Sisteminin Kurulması",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -1951,7 +1951,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-264",
         name: "Tiryaki Agro Global İnovasyon Merkezi (TAGIC)",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2010,7 +2010,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-272",
         name: "Tiryaki Dijital Akademi Global Entegrasyonu",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2069,7 +2069,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-280",
         name: "Tiryaki LTIP Programı",
-        type: "hedef",
+        type: "proje",
         status: "Achieved",
         children: [
           {
@@ -2114,7 +2114,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-286",
         name: "Tiryaki Yapay Zeka Projesi (TYRO)",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2152,7 +2152,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-291",
         name: "Ukrayna Orijinli Organik Ürün",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2183,7 +2183,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-295",
         name: "Uluslararası Çalışma Modelleri",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2235,7 +2235,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-302",
         name: "Web Sitelerinin Güncellenmesi / Oluşturulması (19 adet)",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2333,7 +2333,7 @@ export const treeData: TreeNode[] = [
       {
         id: "kurumsal-315",
         name: "Yetkilendirilmiş Yükümlü Sistemi Projesi",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2399,7 +2399,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-323",
         name: "Carbon Trading",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2465,7 +2465,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-332",
         name: "Djibouti Port Investment",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2552,7 +2552,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-344",
         name: "Grand Al Faw Port Project",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2611,7 +2611,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-352",
         name: "Investment in Sugar Refinery Plant in Venezuela",
-        type: "hedef",
+        type: "proje",
         status: "At Risk",
         children: [
           {
@@ -2670,7 +2670,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-360",
         name: "Iraq Agro Holding",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2743,7 +2743,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-370",
         name: "Organisational Alignment and Training Programme in Iraq",
-        type: "hedef",
+        type: "proje",
         status: "At Risk",
         children: [
           {
@@ -2788,7 +2788,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-376",
         name: "Review of African country structures",
-        type: "hedef",
+        type: "proje",
         status: "On Track",
         children: [
           {
@@ -2840,7 +2840,7 @@ export const treeData: TreeNode[] = [
       {
         id: "international-383",
         name: "Venezuela Coal Facility Project",
-        type: "hedef",
+        type: "proje",
         status: "At Risk",
         children: [
           {

@@ -12,9 +12,9 @@ import { formatDate } from "@/lib/dateUtils";
 import StatusBadge from "@/components/ui/StatusBadge";
 import PageHeader from "@/components/layout/PageHeader";
 import SlidingPanel from "@/components/shared/SlidingPanel";
-import HedefDetail from "@/components/hedefler/HedefDetail";
+import ProjeDetail from "@/components/projeler/ProjeDetail";
 import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
-import type { Hedef, Source } from "@/types";
+import type { Proje, Source } from "@/types";
 
 // Tema renkleri (source → renk paleti)
 const THEME_COLORS: Record<Source, { bg: string; border: string; text: string; light: string }> = {
@@ -50,8 +50,8 @@ function ConnectorLine({ color = "#cbd5e1" }: { color?: string }) {
 }
 
 // Company node (root) — mirrors sidebar, centered, with progress stats
-function CompanyNode({ hedefCount, aksiyonCount, overallProgress, theme }: {
-  hedefCount: number; aksiyonCount: number; overallProgress: number;
+function CompanyNode({ projeCount, aksiyonCount, overallProgress, theme }: {
+  projeCount: number; aksiyonCount: number; overallProgress: number;
   theme: ReturnType<typeof useSidebarTheme>;
 }) {
   const accentColor = theme.accentColor ?? theme.brandStrategy;
@@ -86,7 +86,7 @@ function CompanyNode({ hedefCount, aksiyonCount, overallProgress, theme }: {
             <span style={{ color: theme.brandStrategy }}>Agro</span>
           </span>
           <span className="text-[11px] font-medium mt-0.5" style={{ color: theme.textSecondary }}>
-            {hedefCount} hedef · {aksiyonCount} aksiyon
+            {projeCount} proje · {aksiyonCount} aksiyon
           </span>
         </div>
       </div>
@@ -160,19 +160,19 @@ function ThemeNode({ source, count, progress }: { source: Source; count: number;
       </div>
       <div>
         <p className="text-[13px] font-bold" style={{ color: colors.text }}>{source}</p>
-        <p className="text-[11px] font-medium" style={{ color: colors.text, opacity: 0.7 }}>{count} hedef</p>
+        <p className="text-[11px] font-medium" style={{ color: colors.text, opacity: 0.7 }}>{count} proje</p>
       </div>
     </motion.div>
   );
 }
 
-// Objective node (hedef kartı)
-function ObjectiveNode({ hedef, onClick, expanded, onToggleExpand, aksiyonCount }: {
-  hedef: Hedef; onClick: () => void; expanded: boolean; onToggleExpand: () => void; aksiyonCount: number;
+// Objective node (proje kartı)
+function ObjectiveNode({ proje, onClick, expanded, onToggleExpand, aksiyonCount }: {
+  proje: Proje; onClick: () => void; expanded: boolean; onToggleExpand: () => void; aksiyonCount: number;
 }) {
-  const colors = THEME_COLORS[hedef.source] ?? THEME_COLORS["Kurumsal"];
-  const pColor = progressColor(hedef.progress);
-  const statusColor = { "On Track": "#10b981", "Achieved": "#3b82f6", "Behind": "#ef4444", "At Risk": "#f59e0b", "Not Started": "#94a3b8" }[hedef.status] ?? "#94a3b8";
+  const colors = THEME_COLORS[proje.source] ?? THEME_COLORS["Kurumsal"];
+  const pColor = progressColor(proje.progress);
+  const statusColor = { "On Track": "#10b981", "Achieved": "#3b82f6", "Behind": "#ef4444", "At Risk": "#f59e0b", "Not Started": "#94a3b8" }[proje.status] ?? "#94a3b8";
 
   return (
     <motion.div variants={fadeUp} className="flex flex-col items-center w-[220px]">
@@ -182,23 +182,23 @@ function ObjectiveNode({ hedef, onClick, expanded, onToggleExpand, aksiyonCount 
         style={{ borderColor: colors.border + "60" }}
       >
         <p className="text-[12px] font-semibold text-tyro-text-primary leading-snug group-hover:text-tyro-navy transition-colors">
-          {hedef.name}
+          {proje.name}
         </p>
         {/* Progress bar with status dot */}
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: statusColor }} />
           <div className="flex-1 h-1.5 rounded-full bg-tyro-bg overflow-hidden">
-            <div className="h-full rounded-full transition-all" style={{ width: `${hedef.progress}%`, backgroundColor: pColor }} />
+            <div className="h-full rounded-full transition-all" style={{ width: `${proje.progress}%`, backgroundColor: pColor }} />
           </div>
-          <span className="text-[12px] font-extrabold tabular-nums" style={{ color: pColor }}>%{hedef.progress}</span>
+          <span className="text-[12px] font-extrabold tabular-nums" style={{ color: pColor }}>%{proje.progress}</span>
         </div>
         {/* Owner + Date */}
         <div className="flex items-center justify-between gap-2">
-          {hedef.owner && (
-            <span className="text-[11px] text-tyro-text-secondary truncate flex-1">{hedef.owner}</span>
+          {proje.owner && (
+            <span className="text-[11px] text-tyro-text-secondary truncate flex-1">{proje.owner}</span>
           )}
-          {hedef.endDate && (
-            <span className="text-[11px] text-tyro-text-muted shrink-0">{formatDate(hedef.endDate)}</span>
+          {proje.endDate && (
+            <span className="text-[11px] text-tyro-text-muted shrink-0">{formatDate(proje.endDate)}</span>
           )}
         </div>
       </div>
@@ -244,79 +244,79 @@ function ActionNode({ name, progress, status, onClick }: { name: string; progres
 export default function StrategyMapPage() {
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
   const [expandedHedefIds, setExpandedHedefIds] = useState<Set<string>>(new Set());
   const [showAllActions, setShowAllActions] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [mapSearch, setMapSearch] = useState("");
-  const [selectedHedef, setSelectedHedef] = useState<Hedef | null>(null);
+  const [selectedProje, setSelectedHedef] = useState<Proje | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [panelType, setPanelType] = useState<"hedef" | "aksiyon">("hedef");
+  const [panelType, setPanelType] = useState<"proje" | "aksiyon">("proje");
   const [selectedAksiyonId, setSelectedAksiyonId] = useState<string | null>(null);
 
-  const toggleHedefExpand = (hedefId: string) => {
+  const toggleHedefExpand = (projeId: string) => {
     setExpandedHedefIds((prev) => {
       const next = new Set(prev);
-      if (next.has(hedefId)) next.delete(hedefId);
-      else next.add(hedefId);
+      if (next.has(projeId)) next.delete(projeId);
+      else next.add(projeId);
       return next;
     });
   };
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Arama eşleşen hedef ID'leri
+  // Arama eşleşen proje ID'leri
   const matchedHedefIds = useMemo(() => {
     if (!mapSearch.trim()) return null; // null = hepsi eşleşir
     const q = mapSearch.toLocaleLowerCase("tr");
     const ids = new Set<string>();
-    for (const h of hedefler) {
+    for (const h of projeler) {
       const str = [h.name, h.description, h.owner, h.department, h.source, h.status, ...(h.tags ?? [])].filter(Boolean).join(" ").toLocaleLowerCase("tr");
       if (str.includes(q)) ids.add(h.id);
     }
     return ids;
-  }, [hedefler, mapSearch]);
+  }, [projeler, mapSearch]);
 
-  // Filtreli hedefler
-  const filteredHedefler = useMemo(() => {
-    if (!matchedHedefIds) return hedefler; // null = no search
-    return hedefler.filter((h) => matchedHedefIds.has(h.id));
-  }, [hedefler, matchedHedefIds]);
+  // Filtreli projeler
+  const filteredProjeler = useMemo(() => {
+    if (!matchedHedefIds) return projeler; // null = no search
+    return projeler.filter((h) => matchedHedefIds.has(h.id));
+  }, [projeler, matchedHedefIds]);
 
   // Source'a göre grupla (filtreli)
   const themeGroups = useMemo(() => {
-    const groups: Record<Source, Hedef[]> = {
+    const groups: Record<Source, Proje[]> = {
       "Türkiye": [],
       "Kurumsal": [],
       "International": [],
     };
-    for (const h of filteredHedefler) {
+    for (const h of filteredProjeler) {
       if (groups[h.source]) {
         groups[h.source].push(h);
       }
     }
     return groups;
-  }, [filteredHedefler]);
+  }, [filteredProjeler]);
 
   const activeThemes = useMemo(
-    () => (Object.entries(themeGroups) as [Source, Hedef[]][]).filter(([, list]) => list.length > 0),
+    () => (Object.entries(themeGroups) as [Source, Proje[]][]).filter(([, list]) => list.length > 0),
     [themeGroups]
   );
 
-  // Hedef ID → aksiyonlari
+  // Proje ID → aksiyonlari
   const hedefAksiyonlar = useMemo(() => {
     const map = new Map<string, typeof aksiyonlar>();
     for (const a of aksiyonlar) {
-      const list = map.get(a.hedefId) ?? [];
+      const list = map.get(a.projeId) ?? [];
       list.push(a);
-      map.set(a.hedefId, list);
+      map.set(a.projeId, list);
     }
     return map;
   }, [aksiyonlar]);
 
-  const openDetail = (hedef: Hedef) => {
-    setSelectedHedef(hedef);
+  const openDetail = (proje: Proje) => {
+    setSelectedHedef(proje);
     setPanelOpen(true);
   };
 
@@ -353,7 +353,7 @@ export default function StrategyMapPage() {
             setShowAllActions(!showAllActions);
             if (!showAllActions) {
               // Expand all
-              setExpandedHedefIds(new Set(hedefler.map((h) => h.id)));
+              setExpandedHedefIds(new Set(projeler.map((h) => h.id)));
             } else {
               // Collapse all
               setExpandedHedefIds(new Set());
@@ -414,9 +414,9 @@ export default function StrategyMapPage() {
           >
             {/* Level 1: Company */}
             <CompanyNode
-              hedefCount={filteredHedefler.length}
-              aksiyonCount={mapSearch.trim() ? filteredHedefler.reduce((s, h) => s + (hedefAksiyonlar.get(h.id)?.length ?? 0), 0) : aksiyonlar.length}
-              overallProgress={filteredHedefler.length > 0 ? Math.round(filteredHedefler.reduce((s, h) => s + h.progress, 0) / filteredHedefler.length) : 0}
+              projeCount={filteredProjeler.length}
+              aksiyonCount={mapSearch.trim() ? filteredProjeler.reduce((s, h) => s + (hedefAksiyonlar.get(h.id)?.length ?? 0), 0) : aksiyonlar.length}
+              overallProgress={filteredProjeler.length > 0 ? Math.round(filteredProjeler.reduce((s, h) => s + h.progress, 0) / filteredProjeler.length) : 0}
               theme={sidebarTheme}
             />
 
@@ -450,20 +450,20 @@ export default function StrategyMapPage() {
                     animate="show"
                     className="flex flex-col items-start gap-3"
                   >
-                    {[...list].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()).map((hedef) => {
-                      const isExpanded = expandedHedefIds.has(hedef.id);
-                      const hedefActions = hedefAksiyonlar.get(hedef.id) ?? [];
+                    {[...list].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()).map((proje) => {
+                      const isExpanded = expandedHedefIds.has(proje.id);
+                      const hedefActions = hedefAksiyonlar.get(proje.id) ?? [];
                       return (
-                        <div key={hedef.id} className="flex flex-col items-center">
+                        <div key={proje.id} className="flex flex-col items-center">
                           <ObjectiveNode
-                            hedef={hedef}
-                            onClick={() => openDetail(hedef)}
+                            proje={proje}
+                            onClick={() => openDetail(proje)}
                             expanded={isExpanded}
-                            onToggleExpand={() => toggleHedefExpand(hedef.id)}
+                            onToggleExpand={() => toggleHedefExpand(proje.id)}
                             aksiyonCount={hedefActions.length}
                           />
 
-                          {/* Level 4: Actions — per-hedef expand */}
+                          {/* Level 4: Actions — per-proje expand */}
                           {isExpanded && hedefActions.length > 0 && (
                             <motion.div
                               initial={{ opacity: 0, y: -8 }}
@@ -479,7 +479,7 @@ export default function StrategyMapPage() {
                                     status={aksiyon.status}
                                     onClick={() => {
                                       setSelectedAksiyonId(aksiyon.id);
-                                      setSelectedHedef(hedef);
+                                      setSelectedHedef(proje);
                                       setPanelType("aksiyon");
                                       setPanelOpen(true);
                                     }}
@@ -502,14 +502,14 @@ export default function StrategyMapPage() {
       {/* Detail Panel */}
       <SlidingPanel
         isOpen={panelOpen}
-        onClose={() => { setPanelOpen(false); setPanelType("hedef"); setSelectedAksiyonId(null); }}
+        onClose={() => { setPanelOpen(false); setPanelType("proje"); setSelectedAksiyonId(null); }}
         title={panelType === "aksiyon" ? t("detail.actionDetail") : t("detail.objectiveDetail")}
         icon={panelType === "aksiyon" ? <ListChecks size={18} /> : <Target size={18} />}
         maxWidth={640}
       >
-        {panelType === "hedef" && selectedHedef && (
-          <HedefDetail
-            hedef={selectedHedef}
+        {panelType === "proje" && selectedProje && (
+          <ProjeDetail
+            proje={selectedProje}
             onEdit={() => {}}
           />
         )}
@@ -520,8 +520,8 @@ export default function StrategyMapPage() {
             <div className="flex flex-col gap-4">
               <AksiyonDetail
                 aksiyon={aksiyon}
-                onBackToParent={() => { setPanelType("hedef"); setSelectedAksiyonId(null); }}
-                parentLabel={selectedHedef?.name}
+                onBackToParent={() => { setPanelType("proje"); setSelectedAksiyonId(null); }}
+                parentLabel={selectedProje?.name}
               />
             </div>
           );

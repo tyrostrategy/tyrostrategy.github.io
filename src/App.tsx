@@ -11,7 +11,7 @@ const LoginPage = lazy(() => import("@/pages/LoginPage"));
 const AppLayout = lazy(() => import("@/components/layout/AppLayout"));
 const WorkspacePage = lazy(() => import("@/pages/WorkspacePage"));
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
-const HedeflerPage = lazy(() => import("@/pages/HedeflerPage"));
+const ProjelerPage = lazy(() => import("@/pages/ProjelerPage"));
 const AksiyonlarPage = lazy(() => import("@/pages/AksiyonlarPage"));
 const StratejikKarargahPage = lazy(() => import("@/pages/StratejikKarargahPage"));
 const GanttPage = lazy(() => import("@/pages/GanttPage"));
@@ -59,7 +59,7 @@ export default function App() {
           >
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/dashboard" element={<ProtectedRoute pageKey="kpi"><DashboardPage /></ProtectedRoute>} />
-            <Route path="/hedefler" element={<HedeflerPage />} />
+            <Route path="/projeler" element={<ProjelerPage />} />
             <Route path="/aksiyonlar" element={<ProtectedRoute pageKey="aksiyonlar"><AksiyonlarPage /></ProtectedRoute>} />
             <Route path="/stratejik-karargah" element={<ProtectedRoute pageKey="stratejikKarargah"><StratejikKarargahPage /></ProtectedRoute>} />
             <Route path="/gantt" element={<GanttPage />} />

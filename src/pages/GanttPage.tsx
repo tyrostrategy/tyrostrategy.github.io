@@ -21,7 +21,7 @@ const LABEL_COL_W = 240;
 export default function GanttPage() {
   const { t } = useTranslation();
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
 
@@ -65,12 +65,12 @@ export default function GanttPage() {
     return { rangeStart: null, rangeEnd: null };
   }, [zoom, selectedYear, selectedQuarter]);
 
-  // Hedef name lookup
+  // Proje name lookup
   const hedefNameMap = useMemo(() => {
     const map = new Map<string, string>();
-    for (const h of hedefler) map.set(h.id, h.name);
+    for (const h of projeler) map.set(h.id, h.name);
     return map;
-  }, [hedefler]);
+  }, [projeler]);
 
   // Filter aksiyonlar that overlap with range + text search
   const tasks = useMemo(() => {
@@ -85,7 +85,7 @@ export default function GanttPage() {
     if (ganttSearch.trim()) {
       const q = ganttSearch.toLocaleLowerCase("tr");
       filtered = filtered.filter((a) => {
-        return [a.name, a.description, a.owner, hedefNameMap.get(a.hedefId) ?? "", a.status].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
+        return [a.name, a.description, a.owner, hedefNameMap.get(a.projeId) ?? "", a.status].filter(Boolean).join(" ").toLocaleLowerCase("tr").includes(q);
       });
     }
     return filtered.sort(
@@ -150,8 +150,8 @@ export default function GanttPage() {
     return off >= 0 && off <= 100 ? off : -1;
   }, [tlMin, tlDays]);
 
-  const getHedefSource = (hedefId: string) =>
-    hedefler.find((h) => h.id === hedefId)?.source || "Kurumsal";
+  const getHedefSource = (projeId: string) =>
+    projeler.find((h) => h.id === projeId)?.source || "Kurumsal";
 
   // Bar position helper
   const barPos = (task: Aksiyon) => {
@@ -263,13 +263,13 @@ export default function GanttPage() {
           </div>
         ) : (
           tasks.map((task) => {
-            const color = sourceColors[getHedefSource(task.hedefId)] || "var(--tyro-navy)";
+            const color = sourceColors[getHedefSource(task.projeId)] || "var(--tyro-navy)";
             return (
               <div key={task.id} className="glass-card px-4 py-3">
                 <div className="flex items-start gap-2 mb-2">
                   <span className="w-2.5 h-2.5 rounded-full shrink-0 mt-1" style={{ backgroundColor: color }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-medium text-tyro-text-muted truncate">{hedefler.find((h) => h.id === task.hedefId)?.name}</p>
+                    <p className="text-[11px] font-medium text-tyro-text-muted truncate">{projeler.find((h) => h.id === task.projeId)?.name}</p>
                     <p className="text-sm font-semibold text-tyro-text-primary leading-snug">{task.name}</p>
                     <p className="text-[11px] text-tyro-text-muted mt-0.5">
                       {new Date(task.startDate).toLocaleDateString(i18n.language === "en" ? "en-US" : "tr-TR", { day: "2-digit", month: "short", year: "numeric" })}
@@ -319,7 +319,7 @@ export default function GanttPage() {
             <div className="flex flex-col gap-0.5 min-w-[900px] mt-1">
               {tasks.map((task, i) => {
                 const { left, width } = barPos(task);
-                const color = sourceColors[getHedefSource(task.hedefId)] || "var(--tyro-navy)";
+                const color = sourceColors[getHedefSource(task.projeId)] || "var(--tyro-navy)";
                 const realStart = new Date(task.startDate);
                 const isClipped = zoom === "all" && realStart.getTime() < tlMin.getTime();
                 const clippedYear = realStart.getFullYear();
@@ -337,8 +337,8 @@ export default function GanttPage() {
                         className="w-2 h-2 rounded-full shrink-0 mt-1"
                         style={{ backgroundColor: color }}
                       />
-                      <div className="flex flex-col truncate flex-1 leading-tight" title={`${hedefler.find((h) => h.id === task.hedefId)?.name ?? ""} › ${task.name}`}>
-                        <span className="text-[11px] text-tyro-text-muted truncate">{hedefler.find((h) => h.id === task.hedefId)?.name}</span>
+                      <div className="flex flex-col truncate flex-1 leading-tight" title={`${projeler.find((h) => h.id === task.projeId)?.name ?? ""} › ${task.name}`}>
+                        <span className="text-[11px] text-tyro-text-muted truncate">{projeler.find((h) => h.id === task.projeId)?.name}</span>
                         <span className="text-[11px] text-tyro-text-secondary truncate">{task.name}</span>
                       </div>
                       {isClipped && (

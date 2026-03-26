@@ -12,7 +12,7 @@ vi.mock("@/lib/i18n", () => ({
 
 // Mock mock-adapter
 vi.mock("@/lib/data/mock-adapter", () => ({
-  getInitialHedefler: () => [],
+  getInitialProjeler: () => [],
   getInitialProjeler: () => [],
   getInitialGorevler: () => [],
 }));
@@ -154,8 +154,8 @@ describe("uiStore", () => {
 
   describe("setActivePage", () => {
     it("updates activePage", () => {
-      useUIStore.getState().setActivePage("hedefler");
-      expect(useUIStore.getState().activePage).toBe("hedefler");
+      useUIStore.getState().setActivePage("projeler");
+      expect(useUIStore.getState().activePage).toBe("projeler");
     });
   });
 

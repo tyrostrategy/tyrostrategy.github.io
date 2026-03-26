@@ -1,4 +1,4 @@
-// ===== Domain Model: Hedef → Aksiyon (2 seviye) =====
+// ===== Domain Model: Proje → Aksiyon (2 seviye) =====
 
 export type EntityStatus = "On Track" | "Achieved" | "Behind" | "At Risk" | "Not Started" | "Cancelled" | "On Hold";
 export type Source = "Türkiye" | "Kurumsal" | "International";
@@ -16,7 +16,7 @@ export interface CrudPermission {
 
 export interface PagePermissions {
   kpi: boolean;
-  hedefler: boolean;
+  projeler: boolean;
   aksiyonlar: boolean;
   gantt: boolean;
   wbs: boolean;
@@ -28,14 +28,14 @@ export interface PagePermissions {
 
 export interface RolePermissions {
   pages: PagePermissions;
-  hedef: CrudPermission;
+  proje: CrudPermission;
   aksiyon: CrudPermission;
   editOnlyOwn: boolean;
   viewOnlyOwn: boolean;
 }
 
-// ===== Hedef (genişletilmiş — eski Proje alanları eklendi) =====
-export interface Hedef {
+// ===== Proje (genişletilmiş — eski Proje alanları eklendi) =====
+export interface Proje {
   id: string;
   name: string;
   description?: string;
@@ -49,7 +49,7 @@ export interface Hedef {
   endDate: string;
   reviewDate?: string;
   tags?: string[];             // Etiketler — filtreleme & kategorizasyon
-  parentObjectiveId?: string;  // Ana hedef ID — null ise bağımsız/ana hedef
+  parentObjectiveId?: string;  // Ana proje ID — null ise bağımsız/ana proje
   createdBy?: string;
   createdAt?: string;
   updatedBy?: string;
@@ -67,7 +67,7 @@ export interface TagDefinition {
 // ===== Aksiyon (eski Görev — direkt hedefe bağlı) =====
 export interface Aksiyon {
   id: string;
-  hedefId: string;
+  projeId: string;
   name: string;
   description?: string;
   owner: string;
@@ -87,7 +87,7 @@ export interface Aksiyon {
 /** @deprecated Use Aksiyon instead */
 export type Gorev = Aksiyon;
 /** @deprecated Proje seviyesi kaldırıldı */
-export type Proje = Hedef;
+export type Proje = Proje;
 
 // ===== Legacy types (used by existing mock-data files) =====
 
@@ -125,7 +125,7 @@ export interface KanbanColumn {
 export interface TreeNode {
   id: string;
   name: string;
-  type: "plan" | "hedef" | "aksiyon" | "proje" | "gorev";
+  type: "plan" | "proje" | "aksiyon" | "proje" | "gorev";
   progress?: number;
   status?: string;
   children?: TreeNode[];

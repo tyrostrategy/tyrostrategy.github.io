@@ -16,7 +16,7 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 vi.mock("@/lib/data/mock-adapter", () => ({
-  getInitialHedefler: () => [],
+  getInitialProjeler: () => [],
   getInitialProjeler: () => [],
   getInitialGorevler: () => [],
 }));
@@ -81,7 +81,7 @@ vi.mock("@/hooks/useMyWorkspace", () => ({
   useMyWorkspace: () => ({
     userName: "Cenk Şayli",
     department: "IT",
-    myHedefler: [],
+    myProjeler: [],
     myProjeler: [{ id: "p1", name: "Proje 1" }, { id: "p2", name: "Proje 2" }],
     myGorevler: [{ id: "g1" }, { id: "g2" }, { id: "g3" }],
     projectsAsLeader: 1,

@@ -12,7 +12,7 @@ import { useDataStore } from "@/stores/dataStore";
 import { useUIStore } from "@/stores/uiStore";
 import { sidebarThemes } from "@/config/sidebarThemes";
 import { TyroLogo } from "@/components/ui/TyroLogo";
-import type { Hedef, Aksiyon, EntityStatus, Source } from "@/types";
+import type { Proje, Aksiyon, EntityStatus, Source } from "@/types";
 
 // ===== Status helpers =====
 const STATUS_TR: Record<EntityStatus, string> = {
@@ -59,7 +59,7 @@ const REPORT_SECTIONS = [
   { id: "progressChart", label: "İlerleme Dağılımı", defaultOn: true },
   { id: "deptTable", label: "Departman Tablosu", defaultOn: true },
   { id: "attention", label: "Dikkat Gerektiren", defaultOn: true },
-  { id: "details", label: "Hedef Detayları", defaultOn: true },
+  { id: "details", label: "Proje Detayları", defaultOn: true },
   { id: "actions", label: "Aksiyon Adımları", defaultOn: true },
 ];
 
@@ -81,15 +81,15 @@ function progressColor(p: number): string {
   return "#059669";
 }
 
-function calcHedefProgress(h: Hedef, aksiyonlar: Aksiyon[]): number {
-  const ha = aksiyonlar.filter((a) => a.hedefId === h.id);
+function calcProjeProgress(h: Proje, aksiyonlar: Aksiyon[]): number {
+  const ha = aksiyonlar.filter((a) => a.projeId === h.id);
   if (ha.length === 0) return h.progress;
   return Math.round(ha.reduce((s, a) => s + a.progress, 0) / ha.length);
 }
 
 // ===== Component =====
 export default function RaporSihirbazi() {
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const sidebarThemeId = useUIStore((s) => s.sidebarTheme);
   const companyName = useUIStore((s) => s.companyName);
@@ -104,7 +104,7 @@ export default function RaporSihirbazi() {
   const [sourceFilter, setSourceFilter] = useState<Source | "all">("all");
   const [statusFilters, setStatusFilters] = useState<Set<EntityStatus>>(new Set());
   const [deptFilter, setDeptFilter] = useState("all");
-  const [selectedHedefIds, setSelectedHedefIds] = useState<Set<string> | null>(null); // null = all
+  const [selectedProjeIds, setSelectedHedefIds] = useState<Set<string> | null>(null); // null = all
   const [sections, setSections] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(REPORT_SECTIONS.map((s) => [s.id, s.defaultOn]))
   );
@@ -117,8 +117,8 @@ export default function RaporSihirbazi() {
 
   // Derived
   const allDepartments = useMemo(
-    () => [...new Set(hedefler.map((h) => h.department))].filter(Boolean).sort(),
-    [hedefler]
+    () => [...new Set(projeler.map((h) => h.department))].filter(Boolean).sort(),
+    [projeler]
   );
 
   // Compute effective date range from preset
@@ -140,8 +140,8 @@ export default function RaporSihirbazi() {
     return null; // all — no date filter
   }, [datePreset, dateFrom, dateTo]);
 
-  const filteredHedefler = useMemo(() => {
-    let list = hedefler;
+  const filteredProjeler = useMemo(() => {
+    let list = projeler;
     if (sourceFilter !== "all") list = list.filter((h) => h.source === sourceFilter);
     if (statusFilters.size > 0) list = list.filter((h) => statusFilters.has(h.status));
     if (deptFilter !== "all") list = list.filter((h) => h.department === deptFilter);
@@ -149,49 +149,49 @@ export default function RaporSihirbazi() {
       list = list.filter((h) => h.startDate <= effectiveDateRange.to && h.endDate >= effectiveDateRange.from);
     }
     return list;
-  }, [hedefler, sourceFilter, statusFilters, deptFilter, effectiveDateRange]);
+  }, [projeler, sourceFilter, statusFilters, deptFilter, effectiveDateRange]);
 
-  const reportHedefler = useMemo(
-    () => selectedHedefIds === null ? filteredHedefler : filteredHedefler.filter((h) => selectedHedefIds.has(h.id)),
-    [filteredHedefler, selectedHedefIds]
+  const reportProjeler = useMemo(
+    () => selectedProjeIds === null ? filteredProjeler : filteredProjeler.filter((h) => selectedProjeIds.has(h.id)),
+    [filteredProjeler, selectedProjeIds]
   );
 
   // Report computations
   const avgProgress = useMemo(() => {
-    if (reportHedefler.length === 0) return 0;
-    return Math.round(reportHedefler.reduce((s, h) => s + calcHedefProgress(h, aksiyonlar), 0) / reportHedefler.length);
-  }, [reportHedefler, aksiyonlar]);
+    if (reportProjeler.length === 0) return 0;
+    return Math.round(reportProjeler.reduce((s, h) => s + calcProjeProgress(h, aksiyonlar), 0) / reportProjeler.length);
+  }, [reportProjeler, aksiyonlar]);
 
   const statusSummary = useMemo(() => {
     const m: Record<string, number> = {};
-    reportHedefler.forEach((h) => { m[h.status] = (m[h.status] || 0) + 1; });
+    reportProjeler.forEach((h) => { m[h.status] = (m[h.status] || 0) + 1; });
     return m;
-  }, [reportHedefler]);
+  }, [reportProjeler]);
 
   const deptBreakdown = useMemo(() => {
     const m: Record<string, { total: number; active: number; achieved: number; behind: number; avgProg: number }> = {};
-    reportHedefler.forEach((h) => {
+    reportProjeler.forEach((h) => {
       const d = h.department || "Diğer";
       if (!m[d]) m[d] = { total: 0, active: 0, achieved: 0, behind: 0, avgProg: 0 };
       m[d].total++;
-      m[d].avgProg += calcHedefProgress(h, aksiyonlar);
+      m[d].avgProg += calcProjeProgress(h, aksiyonlar);
       if (h.status === "Achieved") m[d].achieved++;
       else if (h.status === "Behind" || h.status === "At Risk") m[d].behind++;
       else m[d].active++;
     });
     Object.values(m).forEach((v) => { v.avgProg = v.total > 0 ? Math.round(v.avgProg / v.total) : 0; });
     return Object.entries(m).sort((a, b) => b[1].total - a[1].total);
-  }, [reportHedefler, aksiyonlar]);
+  }, [reportProjeler, aksiyonlar]);
 
   const attentionItems = useMemo(
-    () => reportHedefler.filter((h) => h.status === "Behind" || h.status === "At Risk"),
-    [reportHedefler]
+    () => reportProjeler.filter((h) => h.status === "Behind" || h.status === "At Risk"),
+    [reportProjeler]
   );
 
   const progressDist = useMemo(() => {
     const d = { full: 0, high: 0, mid: 0, low: 0, zero: 0 };
-    reportHedefler.forEach((h) => {
-      const p = calcHedefProgress(h, aksiyonlar);
+    reportProjeler.forEach((h) => {
+      const p = calcProjeProgress(h, aksiyonlar);
       if (p >= 100) d.full++;
       else if (p >= 75) d.high++;
       else if (p >= 50) d.mid++;
@@ -199,15 +199,15 @@ export default function RaporSihirbazi() {
       else d.zero++;
     });
     return d;
-  }, [reportHedefler, aksiyonlar]);
+  }, [reportProjeler, aksiyonlar]);
 
   const reportAksiyonlar = useMemo(
-    () => aksiyonlar.filter((a) => reportHedefler.some((h) => h.id === a.hedefId)),
-    [aksiyonlar, reportHedefler]
+    () => aksiyonlar.filter((a) => reportProjeler.some((h) => h.id === a.projeId)),
+    [aksiyonlar, reportProjeler]
   );
 
   // Title based on filters
-  const reportTitle = "Stratejik Hedef Durum Raporu";
+  const reportTitle = "Stratejik Proje Durum Raporu";
   const reportSubtitle = sourceFilter === "all" ? "Tüm Kaynaklar" : sourceFilter;
 
   const today = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
@@ -224,7 +224,7 @@ export default function RaporSihirbazi() {
   const toggleHedef = useCallback((id: string) => {
     setSelectedHedefIds((prev) => {
       if (prev === null) {
-        const all = new Set(filteredHedefler.map((h) => h.id));
+        const all = new Set(filteredProjeler.map((h) => h.id));
         all.delete(id);
         return all;
       }
@@ -232,7 +232,7 @@ export default function RaporSihirbazi() {
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  }, [filteredHedefler]);
+  }, [filteredProjeler]);
 
   const handleGenerate = () => {
     setReportGenerated(true);
@@ -369,24 +369,24 @@ ${clone.outerHTML}
     const wb = new ExcelJS.Workbook();
     // Sheet 1: Summary
     const ws1 = wb.addWorksheet("Özet");
-    ws1.addRow(["Stratejik Hedef Durum Raporu", sourceFilter === "all" ? "Tüm Kaynaklar" : sourceFilter]);
-    ws1.addRow([`Tarih: ${today}`, `${reportHedefler.length} hedef`, `${reportAksiyonlar.length} aksiyon`]);
+    ws1.addRow(["Stratejik Proje Durum Raporu", sourceFilter === "all" ? "Tüm Kaynaklar" : sourceFilter]);
+    ws1.addRow([`Tarih: ${today}`, `${reportProjeler.length} proje`, `${reportAksiyonlar.length} aksiyon`]);
     ws1.addRow([]);
     ws1.addRow(["Durum", "Sayı"]);
     (Object.keys(STATUS_TR) as EntityStatus[]).forEach((s) => {
       ws1.addRow([STATUS_TR[s], statusSummary[s] || 0]);
     });
     // Sheet 2: Hedefler
-    const ws2 = wb.addWorksheet("Hedefler");
-    ws2.addRow(["Hedef", "Açıklama", "Lider", "Departman", "Kaynak", "Durum", "İlerleme %", "Başlangıç", "Bitiş"]);
-    reportHedefler.forEach((h) => {
-      ws2.addRow([h.name, h.description || "", h.owner, h.department, h.source, STATUS_TR[h.status], calcHedefProgress(h, aksiyonlar), h.startDate, h.endDate]);
+    const ws2 = wb.addWorksheet("Projeler");
+    ws2.addRow(["Proje", "Açıklama", "Lider", "Departman", "Kaynak", "Durum", "İlerleme %", "Başlangıç", "Bitiş"]);
+    reportProjeler.forEach((h) => {
+      ws2.addRow([h.name, h.description || "", h.owner, h.department, h.source, STATUS_TR[h.status], calcProjeProgress(h, aksiyonlar), h.startDate, h.endDate]);
     });
     // Sheet 3: Aksiyonlar
     const ws3 = wb.addWorksheet("Aksiyonlar");
-    ws3.addRow(["Aksiyon", "Hedef", "Sorumlu", "Durum", "İlerleme %", "Başlangıç", "Bitiş"]);
+    ws3.addRow(["Aksiyon", "Proje", "Sorumlu", "Durum", "İlerleme %", "Başlangıç", "Bitiş"]);
     reportAksiyonlar.forEach((a) => {
-      const h = reportHedefler.find((hh) => hh.id === a.hedefId);
+      const h = reportProjeler.find((hh) => hh.id === a.projeId);
       ws3.addRow([a.name, h?.name || "", a.owner, STATUS_TR[a.status], a.progress, a.startDate, a.endDate]);
     });
     const buf = await wb.xlsx.writeBuffer();
@@ -398,7 +398,7 @@ ${clone.outerHTML}
     const { saveAs } = await import("file-saver");
     const children: (typeof Paragraph.prototype)[] = [];
     children.push(new Paragraph({ text: reportTitle, heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER }));
-    children.push(new Paragraph({ text: `${today} · ${reportHedefler.length} hedef · ${reportAksiyonlar.length} aksiyon`, alignment: AlignmentType.CENTER }));
+    children.push(new Paragraph({ text: `${today} · ${reportProjeler.length} proje · ${reportAksiyonlar.length} aksiyon`, alignment: AlignmentType.CENTER }));
     children.push(new Paragraph({ text: "" }));
     // Summary
     children.push(new Paragraph({ text: "Genel Özet", heading: HeadingLevel.HEADING_1 }));
@@ -407,10 +407,10 @@ ${clone.outerHTML}
     });
     children.push(new Paragraph({ text: `Ortalama İlerleme: %${avgProgress}` }));
     children.push(new Paragraph({ text: "" }));
-    // Hedef details
-    children.push(new Paragraph({ text: "Hedef Detayları", heading: HeadingLevel.HEADING_1 }));
-    reportHedefler.forEach((h) => {
-      const p = calcHedefProgress(h, aksiyonlar);
+    // Proje details
+    children.push(new Paragraph({ text: "Proje Detayları", heading: HeadingLevel.HEADING_1 }));
+    reportProjeler.forEach((h) => {
+      const p = calcProjeProgress(h, aksiyonlar);
       children.push(new Paragraph({ text: h.name, heading: HeadingLevel.HEADING_2 }));
       if (h.description) children.push(new Paragraph({ text: h.description }));
       children.push(new Paragraph({ children: [new TextRun({ text: `Lider: ${h.owner} · ${h.source} · ${h.department} · %${p} · ${STATUS_TR[h.status]}` })] }));
@@ -428,7 +428,7 @@ ${clone.outerHTML}
     // Cover slide
     const s1 = pptx.addSlide();
     s1.addText(reportTitle, { x: 0.5, y: 1.5, w: 9, h: 1.2, fontSize: 28, bold: true, color: "1e3a5f", align: "center" });
-    s1.addText(`${today} · ${reportHedefler.length} hedef · ${reportAksiyonlar.length} aksiyon`, { x: 0.5, y: 2.8, w: 9, fontSize: 14, color: "64748b", align: "center" });
+    s1.addText(`${today} · ${reportProjeler.length} proje · ${reportAksiyonlar.length} aksiyon`, { x: 0.5, y: 2.8, w: 9, fontSize: 14, color: "64748b", align: "center" });
     s1.addText("TYRO Strategy · Powered by TTECH", { x: 0.5, y: 4.5, w: 9, fontSize: 10, color: "94a3b8", align: "center" });
     // Summary slide
     const s2 = pptx.addSlide();
@@ -436,9 +436,9 @@ ${clone.outerHTML}
     const summaryData = (Object.keys(STATUS_TR) as EntityStatus[]).filter((s) => statusSummary[s]).map((s) => `${STATUS_TR[s]}: ${statusSummary[s]}`).join("  ·  ");
     s2.addText(summaryData, { x: 0.5, y: 1.2, w: 9, fontSize: 14, color: "334155" });
     s2.addText(`Ortalama İlerleme: %${avgProgress}`, { x: 0.5, y: 2, w: 9, fontSize: 16, bold: true, color: "1e3a5f" });
-    // Per-hedef slides
-    reportHedefler.slice(0, 20).forEach((h) => {
-      const p = calcHedefProgress(h, aksiyonlar);
+    // Per-proje slides
+    reportProjeler.slice(0, 20).forEach((h) => {
+      const p = calcProjeProgress(h, aksiyonlar);
       const slide = pptx.addSlide();
       slide.addText(h.name, { x: 0.5, y: 0.3, w: 8, fontSize: 18, bold: true, color: "1e3a5f" });
       slide.addText(`%${p} · ${STATUS_TR[h.status]}`, { x: 0.5, y: 1, w: 4, fontSize: 24, bold: true, color: progressColor(p).replace("#", "") });
@@ -571,18 +571,18 @@ ${clone.outerHTML}
                 </select>
               </div>
 
-              {/* Hedef Seçimi */}
+              {/* Proje Seçimi */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[11px] font-bold text-tyro-text-secondary uppercase tracking-wider">Hedefler ({filteredHedefler.length})</label>
+                  <label className="text-[11px] font-bold text-tyro-text-secondary uppercase tracking-wider">Hedefler ({filteredProjeler.length})</label>
                   <div className="flex gap-2">
                     <button onClick={() => setSelectedHedefIds(null)} className="text-[10px] text-tyro-gold font-semibold hover:underline cursor-pointer">Tümünü Seç</button>
                     <button onClick={() => setSelectedHedefIds(new Set())} className="text-[10px] text-tyro-text-muted hover:underline cursor-pointer">Temizle</button>
                   </div>
                 </div>
                 <div className="max-h-[165px] overflow-y-auto rounded-lg border border-tyro-border/30 divide-y divide-tyro-border/10">
-                  {filteredHedefler.map((h) => {
-                    const isChecked = selectedHedefIds === null || selectedHedefIds.has(h.id);
+                  {filteredProjeler.map((h) => {
+                    const isChecked = selectedProjeIds === null || selectedProjeIds.has(h.id);
                     return (
                       <button
                         key={h.id}
@@ -591,8 +591,8 @@ ${clone.outerHTML}
                       >
                         {isChecked ? <CheckSquare size={14} className="text-tyro-gold shrink-0" /> : <Square size={14} className="text-tyro-text-muted shrink-0" />}
                         <span className={`text-[11px] flex-1 truncate ${isChecked ? "text-tyro-text-primary font-medium" : "text-tyro-text-muted"}`}>{h.name}</span>
-                        <span className="text-[10px] font-bold tabular-nums shrink-0" style={{ color: progressColor(calcHedefProgress(h, aksiyonlar)) }}>
-                          {calcHedefProgress(h, aksiyonlar)}%
+                        <span className="text-[10px] font-bold tabular-nums shrink-0" style={{ color: progressColor(calcProjeProgress(h, aksiyonlar)) }}>
+                          {calcProjeProgress(h, aksiyonlar)}%
                         </span>
                       </button>
                     );
@@ -696,14 +696,14 @@ ${clone.outerHTML}
               Yönetim Raporu Sihirbazı
             </h2>
             <p className="text-[13px] text-white/60 leading-relaxed mb-8">
-              Stratejik hedef ve aksiyonlarınızın executive düzeyinde bir özetini oluşturun.
+              Stratejik proje ve aksiyonlarınızın executive düzeyinde bir özetini oluşturun.
               Filtrelerinizi ayarlayıp raporu çalıştırın, PDF olarak dışa aktarın.
             </p>
 
             {/* Stats preview */}
             <div className="flex items-center justify-center gap-6 mb-8">
               {[
-                { label: "Hedef", value: hedefler.length, color: preset.accent },
+                { label: "Proje", value: projeler.length, color: preset.accent },
                 { label: "Aksiyon", value: aksiyonlar.length, color: "#10b981" },
                 { label: "Departman", value: allDepartments.length, color: "#60a5fa" },
               ].map((s) => (
@@ -746,7 +746,7 @@ ${clone.outerHTML}
       <div className="flex items-center justify-between mb-5 print:hidden">
         <div className="flex items-center gap-2">
           <span className="text-[12px] font-semibold text-tyro-text-secondary">
-            {reportHedefler.length} hedef · {reportAksiyonlar.length} aksiyon
+            {reportProjeler.length} proje · {reportAksiyonlar.length} aksiyon
           </span>
           {sourceFilter !== "all" && (
             <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: `${sourceConf.color}15`, color: sourceConf.color }}>
@@ -843,7 +843,7 @@ ${clone.outerHTML}
                       </svg>
                       <div>
                         <p className="text-[15px] font-extrabold tracking-tight"><span className="text-white/90">tyro</span><span className="text-tyro-gold">strategy</span></p>
-                        <p className="text-[9px] text-white/40">Stratejik Hedef Yönetim Platformu</p>
+                        <p className="text-[9px] text-white/40">Stratejik Proje Yönetim Platformu</p>
                       </div>
                     </div>
                     <p className="text-[8px] text-white/20 mt-1 ml-[42px]">Powered by TTECH Business Solutions</p>
@@ -865,7 +865,7 @@ ${clone.outerHTML}
                   )}
                   <div className="flex items-center justify-center gap-8 mt-8">
                     {[
-                      { label: "Hedef", value: reportHedefler.length },
+                      { label: "Proje", value: reportProjeler.length },
                       { label: "Aksiyon", value: reportAksiyonlar.length },
                       { label: "Departman", value: allDepartments.length },
                       { label: "Ort. İlerleme", value: `%${avgProgress}` },
@@ -894,7 +894,7 @@ ${clone.outerHTML}
                   </h1>
                   <p className="text-[13px] text-tyro-text-secondary">{reportSubtitle}</p>
                   <p className="text-[12px] text-tyro-text-secondary mt-1.5">
-                    {today} · {reportHedefler.length} hedef · {reportAksiyonlar.length} aksiyon
+                    {today} · {reportProjeler.length} proje · {reportAksiyonlar.length} aksiyon
                   </p>
                 </div>
                 <div className="text-right hidden sm:block">
@@ -910,7 +910,7 @@ ${clone.outerHTML}
           {sections.summary && (() => {
             // Sort status cards by value desc
             const statusCards = [
-              { label: "Toplam", value: reportHedefler.length, color: "var(--tyro-navy, #1e3a5f)" },
+              { label: "Toplam", value: reportProjeler.length, color: "var(--tyro-navy, #1e3a5f)" },
               { label: "Yolunda", value: statusSummary["On Track"] || 0, color: "#10b981" },
               { label: "Risk Altında", value: statusSummary["At Risk"] || 0, color: "#f59e0b" },
               { label: "Gecikmeli", value: statusSummary["Behind"] || 0, color: "#ef4444" },
@@ -922,19 +922,19 @@ ${clone.outerHTML}
 
             // Generate AI-like executive insights
             const riskCount = (statusSummary["At Risk"] || 0) + (statusSummary["Behind"] || 0);
-            const completionRate = reportHedefler.length > 0 ? Math.round(((statusSummary["Achieved"] || 0) / reportHedefler.length) * 100) : 0;
+            const completionRate = reportProjeler.length > 0 ? Math.round(((statusSummary["Achieved"] || 0) / reportProjeler.length) * 100) : 0;
             const worstDept = deptBreakdown.length > 0 ? deptBreakdown.reduce((worst, [, d]) => d.avgProg < worst.avgProg ? d : worst, deptBreakdown[0][1]) : null;
             const worstDeptName = deptBreakdown.find(([, d]) => d === worstDept)?.[0] || "";
             const bestDept = deptBreakdown.length > 0 ? deptBreakdown.reduce((best, [, d]) => d.avgProg > best.avgProg ? d : best, deptBreakdown[0][1]) : null;
             const bestDeptName = deptBreakdown.find(([, d]) => d === bestDept)?.[0] || "";
 
             const insights: { Icon: typeof Check; color: string; text: string; type: "success" | "warning" | "info" }[] = [];
-            if (avgProgress >= 70) insights.push({ Icon: TrendingUp, color: "#10b981", text: `Genel ilerleme %${avgProgress} ile hedef doğrultusunda ilerliyor.`, type: "success" });
+            if (avgProgress >= 70) insights.push({ Icon: TrendingUp, color: "#10b981", text: `Genel ilerleme %${avgProgress} ile proje doğrultusunda ilerliyor.`, type: "success" });
             else if (avgProgress >= 40) insights.push({ Icon: CircleAlert, color: "#f59e0b", text: `Genel ilerleme %${avgProgress} seviyesinde — ivme kazanılması gerekiyor.`, type: "warning" });
             else insights.push({ Icon: CircleAlert, color: "#ef4444", text: `Genel ilerleme %${avgProgress} ile kritik seviyede düşük. Acil aksiyon gerekli.`, type: "warning" });
 
-            if (riskCount > 0) insights.push({ Icon: AlertTriangle, color: "#f59e0b", text: `${riskCount} hedef risk altında veya gecikmeli durumda — dikkat gerektiriyor.`, type: "warning" });
-            if (completionRate > 0) insights.push({ Icon: BarChart3, color: "#3b82f6", text: `Hedef tamamlanma oranı %${completionRate}. ${statusSummary["Achieved"] || 0} hedef başarıyla tamamlanmış.`, type: "info" });
+            if (riskCount > 0) insights.push({ Icon: AlertTriangle, color: "#f59e0b", text: `${riskCount} proje risk altında veya gecikmeli durumda — dikkat gerektiriyor.`, type: "warning" });
+            if (completionRate > 0) insights.push({ Icon: BarChart3, color: "#3b82f6", text: `Proje tamamlanma oranı %${completionRate}. ${statusSummary["Achieved"] || 0} proje başarıyla tamamlanmış.`, type: "info" });
             if (worstDept && worstDept.avgProg < avgProgress) insights.push({ Icon: TrendingDown, color: "#ef4444", text: `${worstDeptName} departmanı %${worstDept.avgProg} ortalama ilerleme ile en düşük performansı sergiliyor.`, type: "warning" });
             if (bestDept && bestDept.avgProg > avgProgress) insights.push({ Icon: Trophy, color: "#c8922a", text: `${bestDeptName} departmanı %${bestDept.avgProg} ile en yüksek performansı gösteriyor.`, type: "success" });
 
@@ -1008,7 +1008,7 @@ ${clone.outerHTML}
                         { label: "Düşük (1-49%)", count: progressDist.low, color: "#f59e0b" },
                         { label: "Başlamadı", count: progressDist.zero, color: "#94a3b8" },
                       ].map((row) => {
-                        const pct = reportHedefler.length > 0 ? Math.round((row.count / reportHedefler.length) * 100) : 0;
+                        const pct = reportProjeler.length > 0 ? Math.round((row.count / reportProjeler.length) * 100) : 0;
                         return (
                           <div key={row.label} className="flex items-center gap-2">
                             <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: row.color }} />
@@ -1058,7 +1058,7 @@ ${clone.outerHTML}
                       ))}
                       <circle cx="100" cy="100" r="45" fill="white" />
                       <text x="100" y="96" textAnchor="middle" className="text-[22px] font-extrabold" fill="#0f172a">{total}</text>
-                      <text x="100" y="112" textAnchor="middle" className="text-[9px]" fill="#64748b">hedef</text>
+                      <text x="100" y="112" textAnchor="middle" className="text-[9px]" fill="#64748b">proje</text>
                     </svg>
                     {/* Legend */}
                     <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-2">
@@ -1134,11 +1134,11 @@ ${clone.outerHTML}
 
           {/* 5. HEDEF DETAYLARI — sorted by progress desc */}
           {sections.details && (
-            <Section num={5} title="Hedef Detayları">
+            <Section num={5} title="Proje Detayları">
               <div className="space-y-3">
-                {[...reportHedefler].sort((a, b) => calcHedefProgress(b, aksiyonlar) - calcHedefProgress(a, aksiyonlar)).map((h) => {
-                  const ha = aksiyonlar.filter((a) => a.hedefId === h.id);
-                  const p = calcHedefProgress(h, aksiyonlar);
+                {[...reportProjeler].sort((a, b) => calcProjeProgress(b, aksiyonlar) - calcProjeProgress(a, aksiyonlar)).map((h) => {
+                  const ha = aksiyonlar.filter((a) => a.projeId === h.id);
+                  const p = calcProjeProgress(h, aksiyonlar);
                   const isExp = expandedIds.has(h.id);
 
                   return (

@@ -8,7 +8,7 @@ interface Props {
   errors: FieldErrors<any>;
 }
 
-export default function StepHedefBasics({ control, errors }: Props) {
+export default function StepProjeBasics({ control, errors }: Props) {
   const { t } = useTranslation();
   const sourceOptions = getSourceOptions(t);
 

@@ -11,7 +11,7 @@ import { useDataStore } from "@/stores/dataStore";
 import { useRoleStore } from "@/stores/roleStore";
 import { useUIStore } from "@/stores/uiStore";
 import GlassCard from "@/components/ui/GlassCard";
-import type { Hedef, Aksiyon, TagDefinition } from "@/types";
+import type { Proje, Aksiyon, TagDefinition } from "@/types";
 import * as XLSX from "xlsx";
 
 // ===== Data table definitions =====
@@ -44,7 +44,7 @@ type ExportFormat = "json" | "csv" | "xlsx";
 
 export default function VeriYonetimiPage() {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const tagDefinitions = useDataStore((s) => s.tagDefinitions);
   const rolePermissions = useRoleStore((s) => s.permissions);
@@ -60,19 +60,19 @@ export default function VeriYonetimiPage() {
   // ===== Data table registry =====
   const tables: DataTable[] = [
     {
-      id: "hedefler",
-      label: "Hedefler",
+      id: "projeler",
+      label: "Projeler",
       icon: Target,
       color: "#1e3a5f",
-      getCount: () => hedefler.length,
-      getData: () => hedefler,
+      getCount: () => projeler.length,
+      getData: () => projeler,
       setData: (data) => {
         const store = useDataStore.getState();
         // Clear and re-add
-        store.hedefler.forEach((h) => store.deleteHedef(h.id));
-        (data as Hedef[]).forEach((h) => store.addHedef(h));
+        store.projeler.forEach((h) => store.deleteProje(h.id));
+        (data as Proje[]).forEach((h) => store.addProje(h));
       },
-      description: "Stratejik hedef kayıtları",
+      description: "Stratejik proje kayıtları",
     },
     {
       id: "aksiyonlar",
@@ -269,8 +269,8 @@ export default function VeriYonetimiPage() {
 
       // Validate required fields
       const requiredFields: Record<string, string[]> = {
-        hedefler: ["name", "status", "startDate", "endDate"],
-        aksiyonlar: ["name", "hedefId", "status", "startDate", "endDate"],
+        projeler: ["name", "status", "startDate", "endDate"],
+        aksiyonlar: ["name", "projeId", "status", "startDate", "endDate"],
         etiketler: ["name", "color"],
       };
 

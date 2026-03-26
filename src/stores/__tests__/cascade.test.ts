@@ -3,25 +3,25 @@ import { useDataStore } from "../dataStore";
 
 // Mock the mock-adapter to return empty arrays (clean slate)
 vi.mock("@/lib/data/mock-adapter", () => ({
-  getInitialHedefler: () => [],
+  getInitialProjeler: () => [],
   getInitialProjeler: () => [],
   getInitialGorevler: () => [],
 }));
 
 beforeEach(() => {
   useDataStore.setState({
-    hedefler: [],
+    projeler: [],
     projeler: [],
     gorevler: [],
   });
 });
 
 describe("cascade delete protection", () => {
-  describe("hedef → proje cascade", () => {
-    it("deleteHedef returns false when hedef has child projeler", () => {
-      // Create a hedef
-      useDataStore.getState().addHedef({
-        name: "Test Hedef",
+  describe("proje → proje cascade", () => {
+    it("deleteProje returns false when proje has child projeler", () => {
+      // Create a proje
+      useDataStore.getState().addProje({
+        name: "Test Proje",
         source: "Kurumsal",
         status: "On Track",
         owner: "Owner",
@@ -30,11 +30,11 @@ describe("cascade delete protection", () => {
         endDate: "2024-12-31",
       });
 
-      const hedefId = useDataStore.getState().hedefler[0].id;
+      const projeId = useDataStore.getState().projeler[0].id;
 
       // Add a proje under it
       useDataStore.getState().addProje({
-        hedefId,
+        projeId,
         name: "Child Proje",
         department: "IT",
         projectLeader: "Leader",
@@ -45,18 +45,18 @@ describe("cascade delete protection", () => {
         progress: 0,
       });
 
-      // Attempt to delete the hedef — should fail
-      const result = useDataStore.getState().deleteHedef(hedefId);
+      // Attempt to delete the proje — should fail
+      const result = useDataStore.getState().deleteProje(projeId);
       expect(result).toBe(false);
 
-      // Hedef should still exist
-      expect(useDataStore.getState().hedefler).toHaveLength(1);
+      // Proje should still exist
+      expect(useDataStore.getState().projeler).toHaveLength(1);
     });
 
-    it("deleteHedef returns true after child proje is deleted", () => {
-      // Create hedef
-      useDataStore.getState().addHedef({
-        name: "Test Hedef",
+    it("deleteProje returns true after child proje is deleted", () => {
+      // Create proje
+      useDataStore.getState().addProje({
+        name: "Test Proje",
         source: "Kurumsal",
         status: "On Track",
         owner: "Owner",
@@ -65,11 +65,11 @@ describe("cascade delete protection", () => {
         endDate: "2024-12-31",
       });
 
-      const hedefId = useDataStore.getState().hedefler[0].id;
+      const projeId = useDataStore.getState().projeler[0].id;
 
       // Add proje
       useDataStore.getState().addProje({
-        hedefId,
+        projeId,
         name: "Child Proje",
         department: "IT",
         projectLeader: "Leader",
@@ -86,10 +86,10 @@ describe("cascade delete protection", () => {
       useDataStore.getState().deleteProje(projeId);
       expect(useDataStore.getState().projeler).toHaveLength(0);
 
-      // Now deleteHedef should succeed
-      const result = useDataStore.getState().deleteHedef(hedefId);
+      // Now deleteProje should succeed
+      const result = useDataStore.getState().deleteProje(projeId);
       expect(result).toBe(true);
-      expect(useDataStore.getState().hedefler).toHaveLength(0);
+      expect(useDataStore.getState().projeler).toHaveLength(0);
     });
   });
 
@@ -97,7 +97,7 @@ describe("cascade delete protection", () => {
     it("deleteProje returns false when proje has child gorevler", () => {
       // Create proje
       useDataStore.getState().addProje({
-        hedefId: "h1",
+        projeId: "h1",
         name: "Test Proje",
         department: "IT",
         projectLeader: "Leader",
@@ -132,7 +132,7 @@ describe("cascade delete protection", () => {
     it("deleteProje returns true after child gorev is deleted", () => {
       // Create proje
       useDataStore.getState().addProje({
-        hedefId: "h1",
+        projeId: "h1",
         name: "Test Proje",
         department: "IT",
         projectLeader: "Leader",
@@ -189,10 +189,10 @@ describe("cascade delete protection", () => {
   });
 
   describe("full cascade chain", () => {
-    it("hedef with proje with gorev: must delete bottom-up", () => {
+    it("proje with proje with gorev: must delete bottom-up", () => {
       // Build the chain
-      useDataStore.getState().addHedef({
-        name: "Root Hedef",
+      useDataStore.getState().addProje({
+        name: "Root Proje",
         source: "International",
         status: "On Track",
         owner: "Owner",
@@ -200,10 +200,10 @@ describe("cascade delete protection", () => {
         startDate: "2024-01-01",
         endDate: "2024-12-31",
       });
-      const hedefId = useDataStore.getState().hedefler[0].id;
+      const projeId = useDataStore.getState().projeler[0].id;
 
       useDataStore.getState().addProje({
-        hedefId,
+        projeId,
         name: "Mid Proje",
         department: "IT",
         projectLeader: "Leader",
@@ -226,8 +226,8 @@ describe("cascade delete protection", () => {
       });
       const gorevId = useDataStore.getState().gorevler[0].id;
 
-      // Cannot delete hedef (has proje)
-      expect(useDataStore.getState().deleteHedef(hedefId)).toBe(false);
+      // Cannot delete proje (has proje)
+      expect(useDataStore.getState().deleteProje(projeId)).toBe(false);
       // Cannot delete proje (has gorev)
       expect(useDataStore.getState().deleteProje(projeId)).toBe(false);
 
@@ -235,11 +235,11 @@ describe("cascade delete protection", () => {
       expect(useDataStore.getState().deleteGorev(gorevId)).toBe(true);
       // Now can delete proje
       expect(useDataStore.getState().deleteProje(projeId)).toBe(true);
-      // Now can delete hedef
-      expect(useDataStore.getState().deleteHedef(hedefId)).toBe(true);
+      // Now can delete proje
+      expect(useDataStore.getState().deleteProje(projeId)).toBe(true);
 
       // Everything is gone
-      expect(useDataStore.getState().hedefler).toHaveLength(0);
+      expect(useDataStore.getState().projeler).toHaveLength(0);
       expect(useDataStore.getState().projeler).toHaveLength(0);
       expect(useDataStore.getState().gorevler).toHaveLength(0);
     });

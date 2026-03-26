@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Hedef, Aksiyon, TagDefinition } from "@/types";
+import type { Proje, Aksiyon, TagDefinition } from "@/types";
 import {
-  getInitialHedefler,
+  getInitialProjeler,
   getInitialAksiyonlar,
   getInitialTagDefinitions,
   getInitialData,
@@ -10,14 +10,14 @@ import {
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 
 interface DataState {
-  hedefler: Hedef[];
+  projeler: Proje[];
   aksiyonlar: Aksiyon[];
   tagDefinitions: TagDefinition[];
 
-  // CRUD — Hedef
-  addHedef: (h: Omit<Hedef, "id">) => void;
-  updateHedef: (id: string, data: Partial<Hedef>) => void;
-  deleteHedef: (id: string) => boolean;
+  // CRUD — Proje
+  addProje: (h: Omit<Proje, "id">) => void;
+  updateProje: (id: string, data: Partial<Proje>) => void;
+  deleteProje: (id: string) => boolean;
 
   // CRUD — Aksiyon
   addAksiyon: (a: Omit<Aksiyon, "id">) => void;
@@ -31,9 +31,9 @@ interface DataState {
   renameTag: (oldName: string, newName: string) => void;
 
   // Selectors
-  getHedefById: (id: string) => Hedef | undefined;
+  getProjeById: (id: string) => Proje | undefined;
   getAksiyonById: (id: string) => Aksiyon | undefined;
-  getAksiyonlarByHedefId: (hedefId: string) => Aksiyon[];
+  getAksiyonlarByHedefId: (projeId: string) => Aksiyon[];
   getTagColor: (tagName: string) => string;
   getTagDefinitionByName: (tagName: string) => TagDefinition | undefined;
 }
@@ -45,7 +45,7 @@ function uid(): string {
 }
 
 /**
- * Systematic ID generation: O26-0001 for hedefler, A26-0001 for aksiyonlar
+ * Systematic ID generation: O26-0001 for projeler, A26-0001 for aksiyonlar
  * Prefix: O (objective) or A (action)
  * Year: last 2 digits of year from startDate
  * Serial: 4-digit zero-padded, auto-incremented per year
@@ -77,27 +77,27 @@ function now(): string {
   return new Date().toISOString();
 }
 
-/** Recalculate a Hedef's progress from its aksiyonlar */
-function recalcHedefProgress(
-  hedefler: Hedef[],
+/** Recalculate a Proje's progress from its aksiyonlar */
+function recalcProjeProgress(
+  projeler: Proje[],
   aksiyonlar: Aksiyon[],
-  hedefId: string
-): Hedef[] {
-  const related = aksiyonlar.filter((a) => a.hedefId === hedefId);
-  if (related.length === 0) return hedefler;
+  projeId: string
+): Proje[] {
+  const related = aksiyonlar.filter((a) => a.projeId === projeId);
+  if (related.length === 0) return projeler;
   const avg = Math.round(
     related.reduce((sum, a) => sum + a.progress, 0) / related.length
   );
   const allAchieved = related.every((a) => a.status === "Achieved");
-  return hedefler.map((h) => {
-    if (h.id !== hedefId) return h;
-    const updated: Partial<Hedef> = { progress: avg };
+  return projeler.map((h) => {
+    if (h.id !== projeId) return h;
+    const updated: Partial<Proje> = { progress: avg };
     if (allAchieved && h.status !== "Achieved") {
-      // Tüm aksiyonlar tamamlandı → hedef otomatik tamamlanır
+      // Tüm aksiyonlar tamamlandı → proje otomatik tamamlanır
       updated.status = "Achieved";
       updated.completedAt = new Date().toISOString();
     } else if (!allAchieved && h.status === "Achieved") {
-      // Bir aksiyon geri alındı → hedef tamamlanmış statüsünden çıkar
+      // Bir aksiyon geri alındı → proje tamamlanmış statüsünden çıkar
       updated.status = "On Track";
       updated.completedAt = undefined;
     }
@@ -111,15 +111,15 @@ export const useDataStore = create<DataState>()(
       ...getInitialData(),
       tagDefinitions: getInitialTagDefinitions(),
 
-      // Hedef CRUD
-      addHedef: (h) =>
+      // Proje CRUD
+      addProje: (h) =>
         set((s) => {
-          const id = generateSystematicId("O", h.startDate, s.hedefler.map((x) => x.id));
-          return { hedefler: [...s.hedefler, { ...h, id, createdBy: h.createdBy ?? CURRENT_USER, createdAt: h.createdAt ?? now() }] };
+          const id = generateSystematicId("P", h.startDate, s.projeler.map((x) => x.id));
+          return { projeler: [...s.projeler, { ...h, id, createdBy: h.createdBy ?? CURRENT_USER, createdAt: h.createdAt ?? now() }] };
         }),
-      updateHedef: (id, data) =>
+      updateProje: (id, data) =>
         set((s) => ({
-          hedefler: s.hedefler.map((h) => {
+          projeler: s.projeler.map((h) => {
             if (h.id !== id) return h;
             const updated = { ...h, ...data };
             if (data.status === "Achieved" && h.status !== "Achieved") {
@@ -130,10 +130,10 @@ export const useDataStore = create<DataState>()(
             return updated;
           }),
         })),
-      deleteHedef: (id) => {
+      deleteProje: (id) => {
         const state = get();
-        if (state.aksiyonlar.some((a) => a.hedefId === id)) return false;
-        set((s) => ({ hedefler: s.hedefler.filter((h) => h.id !== id) }));
+        if (state.aksiyonlar.some((a) => a.projeId === id)) return false;
+        set((s) => ({ projeler: s.projeler.filter((h) => h.id !== id) }));
         return true;
       },
 
@@ -143,8 +143,8 @@ export const useDataStore = create<DataState>()(
           const id = generateSystematicId("A", a.startDate, s.aksiyonlar.map((x) => x.id));
           const newAksiyon: Aksiyon = { ...a, id, createdBy: a.createdBy ?? CURRENT_USER, createdAt: a.createdAt ?? now() };
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
-          const hedefler = recalcHedefProgress(s.hedefler, aksiyonlar, newAksiyon.hedefId);
-          return { aksiyonlar, hedefler };
+          const projeler = recalcProjeProgress(s.projeler, aksiyonlar, newAksiyon.projeId);
+          return { aksiyonlar, projeler };
         }),
       updateAksiyon: (id, data) =>
         set((s) => {
@@ -158,21 +158,21 @@ export const useDataStore = create<DataState>()(
             }
             return updated;
           });
-          // Recalc parent hedef progress
+          // Recalc parent proje progress
           const aksiyon = aksiyonlar.find((a) => a.id === id);
-          const hedefler = aksiyon
-            ? recalcHedefProgress(s.hedefler, aksiyonlar, aksiyon.hedefId)
-            : s.hedefler;
-          return { aksiyonlar, hedefler };
+          const projeler = aksiyon
+            ? recalcProjeProgress(s.projeler, aksiyonlar, aksiyon.projeId)
+            : s.projeler;
+          return { aksiyonlar, projeler };
         }),
       deleteAksiyon: (id) => {
         const state = get();
         const aksiyon = state.aksiyonlar.find((a) => a.id === id);
         const aksiyonlar = state.aksiyonlar.filter((a) => a.id !== id);
-        const hedefler = aksiyon
-          ? recalcHedefProgress(state.hedefler, aksiyonlar, aksiyon.hedefId)
-          : state.hedefler;
-        set({ aksiyonlar, hedefler });
+        const projeler = aksiyon
+          ? recalcProjeProgress(state.projeler, aksiyonlar, aksiyon.projeId)
+          : state.projeler;
+        set({ aksiyonlar, projeler });
         return true;
       },
 
@@ -198,8 +198,8 @@ export const useDataStore = create<DataState>()(
           tagDefinitions: s.tagDefinitions.map((t) =>
             t.name === oldName ? { ...t, name: newName } : t
           ),
-          // Update all hedef references
-          hedefler: s.hedefler.map((h) =>
+          // Update all proje references
+          projeler: s.projeler.map((h) =>
             h.tags?.includes(oldName)
               ? { ...h, tags: h.tags.map((t) => (t === oldName ? newName : t)) }
               : h
@@ -207,10 +207,10 @@ export const useDataStore = create<DataState>()(
         })),
 
       // Selectors
-      getHedefById: (id) => get().hedefler.find((h) => h.id === id),
+      getProjeById: (id) => get().projeler.find((h) => h.id === id),
       getAksiyonById: (id) => get().aksiyonlar.find((a) => a.id === id),
-      getAksiyonlarByHedefId: (hedefId) =>
-        get().aksiyonlar.filter((a) => a.hedefId === hedefId),
+      getAksiyonlarByHedefId: (projeId) =>
+        get().aksiyonlar.filter((a) => a.projeId === projeId),
       getTagColor: (tagName) => {
         const def = get().tagDefinitions.find(
           (t) => t.name.toLocaleLowerCase("tr") === tagName.toLocaleLowerCase("tr")

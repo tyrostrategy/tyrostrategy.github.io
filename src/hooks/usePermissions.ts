@@ -2,26 +2,26 @@ import { useMemo } from "react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRoleStore } from "@/stores/roleStore";
 import { useDataStore } from "@/stores/dataStore";
-import type { Hedef, Aksiyon, RolePermissions } from "@/types";
+import type { Proje, Aksiyon, RolePermissions } from "@/types";
 
 export function usePermissions() {
   const user = useCurrentUser();
   const perms: RolePermissions = useRoleStore((s) => s.getPermissions(user.role));
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
   const normalizedName = user.name.toLowerCase().trim();
 
-  // Kullanicinin hedef ID'leri (owner veya participant)
+  // Kullanicinin proje ID'leri (owner veya participant)
   const myHedefIds = useMemo(() => {
     const ids = new Set<string>();
 
     if (!perms.viewOnlyOwn) {
       // Admin — hepsini gorebilir
-      for (const h of hedefler) ids.add(h.id);
+      for (const h of projeler) ids.add(h.id);
     } else if (user.role === "Proje Lideri") {
-      // Proje lideri → owner veya participant oldugu hedefler
-      for (const h of hedefler) {
+      // Proje lideri → owner veya participant oldugu projeler
+      for (const h of projeler) {
         if (
           h.owner?.toLowerCase().trim() === normalizedName ||
           h.participants?.some((p) => p.toLowerCase().trim() === normalizedName)
@@ -33,12 +33,12 @@ export function usePermissions() {
       // Kullanici → aksiyonlarinin hedefleri
       for (const a of aksiyonlar) {
         if (a.owner?.toLowerCase().trim() === normalizedName) {
-          ids.add(a.hedefId);
+          ids.add(a.projeId);
         }
       }
     }
     return ids;
-  }, [perms.viewOnlyOwn, user.role, normalizedName, hedefler, aksiyonlar]);
+  }, [perms.viewOnlyOwn, user.role, normalizedName, projeler, aksiyonlar]);
 
   // Kullanicinin aksiyonlari (owner veya kendi hedeflerindeki)
   const myAksiyonIds = useMemo(() => {
@@ -46,7 +46,7 @@ export function usePermissions() {
     for (const a of aksiyonlar) {
       if (
         a.owner?.toLowerCase().trim() === normalizedName ||
-        myHedefIds.has(a.hedefId)
+        myHedefIds.has(a.projeId)
       ) {
         ids.add(a.id);
       }
@@ -58,7 +58,7 @@ export function usePermissions() {
   const canAccessPage = (pageKey: keyof RolePermissions["pages"]) => perms.pages[pageKey];
 
   // ===== Veri filtreleme =====
-  const filterHedefler = (list: Hedef[]): Hedef[] => {
+  const filterProjeler = (list: Proje[]): Proje[] => {
     if (!perms.viewOnlyOwn) return list;
     return list.filter((h) => myHedefIds.has(h.id));
   };
@@ -75,16 +75,16 @@ export function usePermissions() {
 
   // ===== CRUD izinleri =====
 
-  // Hedef
-  const canCreateHedef = perms.hedef.create;
-  const canEditHedef = (_hedefId: string) => perms.hedef.edit;
-  const canDeleteHedef = (hedefId: string) => {
-    if (!perms.hedef.delete) return false;
+  // Proje
+  const canCreateProje = perms.proje.create;
+  const canEditProje = (_hedefId: string) => perms.proje.edit;
+  const canDeleteProje = (projeId: string) => {
+    if (!perms.proje.delete) return false;
     // Cascade: alt aksiyon varsa silinemez
-    return !aksiyonlar.some((a) => a.hedefId === hedefId);
+    return !aksiyonlar.some((a) => a.projeId === projeId);
   };
-  const getHedefDeleteReason = (hedefId: string): string | null => {
-    const childCount = aksiyonlar.filter((a) => a.hedefId === hedefId).length;
+  const getProjeDeleteReason = (projeId: string): string | null => {
+    const childCount = aksiyonlar.filter((a) => a.projeId === projeId).length;
     if (childCount > 0) return `Bu hedefin altında ${childCount} aksiyon var. Önce aksiyonları silin.`;
     return null;
   };
@@ -109,11 +109,11 @@ export function usePermissions() {
     canAccessAyarlar: perms.pages.ayarlar,
     canAccessGuvenlik: perms.pages.guvenlik,
 
-    // Hedef
-    canCreateHedef,
-    canEditHedef,
-    canDeleteHedef,
-    getHedefDeleteReason,
+    // Proje
+    canCreateProje,
+    canEditProje,
+    canDeleteProje,
+    getProjeDeleteReason,
 
     // Aksiyon
     canCreateAksiyon,
@@ -121,7 +121,7 @@ export function usePermissions() {
     canDeleteAksiyon,
 
     // Filtreleme
-    filterHedefler,
+    filterProjeler,
     filterAksiyonlar,
 
     // Yardimcilar

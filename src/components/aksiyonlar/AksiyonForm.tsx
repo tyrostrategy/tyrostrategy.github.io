@@ -23,7 +23,7 @@ const createAksiyonSchema = (t: TFunction) =>
     name: z.string().min(1, t("validation.actionNameRequired")),
     description: z.string().optional(),
     owner: z.string().min(1, t("validation.ownerRequired")),
-    hedefId: z.string().min(1, t("validation.objectiveRequired")),
+    projeId: z.string().min(1, t("validation.objectiveRequired")),
     progress: z.number().min(0).max(100),
     status: z.enum(["On Track", "At Risk", "Behind", "Achieved", "Not Started", "Cancelled", "On Hold"]),
     startDate: z.string().min(1, t("validation.startDateRequired")),
@@ -34,13 +34,13 @@ type AksiyonFormData = z.infer<ReturnType<typeof createAksiyonSchema>>;
 
 interface AksiyonFormProps {
   aksiyon?: Aksiyon;
-  defaultHedefId?: string;
+  defaultProjeId?: string;
   onSuccess: () => void;
 }
 
-export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: AksiyonFormProps) {
+export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess }: AksiyonFormProps) {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const addAksiyon = useDataStore((s) => s.addAksiyon);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +59,7 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
       name: aksiyon?.name ?? "",
       description: aksiyon?.description ?? "",
       owner: aksiyon?.owner ?? CURRENT_USER,
-      hedefId: aksiyon?.hedefId ?? defaultHedefId ?? "",
+      projeId: aksiyon?.projeId ?? defaultProjeId ?? "",
       progress: aksiyon?.progress ?? 0,
       status: aksiyon?.status ?? "Not Started",
       startDate: aksiyon?.startDate ?? "",
@@ -208,7 +208,7 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
       />
 
       <Controller
-        name="hedefId"
+        name="projeId"
         control={control}
         render={({ field }) => (
           <div>
@@ -223,12 +223,12 @@ export default function AksiyonForm({ aksiyon, defaultHedefId, onSuccess }: Aksi
               }}
               variant="bordered"
               size="sm"
-              isInvalid={!!errors.hedefId}
-              errorMessage={errors.hedefId?.message}
+              isInvalid={!!errors.projeId}
+              errorMessage={errors.projeId?.message}
               classNames={{ trigger: "border-tyro-border" }}
               placeholder={t("forms.action.objectivePlaceholder")}
             >
-              {hedefler.map((h) => (
+              {projeler.map((h) => (
                 <SelectItem key={h.id}>{h.name}</SelectItem>
               ))}
             </Select>

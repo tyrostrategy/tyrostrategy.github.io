@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { useDataStore } from "@/stores/dataStore";
 import { useCurrentUser } from "./useCurrentUser";
-import type { Hedef, Aksiyon } from "@/types";
+import type { Proje, Aksiyon } from "@/types";
 
 export interface DeadlineItem {
   id: string;
   name: string;
-  type: "hedef" | "aksiyon";
+  type: "proje" | "aksiyon";
   endDate: string;
   parentName: string;
   status: string;
@@ -16,7 +16,7 @@ export interface DeadlineItem {
 interface WorkspaceData {
   userName: string;
   department: string;
-  myHedefler: Hedef[];
+  myProjeler: Proje[];
   myAksiyonlar: Aksiyon[];
   totalAksiyonlar: number;
   achievedAksiyonlar: number;
@@ -30,26 +30,26 @@ interface WorkspaceData {
 
 export function useMyWorkspace(): WorkspaceData {
   const { name: userName, department } = useCurrentUser();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
   return useMemo(() => {
     const normalizedName = userName.toLowerCase().trim();
 
-    // Filter hedefler where user is owner or participant
-    const myHedefler = hedefler.filter(
+    // Filter projeler where user is owner or participant
+    const myProjeler = projeler.filter(
       (h) =>
         h.owner?.toLowerCase().trim() === normalizedName ||
         h.participants?.some((p) => p.toLowerCase().trim() === normalizedName)
     );
 
-    const myHedefIds = new Set(myHedefler.map((h) => h.id));
+    const myHedefIds = new Set(myProjeler.map((h) => h.id));
 
-    // Filter aksiyonlar: owner or belongs to user's hedef
+    // Filter aksiyonlar: owner or belongs to user's proje
     const myAksiyonlar = aksiyonlar.filter(
       (a) =>
         a.owner?.toLowerCase().trim() === normalizedName ||
-        myHedefIds.has(a.hedefId)
+        myHedefIds.has(a.projeId)
     );
 
     // Counts
@@ -72,18 +72,18 @@ export function useMyWorkspace(): WorkspaceData {
       statusBreakdown[a.status] = (statusBreakdown[a.status] || 0) + 1;
     }
 
-    // Upcoming deadlines — combine hedef and aksiyon deadlines
-    const hedefNameMap = new Map(hedefler.map((h) => [h.id, h.name]));
+    // Upcoming deadlines — combine proje and aksiyon deadlines
+    const hedefNameMap = new Map(projeler.map((h) => [h.id, h.name]));
 
     const allDeadlines: DeadlineItem[] = [];
 
-    // Hedef deadlines (owner)
-    for (const h of myHedefler) {
+    // Proje deadlines (owner)
+    for (const h of myProjeler) {
       if (h.status !== "Achieved" && h.endDate) {
         allDeadlines.push({
           id: h.id,
           name: h.name,
-          type: "hedef",
+          type: "proje",
           endDate: h.endDate,
           parentName: h.source,
           status: h.status,
@@ -100,7 +100,7 @@ export function useMyWorkspace(): WorkspaceData {
           name: a.name,
           type: "aksiyon",
           endDate: a.endDate,
-          parentName: hedefNameMap.get(a.hedefId) ?? "-",
+          parentName: hedefNameMap.get(a.projeId) ?? "-",
           status: a.status,
           progress: a.progress,
         });
@@ -114,7 +114,7 @@ export function useMyWorkspace(): WorkspaceData {
     return {
       userName,
       department,
-      myHedefler,
+      myProjeler,
       myAksiyonlar,
       totalAksiyonlar,
       achievedAksiyonlar,
@@ -125,5 +125,5 @@ export function useMyWorkspace(): WorkspaceData {
       statusBreakdown,
       upcomingDeadlines,
     };
-  }, [userName, department, hedefler, aksiyonlar]);
+  }, [userName, department, projeler, aksiyonlar]);
 }

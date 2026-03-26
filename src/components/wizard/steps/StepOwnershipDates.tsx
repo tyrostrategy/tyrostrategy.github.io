@@ -13,7 +13,7 @@ interface Props {
 
 export default function StepOwnershipDates({ control, errors }: Props) {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
 
   return (
     <div className="flex flex-col gap-5">
@@ -91,7 +91,7 @@ export default function StepOwnershipDates({ control, errors }: Props) {
               classNames={{ trigger: "border-tyro-border" }}
               placeholder={t("forms.objective.parentObjectivePlaceholder")}
             >
-              {hedefler.map((h) => (
+              {projeler.map((h) => (
                 <SelectItem key={h.id}>{h.name}</SelectItem>
               ))}
             </Select>

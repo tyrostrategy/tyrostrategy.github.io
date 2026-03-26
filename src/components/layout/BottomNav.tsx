@@ -102,14 +102,14 @@ export default function BottomNav() {
 
   const mainItems = [
     { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace" },
-    { id: "hedefler", label: t("nav.objectives"), icon: Target, path: "/hedefler", pageKey: "hedefler" as const },
+    { id: "projeler", label: t("nav.objectives"), icon: Target, path: "/projeler", pageKey: "projeler" as const },
     { id: "aksiyonlar", label: t("nav.actions"), icon: ListChecks, path: "/aksiyonlar", pageKey: "aksiyonlar" as const },
   ];
 
   const moreItems = [
     { id: "dashboard", label: t("nav.kpi"), icon: BarChart3, path: "/dashboard", pageKey: "kpi" as const },
     { id: "stratejik-karargah", label: t("nav.strategicHQ"), icon: Map, path: "/stratejik-karargah", pageKey: "stratejikKarargah" as const },
-    { id: "t-alignment", label: t("nav.tAlignment"), icon: GitMerge, path: "/t-alignment", pageKey: "hedefler" as const },
+    { id: "t-alignment", label: t("nav.tAlignment"), icon: GitMerge, path: "/t-alignment", pageKey: "projeler" as const },
     { id: "gantt", label: t("nav.gantt"), icon: GanttChart, path: "/gantt", pageKey: "gantt" as const },
     { id: "tree", label: t("nav.wbs"), icon: Network, path: "/tree", pageKey: "wbs" as const },
     { id: "users", label: t("nav.users"), icon: Users, path: "/kullanicilar", pageKey: "kullanicilar" as const },

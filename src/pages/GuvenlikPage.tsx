@@ -30,7 +30,7 @@ export default function GuvenlikPage() {
 
   const PAGE_LABELS: Record<keyof PagePermissions, string> = {
     kpi: t("nav.kpi"),
-    hedefler: t("nav.objectives"),
+    projeler: t("nav.objectives"),
     aksiyonlar: t("nav.actions"),
     gantt: t("nav.gantt"),
     wbs: t("nav.wbs"),
@@ -47,7 +47,7 @@ export default function GuvenlikPage() {
   };
 
   const ENTITY_LABELS: Record<string, string> = {
-    hedef: t("nav.objectives"),
+    proje: t("nav.objectives"),
     aksiyon: t("nav.actions"),
   };
 
@@ -72,7 +72,7 @@ export default function GuvenlikPage() {
     }));
   };
 
-  const toggleCrud = (role: UserRole, entity: "hedef" | "aksiyon", action: keyof CrudPermission) => {
+  const toggleCrud = (role: UserRole, entity: "proje" | "aksiyon", action: keyof CrudPermission) => {
     updateDraft(role, (p) => ({
       ...p,
       [entity]: { ...p[entity], [action]: !p[entity][action] },
@@ -183,7 +183,7 @@ export default function GuvenlikPage() {
                     {t("security.dataOperations")}
                   </h4>
                 </div>
-                {(["hedef", "aksiyon"] as const).map((entity) => (
+                {(["proje", "aksiyon"] as const).map((entity) => (
                   <div key={entity} className="mb-3">
                     <p className="text-[11px] font-semibold text-tyro-text-secondary mb-1.5 px-2">
                       {ENTITY_LABELS[entity]}

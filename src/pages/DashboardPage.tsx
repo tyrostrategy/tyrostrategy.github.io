@@ -63,28 +63,28 @@ export default function DashboardPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterOpen, setFilterOpen] = useState(false);
   const activeTab = searchParams.get("tab") || "dashboard";
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const openCommandPalette = useUIStore((s) => s.openCommandPalette);
 
   // ===== KPI Hesaplamaları (tamamen veriye dayalı) =====
 
-  // KPI 1: Hedef Tamamlanma — tüm aksiyonları "Achieved" olan hedefler
+  // KPI 1: Proje Tamamlanma — tüm aksiyonları "Achieved" olan projeler
   const hedefTamamlanan = useMemo(
     () =>
-      hedefler.filter((h) => {
-        const aksiyonlarForH = aksiyonlar.filter((a) => a.hedefId === h.id);
+      projeler.filter((h) => {
+        const aksiyonlarForH = aksiyonlar.filter((a) => a.projeId === h.id);
         if (aksiyonlarForH.length === 0) return false;
         return aksiyonlarForH.every((a) => a.status === "Achieved");
       }),
-    [hedefler, aksiyonlar]
+    [projeler, aksiyonlar]
   );
-  const hedefProgress =
-    hedefler.length > 0 ? Math.round((hedefTamamlanan.length / hedefler.length) * 100) : 0;
+  const projeProgress =
+    projeler.length > 0 ? Math.round((hedefTamamlanan.length / projeler.length) * 100) : 0;
 
   // KPI 2: Aktif Hedefler — On Track veya At Risk
-  const aktivHedefler = hedefler.filter((h) => h.status === "On Track" || h.status === "At Risk");
-  const onTrackCount = hedefler.filter((h) => h.status === "On Track").length;
+  const aktivHedefler = projeler.filter((h) => h.status === "On Track" || h.status === "At Risk");
+  const onTrackCount = projeler.filter((h) => h.status === "On Track").length;
 
   // KPI 3: Aksiyon Tamamlanma — Achieved aksiyonlar / toplam aksiyon
   const achievedAksiyonlar = aksiyonlar.filter((a) => a.status === "Achieved");
@@ -98,14 +98,14 @@ export default function DashboardPage() {
 
   const kpiCards = [
     {
-      label: "Hedef Tamamlanma",
+      label: "Proje Tamamlanma",
       value: hedefTamamlanan.length,
-      target: hedefler.length,
+      target: projeler.length,
       icon: "Target",
       color: "var(--tyro-navy)",
-      progress: hedefProgress,
-      contextText: `${hedefTamamlanan.length}/${hedefler.length} hedef`,
-      onClick: () => navigate("/hedefler"),
+      progress: projeProgress,
+      contextText: `${hedefTamamlanan.length}/${projeler.length} proje`,
+      onClick: () => navigate("/projeler"),
     },
     {
       label: "Aktif Hedefler",
@@ -114,8 +114,8 @@ export default function DashboardPage() {
       color: "var(--tyro-gold)",
       trend: onTrackCount,
       trendLabel: "yolunda",
-      contextText: `${hedefler.length} toplam hedef`,
-      onClick: () => navigate("/hedefler"),
+      contextText: `${projeler.length} toplam proje`,
+      onClick: () => navigate("/projeler"),
     },
     {
       label: "Aksiyon Tamamlanma",
@@ -297,7 +297,7 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <GlassCard className="p-6 overflow-hidden flex-1 flex flex-col cursor-pointer" onClick={() => navigate("/hedefler")}>
+      <GlassCard className="p-6 overflow-hidden flex-1 flex flex-col cursor-pointer" onClick={() => navigate("/projeler")}>
         <div className="flex items-center justify-between mb-4">
           <span className="text-[13px] font-semibold text-tyro-text-secondary">{kpi.label}</span>
           <div
@@ -352,14 +352,14 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
                   Tamamlanan Hedefler
                 </p>
                 {completedHedefler.length === 0 ? (
-                  <p className="text-xs text-tyro-text-muted">Henüz tamamlanan hedef yok</p>
+                  <p className="text-xs text-tyro-text-muted">Henüz tamamlanan proje yok</p>
                 ) : (
                   <ul className="space-y-1">
                     {completedHedefler.slice(0, 3).map((h) => (
                       <li
                         key={h.id}
                         className="text-xs text-tyro-text-secondary truncate cursor-pointer hover:text-tyro-navy transition-colors"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/hedefler?selected=${h.id}`); }}
+                        onClick={(e) => { e.stopPropagation(); navigate(`/projeler?selected=${h.id}`); }}
                       >
                         <span className="text-tyro-success mr-1.5">●</span>{h.name}
                       </li>
@@ -369,7 +369,7 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
                 <button
                   type="button"
                   className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-tyro-navy/[0.07] text-xs font-semibold text-tyro-navy hover:bg-tyro-navy/[0.14] transition-colors cursor-pointer"
-                  onClick={(e) => { e.stopPropagation(); navigate("/hedefler"); }}
+                  onClick={(e) => { e.stopPropagation(); navigate("/projeler"); }}
                 >
                   Tüm hedefleri gör
                   <ArrowRight size={12} />

@@ -2,7 +2,7 @@
   "nav": {
     "home": "Home",
     "kpi": "Reports",
-    "objectives": "Objectives",
+    "projects": "Projects",
     "actions": "Actions",
     "gantt": "Gantt",
     "wbs": "WBS",
@@ -82,13 +82,13 @@
   },
   "roles": {
     "admin": "Admin",
-    "projectLeader": "Objective Leader",
+    "projectLeader": "Project Leader",
     "user": "User"
   },
   "pages": {
-    "objectives": {
-      "title": "Objectives",
-      "subtitle": "Manage your strategic objectives"
+    "projects": {
+      "title": "Projects",
+      "subtitle": "Manage your strategic projects"
     },
     "actions": {
       "title": "Actions",
@@ -96,7 +96,7 @@
     },
     "gantt": {
       "title": "Gantt Timeline",
-      "subtitle": "View your objectives and actions on a timeline",
+      "subtitle": "View your projects and actions on a timeline",
       "quarter": "Quarter",
       "year": "Year",
       "all": "All",
@@ -108,16 +108,16 @@
     },
     "strategyMap": {
       "title": "Strategy Map",
-      "subtitle": "Visualize the corporate strategic objective hierarchy",
+      "subtitle": "Visualize the corporate strategic project hierarchy",
       "companyName": "Company Name",
       "strategicTheme": "Strategic Theme",
       "showActions": "Show actions",
       "hideActions": "Hide actions",
-      "noObjectives": "No objectives under this theme"
+      "noObjectives": "No projects under this theme"
     },
     "tAlignment": {
       "title": "T-Align",
-      "subtitle": "Visualize relationships between objectives"
+      "subtitle": "Visualize relationships between projects"
     },
     "strategicHQ": {
       "title": "HQ",
@@ -141,12 +141,11 @@
       "goHome": "Go to Home Page"
     }
   },
-  "forms": {
-    "objective": {
-      "name": "Objective Name",
-      "namePlaceholder": "Enter objective name",
+  "forms": { "objective": {
+      "name": "Project Name",
+      "namePlaceholder": "Enter project name",
       "description": "Description",
-      "descriptionPlaceholder": "Enter objective description (optional)",
+      "descriptionPlaceholder": "Enter project description (optional)",
       "owner": "Owner",
       "ownerPlaceholder": "Select owner",
       "source": "Source",
@@ -162,15 +161,15 @@
       "department": "Department",
       "departmentPlaceholder": "Select department",
       "reviewDate": "Review Date",
-      "parentObjective": "Parent Objective",
-      "parentObjectivePlaceholder": "Select parent objective (optional)",
-      "standalone": "Standalone Objective"
+      "parentObjective": "Parent Project",
+      "parentProjectPlaceholder": "Select parent project (optional)",
+      "standalone": "Standalone Project"
     },
     "action": {
       "name": "Action Name",
       "namePlaceholder": "Enter action name",
-      "objective": "Objective",
-      "objectivePlaceholder": "Select objective",
+      "project": "Project",
+      "projectPlaceholder": "Select project",
       "assignee": "Assignee",
       "assigneePlaceholder": "Select assignee",
       "progress": "Progress"
@@ -185,12 +184,12 @@
     "endDateRequired": "End date is required",
     "actionNameRequired": "Action name is required",
     "assigneeRequired": "Assignee is required",
-    "objectiveRequired": "Please select an objective"
+    "objectiveRequired": "Please select an project"
   },
   "toast": {
-    "objectiveCreated": "Objective created",
-    "objectiveUpdated": "Objective updated",
-    "objectiveDeleted": "Objective deleted",
+    "objectiveCreated": "Project created",
+    "objectiveUpdated": "Project updated",
+    "objectiveDeleted": "Project deleted",
     "actionCreated": "Action created",
     "actionUpdated": "Action updated",
     "actionDeleted": "Action deleted",
@@ -206,14 +205,14 @@
     "goodMorning": "Good morning",
     "goodAfternoon": "Good afternoon",
     "goodEvening": "Good evening",
-    "myObjectives": "My Objectives",
+    "myObjectives": "My Projects",
     "myActions": "My Actions",
     "completed": "Completed",
     "delayedOrRisky": "Delayed / At Risk",
     "upcomingDates": "Upcoming Dates",
     "actionStatus": "Action Status",
     "individualProgress": "Individual Progress",
-    "objectivesCount": "objectives",
+    "objectivesCount": "projects",
     "actionsCompleted": "actions completed",
     "actionsNeedAttention": "actions need attention",
     "leader": "Leader",
@@ -222,8 +221,8 @@
     "andMore": "and {{count}} more...",
     "noDeadlines": "No upcoming deadlines",
     "deadlineCount": "{{count}} upcoming deadlines",
-    "noObjectives": "No assigned objectives",
-    "moreObjectives": "and {{count}} more objectives →",
+    "noObjectives": "No assigned projects",
+    "moreObjectives": "and {{count}} more projects →",
     "noActions": "No actions yet",
     "overall": "Overall",
     "personalKPI": "Personal Performance",
@@ -235,7 +234,7 @@
     "atRisk": "at risk",
     "sourceDistribution": "Source Distribution",
     "tagDistribution": "Tag Distribution",
-    "objectiveProgress": "Objective Progress",
+    "objectiveProgress": "Project Progress",
     "actionProgress": "Action Progress",
     "statusDistribution": "Status Distribution"
   },
@@ -245,9 +244,9 @@
     "login": "Sign In",
     "strategicManagement": "Strategic Management",
     "platform": "Platform",
-    "heroDescription": "Track your corporate objectives, manage your actions, and make strategic decisions together with your team.",
+    "heroDescription": "Track your corporate projects, manage your actions, and make strategic decisions together with your team.",
     "strategicPlanning": "Strategic Planning",
-    "strategicPlanningDesc": "Objective and action management",
+    "strategicPlanningDesc": "Project and action management",
     "kpiDashboard": "KPI Dashboard",
     "kpiDashboardDesc": "Real-time metrics",
     "teamManagement": "Strategic Views",
@@ -259,17 +258,17 @@
   "dashboard": {
     "title": "KPI Dashboard",
     "overallProgress": "Overall Progress",
-    "tagDistribution": "Objective Distribution by Tag",
+    "tagDistribution": "Project Distribution by Tag",
     "tagDistributionDesc": "Average progress per tag",
     "sourceDistribution": "Action Distribution by Source",
     "sourceSubtitle": "Turkey, Corporate and International operations",
     "completed": "Completed",
     "inProgress": "In Progress",
     "pending": "Pending",
-    "objectiveStatusBreakdown": "Objective Status Breakdown",
+    "objectiveStatusBreakdown": "Project Status Breakdown",
     "recentActivities": "Recent Activities",
-    "summaryGood": "{{count}} active objectives on track. Action completion rate {{rate}}%.",
-    "summaryWarning": "{{activeCount}} active objectives tracked, {{delayedCount}} actions need attention. Overall completion {{rate}}%."
+    "summaryGood": "{{count}} active projects on track. Action completion rate {{rate}}%.",
+    "summaryWarning": "{{activeCount}} active projects tracked, {{delayedCount}} actions need attention. Overall completion {{rate}}%."
   },
   "security": {
     "pageAccess": "Page Access",
@@ -282,10 +281,10 @@
     "viewOwnDataOnly": "View Own Data Only",
     "resetToDefaults": "Reset to Defaults",
     "deleteRulesTitle": "Tyro Deletion Rules",
-    "deleteRuleObjective": "Objectives with sub-actions cannot be deleted — delete the actions first",
+    "deleteRuleObjective": "Projects with sub-actions cannot be deleted — delete the actions first",
     "deleteRulesNote": "These rules always apply regardless of permission settings",
     "fullAccess": "Full system access",
-    "ownObjectivesAndActions": "Own objectives and actions",
+    "ownObjectivesAndActions": "Own projects and actions",
     "assignedActionsOnly": "Assigned actions only"
   },
   "profile": {
@@ -300,7 +299,7 @@
     "selectDepartment": "Select department",
     "authRole": "Authorization Role",
     "selectRole": "Select role",
-    "totalObjectives": "Total Objectives",
+    "totalObjectives": "Total Projects",
     "activeActions": "Active Actions",
     "completedLabel": "Completed"
   },
@@ -321,13 +320,13 @@
     "about": "About",
     "version": "Version",
     "tagManagement": "Tag Management",
-    "tagManagementDesc": "Manage tags and their colors that can be assigned to objectives",
+    "tagManagementDesc": "Manage tags and their colors that can be assigned to projects",
     "addTag": "New Tag",
     "tagName": "Tag Name",
     "tagColor": "Color",
     "tagNamePlaceholder": "Enter tag name...",
     "tagDeleteConfirm": "Are you sure you want to delete this tag?",
-    "tagInUseWarning": "This tag is used in {{count}} objectives. After deletion, tag references in objectives will remain.",
+    "tagInUseWarning": "This tag is used in {{count}} projects. After deletion, tag references in projects will remain.",
     "tagNameRequired": "Tag name is required",
     "tagNameDuplicate": "A tag with this name already exists",
     "tagCreated": "Tag created",
@@ -347,7 +346,7 @@
     "deleteConfirm": "Are you sure you want to delete this record?"
   },
   "confirm": {
-    "deleteObjective": "Are you sure you want to delete this objective? This action cannot be undone.",
+    "deleteObjective": "Are you sure you want to delete this project? This action cannot be undone.",
     "deleteAction": "Are you sure you want to delete this action? This action cannot be undone.",
     "confirm": "Confirm",
     "cancel": "Cancel"
@@ -355,7 +354,7 @@
   "search": {
     "placeholder": "Search commands or pages...",
     "pages": "Pages",
-    "objectives": "Objectives",
+    "projects": "Projects",
     "actions": "Actions",
     "navigate": "navigate",
     "open": "open",
@@ -372,30 +371,30 @@
     "allRightsReserved": "All rights reserved"
   },
   "detail": {
-    "backToObjective": "Back to Objective",
-    "addObjective": "Add Objective",
+    "backToObjective": "Back to Project",
+    "addObjective": "Add Project",
     "addAction": "Add Action",
-    "objectiveDetail": "Objective Detail",
+    "objectiveDetail": "Project Detail",
     "actionDetail": "Action Detail",
-    "editObjective": "Edit Objective",
+    "editObjective": "Edit Project",
     "editAction": "Edit Action",
     "noActionsYet": "No actions added yet.",
-    "parentObjective": "Parent Objective",
-    "relatedObjectives": "Related Objectives"
+    "parentObjective": "Parent Project",
+    "relatedObjectives": "Related Projects"
   },
   "karargah": {
     "tablo": "Table",
     "master": "Master",
-    "selectObjective": "Select an objective",
-    "selectObjectiveDesc": "Select an objective from the list to view details",
+    "selectObjective": "Select an project",
+    "selectObjectiveDesc": "Select an project from the list to view details",
     "generalStatus": "General Status",
     "overallProgress": "Overall Progress",
-    "objectiveInfo": "Objective Details",
+    "objectiveInfo": "Project Details",
     "actionsCount": "Actions ({{count}})",
     "addAction": "Add Action",
     "actionsCompleted": "{{completed}}/{{total}} actions completed",
     "clearFilters": "Clear filters",
-    "noObjectivesFound": "No objectives match these filters",
+    "noObjectivesFound": "No projects match these filters",
     "sortByName": "By name",
     "sortByDate": "By date",
     "sortByProgress": "By progress",
@@ -411,8 +410,8 @@
     "vertical": "Vertical",
     "autoLayout": "Auto Layout",
     "fitView": "Fit View",
-    "parentObjective": "Parent Objective",
-    "childObjective": "Child Objective",
+    "parentObjective": "Parent Project",
+    "childObjective": "Child Project",
     "standalone": "Standalone",
     "actions": "actions"
   },

@@ -47,7 +47,7 @@ describe("i18n setup", () => {
 
     it("role keys exist in Turkish", () => {
       expect(i18n.t("roles.admin", { lng: "tr" })).toBe("Admin");
-      expect(i18n.t("roles.projectLeader", { lng: "tr" })).toBe("Hedef Lideri");
+      expect(i18n.t("roles.projectLeader", { lng: "tr" })).toBe("Proje Lideri");
       expect(i18n.t("roles.user", { lng: "tr" })).toBe("Kullanıcı");
     });
 

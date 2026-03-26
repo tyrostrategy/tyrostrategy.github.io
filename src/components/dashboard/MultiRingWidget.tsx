@@ -12,26 +12,26 @@ const ringConfigs = [
 
 export default function MultiRingWidget() {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const [hoveredRing, setHoveredRing] = useState<number | null>(null);
 
   const rings = useMemo(() => {
-    const hedefCompleted = hedefler.filter((h) => {
-      const aksiyonlarForH = aksiyonlar.filter((a) => a.hedefId === h.id);
+    const projeCompleted = projeler.filter((h) => {
+      const aksiyonlarForH = aksiyonlar.filter((a) => a.projeId === h.id);
       if (aksiyonlarForH.length === 0) return false;
       return aksiyonlarForH.every((a) => a.status === "Achieved");
     }).length;
-    const hedefProgress = hedefler.length > 0 ? Math.round((hedefCompleted / hedefler.length) * 100) : 0;
+    const projeProgress = projeler.length > 0 ? Math.round((projeCompleted / projeler.length) * 100) : 0;
 
     const aksiyonCompleted = aksiyonlar.filter((a) => a.status === "Achieved").length;
     const aksiyonProgress = aksiyonlar.length > 0 ? Math.round((aksiyonCompleted / aksiyonlar.length) * 100) : 0;
 
     return [
-      { label: t("nav.objectives"), progress: hedefProgress, color: "var(--tyro-navy)", actual: hedefCompleted, total: hedefler.length },
+      { label: t("nav.objectives"), progress: projeProgress, color: "var(--tyro-navy)", actual: projeCompleted, total: projeler.length },
       { label: t("nav.actions"), progress: aksiyonProgress, color: "var(--tyro-success)", actual: aksiyonCompleted, total: aksiyonlar.length },
     ];
-  }, [hedefler, aksiyonlar, t]);
+  }, [projeler, aksiyonlar, t]);
 
   return (
     <GlassCard className="p-6 flex-1 flex flex-col">

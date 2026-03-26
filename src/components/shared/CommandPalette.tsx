@@ -29,7 +29,7 @@ interface SearchResult {
 function getPages(t: (key: string) => string): { name: string; path: string; icon: LucideIcon }[] {
   return [
     { name: t("dashboard.title"), path: "/dashboard", icon: LayoutDashboard },
-    { name: t("nav.objectives"), path: "/hedefler", icon: Target },
+    { name: t("nav.objectives"), path: "/projeler", icon: Target },
     { name: t("nav.actions"), path: "/aksiyonlar", icon: ListChecks },
     { name: t("nav.gantt"), path: "/gantt", icon: GanttChart },
     { name: t("nav.wbs"), path: "/tree", icon: Network },
@@ -42,7 +42,7 @@ export default function CommandPalette() {
   const { t } = useTranslation();
   const open = useUIStore((s) => s.commandPaletteOpen);
   const close = useUIStore((s) => s.closeCommandPalette);
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const navigate = useNavigate();
 
@@ -101,7 +101,7 @@ export default function CommandPalette() {
 
     // Data search results (only when query is not empty)
     if (q) {
-      hedefler
+      projeler
         .filter((h) => h.name.toLowerCase().includes(q))
         .slice(0, 5)
         .forEach((h) =>
@@ -117,7 +117,7 @@ export default function CommandPalette() {
     }
 
     return out;
-  }, [query, hedefler, aksiyonlar]);
+  }, [query, projeler, aksiyonlar]);
 
   // Reset selectedIndex when results change
   useEffect(() => {

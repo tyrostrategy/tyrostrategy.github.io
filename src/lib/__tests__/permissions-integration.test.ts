@@ -4,7 +4,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useRoleStore, DEFAULT_PERMISSIONS } from "@/stores/roleStore";
 import { useDataStore } from "@/stores/dataStore";
 import { useUIStore } from "@/stores/uiStore";
-import type { Hedef, Proje, Gorev, RolePermissions } from "@/types";
+import type { Proje, Proje, Gorev, RolePermissions } from "@/types";
 
 // Mock departments
 vi.mock("@/config/departments", () => ({
@@ -30,7 +30,7 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 vi.mock("@/lib/data/mock-adapter", () => ({
-  getInitialHedefler: () => [],
+  getInitialProjeler: () => [],
   getInitialProjeler: () => [],
   getInitialGorevler: () => [],
 }));
@@ -40,24 +40,24 @@ function setCurrentUser(name: string, role: string) {
 }
 
 // === Test Data ===
-const hedef1: Hedef = {
-  id: "h1", name: "Hedef 1", source: "Kurumsal", status: "On Track",
+const hedef1: Proje = {
+  id: "h1", name: "Proje 1", source: "Kurumsal", status: "On Track",
   owner: "Leader User", leader: "Leader User", startDate: "2024-01-01", endDate: "2024-12-31",
 };
 
-const hedef2: Hedef = {
-  id: "h2", name: "Hedef 2", source: "Türkiye", status: "On Track",
+const hedef2: Proje = {
+  id: "h2", name: "Proje 2", source: "Türkiye", status: "On Track",
   owner: "Admin User", leader: "Admin User", startDate: "2024-01-01", endDate: "2024-12-31",
 };
 
 const proje1: Proje = {
-  id: "p1", hedefId: "h1", name: "Proje 1", department: "IT",
+  id: "p1", projeId: "h1", name: "Proje 1", department: "IT",
   projectLeader: "Leader User", participants: ["Leader User", "Normal User"],
   startDate: "2024-01-01", endDate: "2024-06-30", status: "On Track", progress: 50,
 };
 
 const proje2: Proje = {
-  id: "p2", hedefId: "h2", name: "Proje 2", department: "IT",
+  id: "p2", projeId: "h2", name: "Proje 2", department: "IT",
   projectLeader: "Admin User", participants: ["Admin User"],
   startDate: "2024-01-01", endDate: "2024-06-30", status: "On Track", progress: 30,
 };
@@ -80,7 +80,7 @@ const gorev3: Gorev = {
 beforeEach(() => {
   useRoleStore.setState({ permissions: { ...DEFAULT_PERMISSIONS } });
   useDataStore.setState({
-    hedefler: [hedef1, hedef2],
+    projeler: [hedef1, hedef2],
     projeler: [proje1, proje2],
     gorevler: [gorev1, gorev2, gorev3],
   });
@@ -90,21 +90,21 @@ describe("RBAC Integration Tests", () => {
   describe("Admin full access", () => {
     beforeEach(() => setCurrentUser("Admin User", "Admin"));
 
-    it("can create hedef", () => {
+    it("can create proje", () => {
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canCreateHedef).toBe(true);
+      expect(result.current.canCreateProje).toBe(true);
     });
 
-    it("can edit any hedef", () => {
+    it("can edit any proje", () => {
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canEditHedef("h1")).toBe(true);
-      expect(result.current.canEditHedef("h2")).toBe(true);
+      expect(result.current.canEditProje("h1")).toBe(true);
+      expect(result.current.canEditProje("h2")).toBe(true);
     });
 
-    it("can delete hedef without children", () => {
+    it("can delete proje without children", () => {
       useDataStore.setState({ projeler: [], gorevler: [] });
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canDeleteHedef("h1")).toBe(true);
+      expect(result.current.canDeleteProje("h1")).toBe(true);
     });
 
     it("can create proje", () => {
@@ -140,9 +140,9 @@ describe("RBAC Integration Tests", () => {
       expect(result.current.canDeleteGorev("g1")).toBe(true);
     });
 
-    it("sees all hedefler unfiltered", () => {
+    it("sees all projeler unfiltered", () => {
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.filterHedefler([hedef1, hedef2])).toHaveLength(2);
+      expect(result.current.filterProjeler([hedef1, hedef2])).toHaveLength(2);
     });
 
     it("sees all projeler unfiltered", () => {
@@ -159,9 +159,9 @@ describe("RBAC Integration Tests", () => {
   describe("Proje Lideri restricted access", () => {
     beforeEach(() => setCurrentUser("Leader User", "Proje Lideri"));
 
-    it("cannot create hedef", () => {
+    it("cannot create proje", () => {
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canCreateHedef).toBe(false);
+      expect(result.current.canCreateProje).toBe(false);
     });
 
     it("cannot create proje", () => {
@@ -196,10 +196,10 @@ describe("RBAC Integration Tests", () => {
       expect(result.current.canEditGorev("g2")).toBe(false);
     });
 
-    it("cannot delete hedef, even without children", () => {
+    it("cannot delete proje, even without children", () => {
       useDataStore.setState({ projeler: [] });
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canDeleteHedef("h1")).toBe(false);
+      expect(result.current.canDeleteProje("h1")).toBe(false);
     });
 
     it("cannot delete proje", () => {
@@ -212,9 +212,9 @@ describe("RBAC Integration Tests", () => {
       expect(result.current.canDeleteGorev("g1")).toBe(false);
     });
 
-    it("only sees hedefler they lead/own or linked via projects", () => {
+    it("only sees projeler they lead/own or linked via projects", () => {
       const { result } = renderHook(() => usePermissions());
-      const filtered = result.current.filterHedefler([hedef1, hedef2]);
+      const filtered = result.current.filterProjeler([hedef1, hedef2]);
       expect(filtered.some((h) => h.id === "h1")).toBe(true);
       expect(filtered.some((h) => h.id === "h2")).toBe(false);
     });
@@ -230,9 +230,9 @@ describe("RBAC Integration Tests", () => {
   describe("Kullanıcı restricted access", () => {
     beforeEach(() => setCurrentUser("Normal User", "Kullanıcı"));
 
-    it("cannot create hedef", () => {
+    it("cannot create proje", () => {
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canCreateHedef).toBe(false);
+      expect(result.current.canCreateProje).toBe(false);
     });
 
     it("cannot create proje", () => {
@@ -250,9 +250,9 @@ describe("RBAC Integration Tests", () => {
       expect(result.current.canEditGorev("g1")).toBe(true);
     });
 
-    it("cannot edit hedef", () => {
+    it("cannot edit proje", () => {
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canEditHedef("h1")).toBe(false);
+      expect(result.current.canEditProje("h1")).toBe(false);
     });
 
     it("cannot edit proje", () => {
@@ -272,9 +272,9 @@ describe("RBAC Integration Tests", () => {
       expect(filtered[0].id).toBe("g1");
     });
 
-    it("sees hedefler linked through assigned gorevler", () => {
+    it("sees projeler linked through assigned gorevler", () => {
       const { result } = renderHook(() => usePermissions());
-      const filtered = result.current.filterHedefler([hedef1, hedef2]);
+      const filtered = result.current.filterProjeler([hedef1, hedef2]);
       // Normal User assigned to g1 -> p1 -> h1
       expect(filtered.some((h) => h.id === "h1")).toBe(true);
       expect(filtered.some((h) => h.id === "h2")).toBe(false);
@@ -292,20 +292,20 @@ describe("RBAC Integration Tests", () => {
     it("updating role permissions reflects in usePermissions", () => {
       setCurrentUser("Leader User", "Proje Lideri");
 
-      // Verify Proje Lideri cannot create hedef by default
+      // Verify Proje Lideri cannot create proje by default
       let { result } = renderHook(() => usePermissions());
-      expect(result.current.canCreateHedef).toBe(false);
+      expect(result.current.canCreateProje).toBe(false);
 
-      // Grant hedef.create to Proje Lideri
+      // Grant proje.create to Proje Lideri
       const updatedPerms: RolePermissions = {
         ...DEFAULT_PERMISSIONS["Proje Lideri"],
-        hedef: { create: true, edit: true, delete: false },
+        proje: { create: true, edit: true, delete: false },
       };
       useRoleStore.getState().updatePermissions("Proje Lideri", updatedPerms);
 
       // Re-render hook
       ({ result } = renderHook(() => usePermissions()));
-      expect(result.current.canCreateHedef).toBe(true);
+      expect(result.current.canCreateProje).toBe(true);
     });
 
     it("resetting to defaults restores original permissions", () => {
@@ -330,11 +330,11 @@ describe("RBAC Integration Tests", () => {
   });
 
   describe("Cascade deletion rules", () => {
-    it("cannot delete hedef with child projeler", () => {
+    it("cannot delete proje with child projeler", () => {
       setCurrentUser("Admin User", "Admin");
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canDeleteHedef("h1")).toBe(false);
-      expect(result.current.getHedefDeleteReason("h1")).toContain("proje");
+      expect(result.current.canDeleteProje("h1")).toBe(false);
+      expect(result.current.getProjeDeleteReason("h1")).toContain("proje");
     });
 
     it("cannot delete proje with child gorevler", () => {
@@ -344,7 +344,7 @@ describe("RBAC Integration Tests", () => {
       expect(result.current.getProjeDeleteReason("p1")).toContain("görev");
     });
 
-    it("can delete hedef after removing all child projeler", () => {
+    it("can delete proje after removing all child projeler", () => {
       setCurrentUser("Admin User", "Admin");
 
       // h1 has p1 under it. Remove p1 (and its gorevler first)
@@ -354,8 +354,8 @@ describe("RBAC Integration Tests", () => {
       });
 
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canDeleteHedef("h1")).toBe(true);
-      expect(result.current.getHedefDeleteReason("h1")).toBeNull();
+      expect(result.current.canDeleteProje("h1")).toBe(true);
+      expect(result.current.getProjeDeleteReason("h1")).toBeNull();
     });
 
     it("can delete proje after removing all child gorevler", () => {
@@ -376,7 +376,7 @@ describe("RBAC Integration Tests", () => {
 
       // Step 1: Cannot delete h1 (has p1 with gorevler)
       let { result } = renderHook(() => usePermissions());
-      expect(result.current.canDeleteHedef("h1")).toBe(false);
+      expect(result.current.canDeleteProje("h1")).toBe(false);
 
       // Step 2: Remove gorevler from p1
       useDataStore.setState({ gorevler: [gorev2] });
@@ -386,7 +386,7 @@ describe("RBAC Integration Tests", () => {
       // Step 3: Remove p1
       useDataStore.setState({ projeler: [proje2] });
       ({ result } = renderHook(() => usePermissions()));
-      expect(result.current.canDeleteHedef("h1")).toBe(true);
+      expect(result.current.canDeleteProje("h1")).toBe(true);
     });
   });
 
@@ -398,7 +398,7 @@ describe("RBAC Integration Tests", () => {
       expect(result.current.canAccessKullanicilar).toBe(true);
       expect(result.current.canAccessAyarlar).toBe(true);
       expect(result.current.canAccessGuvenlik).toBe(true);
-      expect(result.current.canAccessPage("hedefler")).toBe(true);
+      expect(result.current.canAccessPage("projeler")).toBe(true);
       expect(result.current.canAccessPage("projeler")).toBe(true);
       expect(result.current.canAccessPage("gorevler")).toBe(true);
       expect(result.current.canAccessPage("gantt")).toBe(true);
@@ -408,7 +408,7 @@ describe("RBAC Integration Tests", () => {
     it("Proje Lideri can access data pages but not admin pages", () => {
       setCurrentUser("Leader User", "Proje Lideri");
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canAccessPage("hedefler")).toBe(true);
+      expect(result.current.canAccessPage("projeler")).toBe(true);
       expect(result.current.canAccessPage("projeler")).toBe(true);
       expect(result.current.canAccessPage("gorevler")).toBe(true);
       expect(result.current.canAccessPage("gantt")).toBe(true);
@@ -421,7 +421,7 @@ describe("RBAC Integration Tests", () => {
     it("Kullanıcı can access data pages but not admin pages", () => {
       setCurrentUser("Normal User", "Kullanıcı");
       const { result } = renderHook(() => usePermissions());
-      expect(result.current.canAccessPage("hedefler")).toBe(true);
+      expect(result.current.canAccessPage("projeler")).toBe(true);
       expect(result.current.canAccessPage("projeler")).toBe(true);
       expect(result.current.canAccessPage("gorevler")).toBe(true);
       expect(result.current.canAccessKPI).toBe(false);

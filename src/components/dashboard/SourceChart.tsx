@@ -15,15 +15,15 @@ import GlassCard from "@/components/ui/GlassCard";
 
 export default function SourceChart() {
   const { t } = useTranslation();
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
   const chartData = useMemo(() => {
     const sources = ["T\u00fcrkiye", "Kurumsal", "International"];
     return sources.map((source) => {
-      const sourceHedefler = hedefler.filter((h) => h.source === source);
+      const sourceHedefler = projeler.filter((h) => h.source === source);
       const sourceHedefIds = new Set(sourceHedefler.map((h) => h.id));
-      const sourceAksiyonlar = aksiyonlar.filter((a) => sourceHedefIds.has(a.hedefId));
+      const sourceAksiyonlar = aksiyonlar.filter((a) => sourceHedefIds.has(a.projeId));
       const achieved = sourceAksiyonlar.filter((a) => a.status === "Achieved").length;
       const active = sourceAksiyonlar.filter(
         (a) => a.status === "On Track" || a.status === "At Risk"
@@ -32,14 +32,14 @@ export default function SourceChart() {
 
       return {
         source: source === "International" ? "Intl" : source,
-        hedef: sourceHedefler.length,
+        proje: sourceHedefler.length,
         aksiyon: sourceAksiyonlar.length,
         tamamlanan: achieved,
         devamEden: active,
         bekleyen: Math.max(0, remaining),
       };
     });
-  }, [hedefler, aksiyonlar]);
+  }, [projeler, aksiyonlar]);
 
   return (
     <GlassCard className="p-5 flex-1 flex flex-col">

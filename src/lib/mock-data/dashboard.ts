@@ -3,7 +3,7 @@ import type { ActivityItem, ChartDataPoint } from "@/types";
 export const kpiData = [
   {
     id: "goal-completion",
-    label: "Hedef Tamamlanma",
+    label: "Proje Tamamlanma",
     value: 2,
     target: 46,
     suffix: "",
@@ -68,7 +68,7 @@ export const chartData: ChartDataPoint[] = [
 ];
 
 export const multiRingData = [
-  { label: "Hedefler", progress: 4, color: "var(--tyro-navy)" },
+  { label: "Projeler", progress: 4, color: "var(--tyro-navy)" },
   { label: "Projeler", progress: 2, color: "var(--tyro-gold)" },
   { label: "Bütçe", progress: 68, color: "var(--tyro-success)" },
 ];

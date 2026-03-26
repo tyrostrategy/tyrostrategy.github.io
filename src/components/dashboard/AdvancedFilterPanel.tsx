@@ -147,8 +147,8 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                 </div>
               </FilterSection>
 
-              {/* Hedef Lideri */}
-              <FilterSection title="Hedef Lideri">
+              {/* Proje Lideri */}
+              <FilterSection title="Proje Lideri">
                 <div className="flex flex-wrap gap-2">
                   {liderOptions.map((l) => (
                     <ChipToggle key={l} label={l} active={lider.has(l)} onClick={() => toggleSet(lider, l, setLider)} />

@@ -16,14 +16,14 @@ function formatDate(d: string): string {
 export default function StepReview({ control }: Props) {
   const { t } = useTranslation();
   const data = useWatch({ control });
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const parentName = data.parentObjectiveId
-    ? hedefler.find((h) => h.id === data.parentObjectiveId)?.name
+    ? projeler.find((h) => h.id === data.parentObjectiveId)?.name
     : null;
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Hedef Summary */}
+      {/* Proje Summary */}
       <div className="rounded-2xl border border-tyro-border overflow-hidden">
         <div className="bg-tyro-navy px-4 py-2.5">
           <span className="text-[11px] font-bold text-white/70 uppercase tracking-wide">
@@ -70,7 +70,7 @@ export default function StepReview({ control }: Props) {
 
           {parentName && (
             <div className="text-xs text-tyro-text-muted pt-1 border-t border-tyro-border">
-              Ana Hedef: <span className="font-medium text-tyro-text-secondary">{parentName}</span>
+              Ana Proje: <span className="font-medium text-tyro-text-secondary">{parentName}</span>
             </div>
           )}
         </div>

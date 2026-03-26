@@ -33,7 +33,7 @@ describe("roleStore", () => {
     it("Admin has full page access", () => {
       const perms = useRoleStore.getState().getPermissions("Admin");
       expect(perms.pages.kpi).toBe(true);
-      expect(perms.pages.hedefler).toBe(true);
+      expect(perms.pages.projeler).toBe(true);
       expect(perms.pages.projeler).toBe(true);
       expect(perms.pages.gorevler).toBe(true);
       expect(perms.pages.gantt).toBe(true);
@@ -43,9 +43,9 @@ describe("roleStore", () => {
       expect(perms.pages.guvenlik).toBe(true);
     });
 
-    it("Admin has full CRUD on hedef, proje, gorev", () => {
+    it("Admin has full CRUD on proje, proje, gorev", () => {
       const perms = useRoleStore.getState().getPermissions("Admin");
-      expect(perms.hedef).toEqual({ create: true, edit: true, delete: true });
+      expect(perms.proje).toEqual({ create: true, edit: true, delete: true });
       expect(perms.proje).toEqual({ create: true, edit: true, delete: true });
       expect(perms.gorev).toEqual({ create: true, edit: true, delete: true });
     });
@@ -64,9 +64,9 @@ describe("roleStore", () => {
       expect(perms.pages.guvenlik).toBe(false);
     });
 
-    it("Proje Lideri can access hedefler, projeler, gorevler, gantt, wbs", () => {
+    it("Proje Lideri can access projeler, projeler, gorevler, gantt, wbs", () => {
       const perms = useRoleStore.getState().getPermissions("Proje Lideri");
-      expect(perms.pages.hedefler).toBe(true);
+      expect(perms.pages.projeler).toBe(true);
       expect(perms.pages.projeler).toBe(true);
       expect(perms.pages.gorevler).toBe(true);
       expect(perms.pages.gantt).toBe(true);
@@ -75,7 +75,7 @@ describe("roleStore", () => {
 
     it("Proje Lideri has restricted CRUD permissions", () => {
       const perms = useRoleStore.getState().getPermissions("Proje Lideri");
-      expect(perms.hedef).toEqual({ create: false, edit: false, delete: false });
+      expect(perms.proje).toEqual({ create: false, edit: false, delete: false });
       expect(perms.proje).toEqual({ create: false, edit: true, delete: false });
       expect(perms.gorev).toEqual({ create: true, edit: true, delete: false });
       expect(perms.editOnlyOwn).toBe(true);
@@ -92,7 +92,7 @@ describe("roleStore", () => {
 
     it("Kullanıcı has minimal CRUD (only gorev create/edit)", () => {
       const perms = useRoleStore.getState().getPermissions("Kullanıcı");
-      expect(perms.hedef).toEqual({ create: false, edit: false, delete: false });
+      expect(perms.proje).toEqual({ create: false, edit: false, delete: false });
       expect(perms.proje).toEqual({ create: false, edit: false, delete: false });
       expect(perms.gorev).toEqual({ create: true, edit: true, delete: false });
       expect(perms.editOnlyOwn).toBe(true);
@@ -131,7 +131,7 @@ describe("roleStore", () => {
     it("persists changes to localStorage", () => {
       const customPerms: RolePermissions = {
         ...DEFAULT_PERMISSIONS["Admin"],
-        hedef: { create: true, edit: true, delete: false },
+        proje: { create: true, edit: true, delete: false },
       };
 
       useRoleStore.getState().updatePermissions("Admin", customPerms);
@@ -144,7 +144,7 @@ describe("roleStore", () => {
       const stored = JSON.parse(
         localStorageMock.setItem.mock.calls[0][1]
       );
-      expect(stored.Admin.hedef.delete).toBe(false);
+      expect(stored.Admin.proje.delete).toBe(false);
     });
 
     it("does not affect other roles when updating one role", () => {

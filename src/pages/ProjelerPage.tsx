@@ -9,13 +9,13 @@ import {
 import { Search, Target, ChevronDown, Trash2, LayoutList, Kanban, CircleDot, Columns3, Eye, Pencil, Tag } from "lucide-react";
 import TagChip from "@/components/ui/TagChip";
 import { useDataStore as useDataStoreTag } from "@/stores/dataStore";
-import { useHedefler } from "@/hooks/useHedefler";
+import { useProjeler } from "@/hooks/useProjeler";
 import { useDataStore } from "@/stores/dataStore";
 import PageHeader from "@/components/layout/PageHeader";
 import SlidingPanel from "@/components/shared/SlidingPanel";
 import KanbanView, { statusColumns } from "@/components/shared/KanbanView";
-import HedefForm from "@/components/hedefler/HedefForm";
-import HedefDetail from "@/components/hedefler/HedefDetail";
+import ProjeForm from "@/components/projeler/ProjeForm";
+import ProjeDetail from "@/components/projeler/ProjeDetail";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { hexToHSL } from "@/lib/colorUtils";
@@ -24,7 +24,7 @@ import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "@/stores/toastStore";
 import { STATUS_DOT_COLOR, getStatusLabel } from "@/lib/constants";
-import type { Hedef } from "@/types";
+import type { Proje } from "@/types";
 
 type ViewTab = "list" | "kanban";
 
@@ -39,7 +39,7 @@ function formatDate(dateStr: string): string {
 
 const INITIAL_VISIBLE = new Set(["name", "owner", "source", "tags", "status", "startDate", "endDate", "reviewDate", "aksiyonCount", "actions"]);
 
-export default function HedeflerPage() {
+export default function ProjelerPage() {
   const { t } = useTranslation();
   const sidebarTheme = useSidebarTheme();
 
@@ -56,10 +56,10 @@ export default function HedeflerPage() {
     { uid: "aksiyonCount", name: t("nav.actions") },
     { uid: "actions", name: t("common.edit") },
   ];
-  const { canCreateHedef, canEditHedef, canDeleteHedef, getHedefDeleteReason, filterHedefler } = usePermissions();
-  const { data: hedefler } = useHedefler();
+  const { canCreateProje, canEditProje, canDeleteProje, getProjeDeleteReason, filterProjeler } = usePermissions();
+  const { data: projeler } = useProjeler();
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const deleteHedef = useDataStore((s) => s.deleteHedef);
+  const deleteProje = useDataStore((s) => s.deleteProje);
 
   const tagDefs = useDataStoreTag((s) => s.tagDefinitions);
   const getTagColor = (name: string) => tagDefs.find((t) => t.name.toLocaleLowerCase("tr") === name.toLocaleLowerCase("tr"))?.color ?? "#D4A017";
@@ -75,7 +75,7 @@ export default function HedeflerPage() {
 
   // Panel state
   const [panelMode, setPanelMode] = useState<"closed" | "create" | "edit" | "detail">("closed");
-  const [selectedHedef, setSelectedHedef] = useState<Hedef | null>(null);
+  const [selectedProje, setSelectedHedef] = useState<Proje | null>(null);
 
   const [detailTitle, setDetailTitle] = useState(t("detail.objectiveDetail"));
 
@@ -87,22 +87,22 @@ export default function HedeflerPage() {
   const aksiyonCountMap = useMemo(() => {
     const map = new Map<string, number>();
     for (const a of aksiyonlar) {
-      map.set(a.hedefId, (map.get(a.hedefId) ?? 0) + 1);
+      map.set(a.projeId, (map.get(a.projeId) ?? 0) + 1);
     }
     return map;
   }, [aksiyonlar]);
 
-  // Collect all unique tags across hedefler
+  // Collect all unique tags across projeler
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    for (const h of (hedefler ?? [])) {
+    for (const h of (projeler ?? [])) {
       (h.tags ?? []).forEach((t) => tagSet.add(t));
     }
     return Array.from(tagSet).sort((a, b) => a.localeCompare(b, "tr"));
-  }, [hedefler]);
+  }, [projeler]);
 
   const filtered = useMemo(() => {
-    let result = filterHedefler(hedefler ?? []);
+    let result = filterProjeler(projeler ?? []);
     if (search.trim()) {
       const q = search.toLocaleLowerCase("tr");
       result = result.filter((h) => {
@@ -117,7 +117,7 @@ export default function HedeflerPage() {
       result = result.filter((h) => (h.tags ?? []).includes(tagFilter));
     }
     return result;
-  }, [hedefler, search, statusFilter, tagFilter, aksiyonCountMap, filterHedefler]);
+  }, [projeler, search, statusFilter, tagFilter, aksiyonCountMap, filterProjeler]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -150,13 +150,13 @@ export default function HedeflerPage() {
     setPanelMode("create");
   };
 
-  const openDetail = (h: Hedef) => {
+  const openDetail = (h: Proje) => {
     setSelectedHedef(h);
     setPanelMode("detail");
     setDetailTitle(t("detail.objectiveDetail"));
   };
 
-  const openEdit = (h: Hedef) => {
+  const openEdit = (h: Proje) => {
     setSelectedHedef(h);
     setPanelMode("edit");
   };
@@ -166,28 +166,28 @@ export default function HedeflerPage() {
     setSelectedHedef(null);
   };
 
-  const renderCell = useCallback((hedef: Hedef, columnKey: Key) => {
+  const renderCell = useCallback((proje: Proje, columnKey: Key) => {
     switch (columnKey) {
       case "name":
-        return <span className="font-medium text-tyro-text-primary">{hedef.name}</span>;
+        return <span className="font-medium text-tyro-text-primary">{proje.name}</span>;
       case "description":
-        return <span className="text-[13px] text-tyro-text-secondary line-clamp-2">{hedef.description || "-"}</span>;
+        return <span className="text-[13px] text-tyro-text-secondary line-clamp-2">{proje.description || "-"}</span>;
       case "owner":
-        return <span className="text-[13px] text-tyro-text-primary">{hedef.owner || "-"}</span>;
+        return <span className="text-[13px] text-tyro-text-primary">{proje.owner || "-"}</span>;
       case "source":
-        return <span className="text-[13px] text-tyro-text-secondary">{hedef.source}</span>;
+        return <span className="text-[13px] text-tyro-text-secondary">{proje.source}</span>;
       case "tags":
         return (
           <div className="flex flex-wrap gap-1 max-w-[200px]">
-            {(hedef.tags ?? []).map((tag) => (
+            {(proje.tags ?? []).map((tag) => (
               <TagChip key={tag} name={tag} size="sm" />
             ))}
-            {(!hedef.tags || hedef.tags.length === 0) && <span className="text-[12px] text-tyro-text-muted">-</span>}
+            {(!proje.tags || proje.tags.length === 0) && <span className="text-[12px] text-tyro-text-muted">-</span>}
           </div>
         );
       case "status": {
-        const dot = STATUS_DOT_COLOR[hedef.status];
-        const label = getStatusLabel(hedef.status, t);
+        const dot = STATUS_DOT_COLOR[proje.status];
+        const label = getStatusLabel(proje.status, t);
         return (
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
@@ -196,31 +196,31 @@ export default function HedeflerPage() {
         );
       }
       case "startDate":
-        return <span className="text-[13px] text-tyro-text-secondary">{formatDate(hedef.startDate)}</span>;
+        return <span className="text-[13px] text-tyro-text-secondary">{formatDate(proje.startDate)}</span>;
       case "endDate":
-        return <span className="text-[13px] text-tyro-text-secondary">{formatDate(hedef.endDate)}</span>;
+        return <span className="text-[13px] text-tyro-text-secondary">{formatDate(proje.endDate)}</span>;
       case "reviewDate":
-        return <span className="text-[13px] text-tyro-text-secondary">{hedef.reviewDate ? formatDate(hedef.reviewDate) : "—"}</span>;
+        return <span className="text-[13px] text-tyro-text-secondary">{proje.reviewDate ? formatDate(proje.reviewDate) : "—"}</span>;
       case "aksiyonCount":
-        return <span className="text-[13px] font-bold text-tyro-navy">{aksiyonCountMap.get(hedef.id) ?? 0}</span>;
+        return <span className="text-[13px] font-bold text-tyro-navy">{aksiyonCountMap.get(proje.id) ?? 0}</span>;
       case "actions":
         return (
           <div className="relative flex items-center gap-2 justify-center">
             <Tooltip content={t("common.detail")} size="sm">
-              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); openDetail(hedef); }}>
+              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); openDetail(proje); }}>
                 <Eye size={16} />
               </button>
             </Tooltip>
-            {canEditHedef(hedef.id) && (
+            {canEditProje(proje.id) && (
             <Tooltip content={t("common.edit")} size="sm">
-              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); openEdit(hedef); }}>
+              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); openEdit(proje); }}>
                 <Pencil size={16} />
               </button>
             </Tooltip>
             )}
-            {canDeleteHedef(hedef.id) && (
+            {canDeleteProje(proje.id) && (
             <Tooltip content={t("common.delete")} color="danger" size="sm">
-              <button className="text-lg text-danger cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); const reason = getHedefDeleteReason(hedef.id); if (reason) { toast.error(reason); return; } setConfirmMessage(t("confirm.deleteObjective")); setConfirmAction(() => () => { deleteHedef(hedef.id); toast.success(t("toast.objectiveDeleted"), { message: hedef.name }); }); setConfirmOpen(true); }}>
+              <button className="text-lg text-danger cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); const reason = getProjeDeleteReason(proje.id); if (reason) { toast.error(reason); return; } setConfirmMessage(t("confirm.deleteObjective")); setConfirmAction(() => () => { deleteProje(proje.id); toast.success(t("toast.objectiveDeleted"), { message: proje.name }); }); setConfirmOpen(true); }}>
                 <Trash2 size={16} />
               </button>
             </Tooltip>
@@ -230,7 +230,7 @@ export default function HedeflerPage() {
       default:
         return null;
     }
-  }, [aksiyonCountMap, deleteHedef, canEditHedef, canDeleteHedef, getHedefDeleteReason, t]);
+  }, [aksiyonCountMap, deleteProje, canEditProje, canDeleteProje, getProjeDeleteReason, t]);
 
   // Top content (only selection info + rows per page)
   const topContent = useMemo(() => (
@@ -245,7 +245,7 @@ export default function HedeflerPage() {
             <button
               onClick={() => {
                 setConfirmMessage(t("confirm.deleteObjective"));
-                setConfirmAction(() => () => { const count = selectedKeys.size; selectedKeys.forEach((id) => deleteHedef(id)); setSelectedKeys(new Set()); toast.success(t("toast.objectiveDeleted")); });
+                setConfirmAction(() => () => { const count = selectedKeys.size; selectedKeys.forEach((id) => deleteProje(id)); setSelectedKeys(new Set()); toast.success(t("toast.objectiveDeleted")); });
                 setConfirmOpen(true);
               }}
               className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
@@ -269,7 +269,7 @@ export default function HedeflerPage() {
         </select>
       </label>
     </div>
-  ), [filtered.length, rowsPerPage, selectedKeys, deleteHedef]);
+  ), [filtered.length, rowsPerPage, selectedKeys, deleteProje]);
 
   // Bottom content
   const bottomContent = useMemo(() => (
@@ -399,7 +399,7 @@ export default function HedeflerPage() {
               ))}
             </DropdownMenu>
           </Dropdown>
-          {canCreateHedef && <CreateButton onPress={openCreate} />}
+          {canCreateProje && <CreateButton onPress={openCreate} />}
         </div>
       </div>
 
@@ -411,28 +411,28 @@ export default function HedeflerPage() {
           {paginatedItems.length === 0 ? (
             <EmptyState title={t("common.noResults")} description="" />
           ) : (
-            paginatedItems.map((hedef) => (
-              <div key={hedef.id} onClick={() => openDetail(hedef)} className="px-4 py-3.5 active:bg-default-100 transition-colors cursor-pointer">
+            paginatedItems.map((proje) => (
+              <div key={proje.id} onClick={() => openDetail(proje)} className="px-4 py-3.5 active:bg-default-100 transition-colors cursor-pointer">
                 <div className="flex items-start justify-between gap-2 mb-1.5">
-                  <p className="text-sm font-semibold text-tyro-text-primary leading-snug">{hedef.name}</p>
-                  {renderCell(hedef, "status")}
+                  <p className="text-sm font-semibold text-tyro-text-primary leading-snug">{proje.name}</p>
+                  {renderCell(proje, "status")}
                 </div>
-                {hedef.description && (
-                  <p className="text-xs text-tyro-text-secondary line-clamp-2 mb-1.5">{hedef.description}</p>
+                {proje.description && (
+                  <p className="text-xs text-tyro-text-secondary line-clamp-2 mb-1.5">{proje.description}</p>
                 )}
                 <div className="flex items-center gap-3 text-xs text-tyro-text-muted mb-2">
-                  <span>{hedef.source}</span>
+                  <span>{proje.source}</span>
                   <span>·</span>
-                  <span>{hedef.leader}</span>
+                  <span>{proje.leader}</span>
                 </div>
                 <div className="flex items-center gap-2 pt-2 border-t border-tyro-border/20" onClick={(e) => e.stopPropagation()}>
-                  {canEditHedef(hedef.id) && (
-                  <button aria-label={t("common.edit")} onClick={() => openEdit(hedef)} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
+                  {canEditProje(proje.id) && (
+                  <button aria-label={t("common.edit")} onClick={() => openEdit(proje)} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
                     <Pencil size={14} /> {t("common.edit")}
                   </button>
                   )}
-                  {canDeleteHedef(hedef.id) && (
-                  <button aria-label={t("common.delete")} onClick={() => { const reason = getHedefDeleteReason(hedef.id); if (reason) { toast.error(reason); return; } if (window.confirm(t("confirm.deleteObjective"))) deleteHedef(hedef.id); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 transition-colors ml-auto">
+                  {canDeleteProje(proje.id) && (
+                  <button aria-label={t("common.delete")} onClick={() => { const reason = getProjeDeleteReason(proje.id); if (reason) { toast.error(reason); return; } if (window.confirm(t("confirm.deleteObjective"))) deleteProje(proje.id); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 transition-colors ml-auto">
                     <Trash2 size={14} /> {t("common.delete")}
                   </button>
                   )}
@@ -461,8 +461,8 @@ export default function HedeflerPage() {
           }}
           style={{ "--heroui-primary": hexToHSL(sidebarTheme.accentColor), "--th-bg": sidebarTheme.tableHeaderBg } as React.CSSProperties}
           onRowAction={(key) => {
-            const hedef = (hedefler ?? []).find((h) => h.id === String(key));
-            if (hedef) openDetail(hedef);
+            const proje = (projeler ?? []).find((h) => h.id === String(key));
+            if (proje) openDetail(proje);
           }}
         >
           <TableHeader columns={headerColumns}>
@@ -521,8 +521,8 @@ export default function HedeflerPage() {
         title={panelMode === "edit" ? t("detail.editObjective") : t("detail.addObjective")}
         icon={<Target size={18} />}
       >
-        <HedefForm
-          hedef={panelMode === "edit" && selectedHedef ? selectedHedef : undefined}
+        <ProjeForm
+          proje={panelMode === "edit" && selectedProje ? selectedProje : undefined}
           onSuccess={closePanel}
         />
       </SlidingPanel>
@@ -535,10 +535,10 @@ export default function HedeflerPage() {
         icon={<Target size={18} />}
         maxWidth={640}
       >
-        {selectedHedef && (
-          <HedefDetail
-            hedef={selectedHedef}
-            onEdit={() => openEdit(selectedHedef)}
+        {selectedProje && (
+          <ProjeDetail
+            proje={selectedProje}
+            onEdit={() => openEdit(selectedProje)}
             onModeChange={(m) => {
               if (m === "editing") setDetailTitle(t("detail.editObjective"));
               else if (m === "addAksiyon") setDetailTitle(t("detail.addAction"));

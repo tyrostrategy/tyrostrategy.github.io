@@ -33,11 +33,11 @@ import {
 import { useDataStore } from "@/stores/dataStore";
 import PageHeader from "@/components/layout/PageHeader";
 import SlidingPanel from "@/components/shared/SlidingPanel";
-import HedefDetail from "@/components/hedefler/HedefDetail";
+import ProjeDetail from "@/components/projeler/ProjeDetail";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { progressColor } from "@/lib/colorUtils";
 import { getStatusLabel } from "@/lib/constants";
-import type { Hedef, Source, EntityStatus } from "@/types";
+import type { Proje, Source, EntityStatus } from "@/types";
 
 // ─── Source colors (matching T-Map) ───────────────────────────────
 const SOURCE_COLORS: Record<Source, { bg: string; border: string; text: string }> = {
@@ -63,7 +63,7 @@ const CHILD_HEIGHT = 100;
 
 // ─── Node data type ──────────────────────────────────────────────
 interface AlignmentNodeData {
-  hedef: Hedef;
+  proje: Proje;
   actionCount: number;
   nodeType: "parent" | "child" | "standalone";
   [key: string]: unknown;
@@ -72,8 +72,8 @@ interface AlignmentNodeData {
 // ─── Custom Node Component ───────────────────────────────────────
 function AlignmentNode({ data }: NodeProps<Node<AlignmentNodeData>>) {
   const { t } = useTranslation();
-  const { hedef, actionCount, nodeType } = data;
-  const sc = SOURCE_COLORS[hedef.source];
+  const { proje, actionCount, nodeType } = data;
+  const sc = SOURCE_COLORS[proje.source];
   const isParent = nodeType === "parent";
   const isStandalone = nodeType === "standalone";
 
@@ -123,14 +123,14 @@ function AlignmentNode({ data }: NodeProps<Node<AlignmentNodeData>>) {
       <div className="flex items-center gap-1.5 min-w-0">
         <span
           className="w-2 h-2 rounded-full shrink-0"
-          style={{ backgroundColor: STATUS_DOT_HEX[hedef.status] }}
+          style={{ backgroundColor: STATUS_DOT_HEX[proje.status] }}
         />
         <span
           className="text-[12px] font-bold truncate leading-tight"
           style={isParent ? { color: "#fff" } : undefined}
-          title={hedef.name}
+          title={proje.name}
         >
-          {hedef.name}
+          {proje.name}
         </span>
       </div>
 
@@ -143,7 +143,7 @@ function AlignmentNode({ data }: NodeProps<Node<AlignmentNodeData>>) {
             color: isParent ? "#fff" : sc.text,
           }}
         >
-          {hedef.source}
+          {proje.source}
         </span>
         <span
           className="text-[11px] font-semibold flex items-center gap-1"
@@ -151,9 +151,9 @@ function AlignmentNode({ data }: NodeProps<Node<AlignmentNodeData>>) {
         >
           <span
             className="w-1.5 h-1.5 rounded-full inline-block"
-            style={{ backgroundColor: STATUS_DOT_HEX[hedef.status] }}
+            style={{ backgroundColor: STATUS_DOT_HEX[proje.status] }}
           />
-          {getStatusLabel(hedef.status, t)}
+          {getStatusLabel(proje.status, t)}
         </span>
       </div>
 
@@ -166,8 +166,8 @@ function AlignmentNode({ data }: NodeProps<Node<AlignmentNodeData>>) {
           <div
             className="h-full rounded-full transition-all"
             style={{
-              width: `${Math.min(hedef.progress, 100)}%`,
-              backgroundColor: isParent ? "#60a5fa" : progressColor(hedef.progress),
+              width: `${Math.min(proje.progress, 100)}%`,
+              backgroundColor: isParent ? "#60a5fa" : progressColor(proje.progress),
             }}
           />
         </div>
@@ -175,7 +175,7 @@ function AlignmentNode({ data }: NodeProps<Node<AlignmentNodeData>>) {
           className="text-[11px] font-bold tabular-nums"
           style={{ color: isParent ? "rgba(255,255,255,0.9)" : "#475569" }}
         >
-          %{hedef.progress}
+          %{proje.progress}
         </span>
       </div>
 
@@ -236,16 +236,16 @@ function getLayoutedElements(
   return { nodes: layoutedNodes, edges };
 }
 
-// ─── Build graph data from hedefler ──────────────────────────────
+// ─── Build graph data from projeler ──────────────────────────────
 function buildGraphData(
-  hedefler: Hedef[],
+  projeler: Proje[],
   aksiyonCountMap: Map<string, number>,
   direction: Direction,
   sourceFilter: string,
   statusFilter: string,
 ): { nodes: Node<AlignmentNodeData>[]; edges: Edge[] } {
-  // Filter hedefler
-  let filtered = hedefler;
+  // Filter projeler
+  let filtered = projeler;
   if (sourceFilter !== "all") {
     filtered = filtered.filter((h) => h.source === sourceFilter);
   }
@@ -257,9 +257,9 @@ function buildGraphData(
   const childIds = new Set(filtered.filter((h) => h.parentObjectiveId).map((h) => h.parentObjectiveId!));
 
   // Classify nodes
-  const nodes: Node<AlignmentNodeData>[] = filtered.map((hedef) => {
-    const hasChildren = filtered.some((h) => h.parentObjectiveId === hedef.id);
-    const isChild = !!hedef.parentObjectiveId;
+  const nodes: Node<AlignmentNodeData>[] = filtered.map((proje) => {
+    const hasChildren = filtered.some((h) => h.parentObjectiveId === proje.id);
+    const isChild = !!proje.parentObjectiveId;
     let nodeType: "parent" | "child" | "standalone";
 
     if (!isChild && hasChildren) {
@@ -271,12 +271,12 @@ function buildGraphData(
     }
 
     return {
-      id: hedef.id,
+      id: proje.id,
       type: "alignmentNode",
       position: { x: 0, y: 0 },
       data: {
-        hedef,
-        actionCount: aksiyonCountMap.get(hedef.id) ?? 0,
+        proje,
+        actionCount: aksiyonCountMap.get(proje.id) ?? 0,
         nodeType,
       },
     };
@@ -286,13 +286,13 @@ function buildGraphData(
   const edges: Edge[] = [];
   const parentChildGroups = new Map<string, string[]>();
 
-  for (const hedef of filtered) {
-    if (hedef.parentObjectiveId && filteredIds.has(hedef.parentObjectiveId)) {
+  for (const proje of filtered) {
+    if (proje.parentObjectiveId && filteredIds.has(proje.parentObjectiveId)) {
       // Parent → Child edge
       edges.push({
-        id: `e-${hedef.parentObjectiveId}-${hedef.id}`,
-        source: hedef.parentObjectiveId,
-        target: hedef.id,
+        id: `e-${proje.parentObjectiveId}-${proje.id}`,
+        source: proje.parentObjectiveId,
+        target: proje.id,
         sourceHandle: direction === "LR" ? undefined : "bottom",
         targetHandle: direction === "LR" ? undefined : "top",
         type: "default",
@@ -302,10 +302,10 @@ function buildGraphData(
       });
 
       // Group siblings
-      if (!parentChildGroups.has(hedef.parentObjectiveId)) {
-        parentChildGroups.set(hedef.parentObjectiveId, []);
+      if (!parentChildGroups.has(proje.parentObjectiveId)) {
+        parentChildGroups.set(proje.parentObjectiveId, []);
       }
-      parentChildGroups.get(hedef.parentObjectiveId)!.push(hedef.id);
+      parentChildGroups.get(proje.parentObjectiveId)!.push(proje.id);
     }
   }
 
@@ -331,13 +331,13 @@ function TAlignmentInner() {
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor;
 
-  const hedefler = useDataStore((s) => s.hedefler);
+  const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
   const [direction, setDirection] = useState<Direction>("LR");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedHedef, setSelectedHedef] = useState<Hedef | null>(null);
+  const [selectedProje, setSelectedHedef] = useState<Proje | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
   const { fitView, zoomIn, zoomOut } = useReactFlow();
@@ -346,15 +346,15 @@ function TAlignmentInner() {
   const aksiyonCountMap = useMemo(() => {
     const map = new Map<string, number>();
     for (const a of aksiyonlar) {
-      map.set(a.hedefId, (map.get(a.hedefId) ?? 0) + 1);
+      map.set(a.projeId, (map.get(a.projeId) ?? 0) + 1);
     }
     return map;
   }, [aksiyonlar]);
 
   // Build graph
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => buildGraphData(hedefler, aksiyonCountMap, direction, sourceFilter, statusFilter),
-    [hedefler, aksiyonCountMap, direction, sourceFilter, statusFilter],
+    () => buildGraphData(projeler, aksiyonCountMap, direction, sourceFilter, statusFilter),
+    [projeler, aksiyonCountMap, direction, sourceFilter, statusFilter],
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -379,13 +379,13 @@ function TAlignmentInner() {
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      const hedef = hedefler.find((h) => h.id === node.id);
-      if (hedef) {
-        setSelectedHedef(hedef);
+      const proje = projeler.find((h) => h.id === node.id);
+      if (proje) {
+        setSelectedHedef(proje);
         setPanelOpen(true);
       }
     },
-    [hedefler],
+    [projeler],
   );
 
   const handleAutoLayout = useCallback(() => {
@@ -552,7 +552,7 @@ function TAlignmentInner() {
             nodeColor={(node) => {
               const data = node.data as AlignmentNodeData;
               if (data.nodeType === "parent") return "#1e3a5f";
-              return SOURCE_COLORS[data.hedef.source]?.border ?? "#94a3b8";
+              return SOURCE_COLORS[data.proje.source]?.border ?? "#94a3b8";
             }}
             maskColor="rgba(0,0,0,0.08)"
             style={{ borderRadius: 12, border: "1px solid #e2e8f0" }}
@@ -571,9 +571,9 @@ function TAlignmentInner() {
         icon={<Crosshair size={18} />}
         maxWidth={520}
       >
-        {selectedHedef && (
-          <HedefDetail
-            hedef={selectedHedef}
+        {selectedProje && (
+          <ProjeDetail
+            proje={selectedProje}
             onEdit={() => {}}
             onSelectHedef={(h) => {
               setSelectedHedef(h);

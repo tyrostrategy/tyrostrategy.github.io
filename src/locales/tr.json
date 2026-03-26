@@ -2,7 +2,7 @@
   "nav": {
     "home": "Anasayfa",
     "kpi": "Raporlar",
-    "objectives": "Hedefler",
+    "objectives": "Projeler",
     "actions": "Aksiyonlar",
     "gantt": "Gantt",
     "wbs": "WBS",
@@ -60,7 +60,7 @@
     "controlDate": "Kontrol Tarihi",
     "progress": "İlerleme",
     "responsible": "Sorumlu",
-    "owner": "Hedef Sahibi",
+    "owner": "Proje Sahibi",
     "source": "Kaynak",
     "department": "Departman",
     "participants": "Katılımcılar",
@@ -82,13 +82,13 @@
   },
   "roles": {
     "admin": "Admin",
-    "projectLeader": "Hedef Lideri",
+    "projectLeader": "Proje Lideri",
     "user": "Kullanıcı"
   },
   "pages": {
     "objectives": {
-      "title": "Hedefler",
-      "subtitle": "Stratejik hedeflerinizi yönetin"
+      "title": "Projeler",
+      "subtitle": "Stratejik projelerinizi yönetin"
     },
     "actions": {
       "title": "Aksiyonlar",
@@ -96,7 +96,7 @@
     },
     "gantt": {
       "title": "Gantt Zaman Çizelgesi",
-      "subtitle": "Hedef ve aksiyonlarınızı zaman çizelgesinde görüntüleyin",
+      "subtitle": "Proje ve aksiyonlarınızı zaman çizelgesinde görüntüleyin",
       "quarter": "Çeyrek",
       "year": "Yıl",
       "all": "Tümü",
@@ -108,16 +108,16 @@
     },
     "strategyMap": {
       "title": "Strateji Haritası",
-      "subtitle": "Kurumsal stratejik hedef hiyerarşisini görselleştirin",
+      "subtitle": "Kurumsal stratejik proje hiyerarşisini görselleştirin",
       "companyName": "Şirket Adı",
       "strategicTheme": "Stratejik Tema",
       "showActions": "Aksiyonları göster",
       "hideActions": "Aksiyonları gizle",
-      "noObjectives": "Bu tema altında hedef bulunmuyor"
+      "noObjectives": "Bu tema altında proje bulunmuyor"
     },
     "tAlignment": {
       "title": "T-Align",
-      "subtitle": "Hedefler arası ilişkileri görselleştirin"
+      "subtitle": "Projeler arası ilişkileri görselleştirin"
     },
     "strategicHQ": {
       "title": "Karargah",
@@ -143,12 +143,12 @@
   },
   "forms": {
     "objective": {
-      "name": "Hedef Adı",
-      "namePlaceholder": "Hedef adını giriniz",
+      "name": "Proje Adı",
+      "namePlaceholder": "Proje adını giriniz",
       "description": "Açıklama",
-      "descriptionPlaceholder": "Hedef açıklaması giriniz (isteğe bağlı)",
-      "owner": "Hedef Sahibi",
-      "ownerPlaceholder": "Hedef sahibi seçiniz",
+      "descriptionPlaceholder": "Proje açıklaması giriniz (isteğe bağlı)",
+      "owner": "Proje Sahibi",
+      "ownerPlaceholder": "Proje sahibi seçiniz",
       "source": "Kaynak",
       "sourcePlaceholder": "Kaynak seçiniz",
       "status": "Durum",
@@ -162,15 +162,15 @@
       "department": "Departman",
       "departmentPlaceholder": "Departman seçiniz",
       "reviewDate": "Kontrol Tarihi",
-      "parentObjective": "Ana Hedef",
-      "parentObjectivePlaceholder": "Ana hedef seçiniz (isteğe bağlı)",
-      "standalone": "Bağımsız Hedef"
+      "parentObjective": "Ana Proje",
+      "parentObjectivePlaceholder": "Ana proje seçiniz (isteğe bağlı)",
+      "standalone": "Bağımsız Proje"
     },
     "action": {
       "name": "Aksiyon Adı",
       "namePlaceholder": "Aksiyon adını giriniz",
-      "objective": "Hedef",
-      "objectivePlaceholder": "Hedef seçiniz",
+      "objective": "Proje",
+      "objectivePlaceholder": "Proje seçiniz",
       "assignee": "Atanan Kişi",
       "assigneePlaceholder": "Atanan kişi seçiniz",
       "progress": "İlerleme"
@@ -178,19 +178,19 @@
   },
   "validation": {
     "minChars": "En az 3 karakter giriniz",
-    "ownerRequired": "Hedef sahibi zorunludur",
+    "ownerRequired": "Proje sahibi zorunludur",
     "sourceRequired": "Kaynak zorunludur",
     "statusRequired": "Durum zorunludur",
     "startDateRequired": "Başlangıç tarihi zorunludur",
     "endDateRequired": "Bitiş tarihi zorunludur",
     "actionNameRequired": "Aksiyon adı zorunludur",
     "assigneeRequired": "Atanan kişi zorunludur",
-    "objectiveRequired": "Hedef seçiniz"
+    "objectiveRequired": "Proje seçiniz"
   },
   "toast": {
-    "objectiveCreated": "Hedef oluşturuldu",
-    "objectiveUpdated": "Hedef güncellendi",
-    "objectiveDeleted": "Hedef silindi",
+    "objectiveCreated": "Proje oluşturuldu",
+    "objectiveUpdated": "Proje güncellendi",
+    "objectiveDeleted": "Proje silindi",
     "actionCreated": "Aksiyon oluşturuldu",
     "actionUpdated": "Aksiyon güncellendi",
     "actionDeleted": "Aksiyon silindi",
@@ -206,14 +206,14 @@
     "goodMorning": "Günaydın",
     "goodAfternoon": "İyi günler",
     "goodEvening": "İyi akşamlar",
-    "myObjectives": "Hedeflerim",
+    "myObjectives": "Projelerim",
     "myActions": "Aksiyonlarım",
     "completed": "Tamamlanan",
     "delayedOrRisky": "Geciken / Riskli",
     "upcomingDates": "Yaklaşan Tarihler",
     "actionStatus": "Aksiyon Durumu",
     "individualProgress": "Bireysel İlerleme",
-    "objectivesCount": "hedefiniz var",
+    "objectivesCount": "projeniz var",
     "actionsCompleted": "aksiyon tamamlandı",
     "actionsNeedAttention": "aksiyon dikkat gerektiriyor",
     "leader": "Lider",
@@ -222,8 +222,8 @@
     "andMore": "ve {{count}} daha...",
     "noDeadlines": "Yaklaşan deadline yok",
     "deadlineCount": "{{count}} yaklaşan deadline",
-    "noObjectives": "Atanmış hedef yok",
-    "moreObjectives": "ve {{count}} hedef daha →",
+    "noObjectives": "Atanmış proje yok",
+    "moreObjectives": "ve {{count}} proje daha →",
     "noActions": "Henüz aksiyon yok",
     "overall": "Genel",
     "personalKPI": "Bireysel Performans",
@@ -235,7 +235,7 @@
     "atRisk": "riskli",
     "sourceDistribution": "Kaynak Dağılımı",
     "tagDistribution": "Etiket Dağılımı",
-    "objectiveProgress": "Hedef İlerlemesi",
+    "objectiveProgress": "Proje İlerlemesi",
     "actionProgress": "Aksiyon İlerlemesi",
     "statusDistribution": "Durum Dağılımı"
   },
@@ -245,9 +245,9 @@
     "login": "Giriş Yap",
     "strategicManagement": "Stratejik Yönetim",
     "platform": "Platformu",
-    "heroDescription": "Kurumsal hedeflerinizi takip edin, aksiyonlarınızı yönetin, ekibinizle birlikte stratejik kararlar alın.",
+    "heroDescription": "Kurumsal projelerinizi takip edin, aksiyonlarınızı yönetin, ekibinizle birlikte stratejik kararlar alın.",
     "strategicPlanning": "Stratejik Planlama",
-    "strategicPlanningDesc": "Hedef ve aksiyon yönetimi",
+    "strategicPlanningDesc": "Proje ve aksiyon yönetimi",
     "kpiDashboard": "KPI Dashboard",
     "kpiDashboardDesc": "Gerçek zamanlı metrikler",
     "teamManagement": "Stratejik Görünümler",
@@ -259,17 +259,17 @@
   "dashboard": {
     "title": "KPI Dashboard",
     "overallProgress": "Genel İlerleme",
-    "tagDistribution": "Tag Bazlı Hedef Dağılımı",
+    "tagDistribution": "Tag Bazlı Proje Dağılımı",
     "tagDistributionDesc": "Etiket bazında ortalama ilerleme",
     "sourceDistribution": "Kaynak Bazlı Aksiyon Dağılımı",
     "sourceSubtitle": "Türkiye, Kurumsal ve International operasyonları",
     "completed": "Tamamlanan",
     "inProgress": "Devam Eden",
     "pending": "Bekleyen",
-    "objectiveStatusBreakdown": "Hedef Durum Dağılımı",
+    "objectiveStatusBreakdown": "Proje Durum Dağılımı",
     "recentActivities": "Son Aktiviteler",
-    "summaryGood": "{{count}} aktif hedef yolunda ilerliyor. Aksiyon tamamlanma oranı %{{rate}}.",
-    "summaryWarning": "{{activeCount}} aktif hedef takipte, {{delayedCount}} aksiyon dikkat gerektiriyor. Genel tamamlanma %{{rate}}."
+    "summaryGood": "{{count}} aktif proje yolunda ilerliyor. Aksiyon tamamlanma oranı %{{rate}}.",
+    "summaryWarning": "{{activeCount}} aktif proje takipte, {{delayedCount}} aksiyon dikkat gerektiriyor. Genel tamamlanma %{{rate}}."
   },
   "security": {
     "pageAccess": "Sayfa Erişimi",
@@ -282,10 +282,10 @@
     "viewOwnDataOnly": "Sadece Kendi Verilerini Görsün",
     "resetToDefaults": "Varsayılanlara Sıfırla",
     "deleteRulesTitle": "Tyro Silme Kuralları",
-    "deleteRuleObjective": "Alt aksiyonu olan hedefler silinemez — önce aksiyonlar silinmelidir",
+    "deleteRuleObjective": "Alt aksiyonu olan projeler silinemez — önce aksiyonlar silinmelidir",
     "deleteRulesNote": "Bu kurallar yetki ayarlarından bağımsız olarak her zaman geçerlidir",
     "fullAccess": "Tüm sisteme tam erişim",
-    "ownObjectivesAndActions": "Kendi hedefleri ve aksiyonları",
+    "ownObjectivesAndActions": "Kendi projeleri ve aksiyonları",
     "assignedActionsOnly": "Sadece atanmış aksiyonlar"
   },
   "profile": {
@@ -300,7 +300,7 @@
     "selectDepartment": "Departman seçiniz",
     "authRole": "Yetki Rolü",
     "selectRole": "Rol seçiniz",
-    "totalObjectives": "Toplam Hedef",
+    "totalObjectives": "Toplam Proje",
     "activeActions": "Aktif Aksiyon",
     "completedLabel": "Tamamlanan"
   },
@@ -321,13 +321,13 @@
     "about": "Hakkında",
     "version": "Versiyon",
     "tagManagement": "Etiket Yönetimi",
-    "tagManagementDesc": "Hedeflere atanabilecek etiketleri ve renklerini yönetin",
+    "tagManagementDesc": "Projelere atanabilecek etiketleri ve renklerini yönetin",
     "addTag": "Yeni Etiket",
     "tagName": "Etiket Adı",
     "tagColor": "Renk",
     "tagNamePlaceholder": "Etiket adı girin...",
     "tagDeleteConfirm": "Bu etiketi silmek istediğinize emin misiniz?",
-    "tagInUseWarning": "Bu etiket {{count}} hedefte kullanılıyor. Silindikten sonra hedeflerdeki etiket referansları kalır.",
+    "tagInUseWarning": "Bu etiket {{count}} projete kullanılıyor. Silindikten sonra projelerdeki etiket referansları kalır.",
     "tagNameRequired": "Etiket adı zorunludur",
     "tagNameDuplicate": "Bu isimde bir etiket zaten mevcut",
     "tagCreated": "Etiket oluşturuldu",
@@ -347,7 +347,7 @@
     "deleteConfirm": "Bu kaydı silmek istediğinize emin misiniz?"
   },
   "confirm": {
-    "deleteObjective": "Bu hedefi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+    "deleteObjective": "Bu projei silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
     "deleteAction": "Bu aksiyonu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
     "confirm": "Onayla",
     "cancel": "İptal"
@@ -355,7 +355,7 @@
   "search": {
     "placeholder": "Komut veya sayfa ara...",
     "pages": "Sayfalar",
-    "objectives": "Hedefler",
+    "objectives": "Projeler",
     "actions": "Aksiyonlar",
     "navigate": "gezin",
     "open": "aç",
@@ -372,30 +372,30 @@
     "allRightsReserved": "Tüm hakları saklıdır"
   },
   "detail": {
-    "backToObjective": "Hedef Detayına Dön",
-    "addObjective": "Hedef Ekle",
+    "backToObjective": "Proje Detayına Dön",
+    "addObjective": "Proje Ekle",
     "addAction": "Aksiyon Ekle",
-    "objectiveDetail": "Hedef Detayı",
+    "objectiveDetail": "Proje Detayı",
     "actionDetail": "Aksiyon Detayı",
-    "editObjective": "Hedef Düzenle",
+    "editObjective": "Proje Düzenle",
     "editAction": "Aksiyon Düzenle",
     "noActionsYet": "Henüz aksiyon eklenmemiş.",
-    "parentObjective": "Ana Hedef",
-    "relatedObjectives": "İlişkili Hedefler"
+    "parentObjective": "Ana Proje",
+    "relatedObjectives": "İlişkili Projeler"
   },
   "karargah": {
     "tablo": "Tablo",
     "master": "Master",
-    "selectObjective": "Hedef seçin",
-    "selectObjectiveDesc": "Detayları görüntülemek için sol listeden bir hedef seçin",
+    "selectObjective": "Proje seçin",
+    "selectObjectiveDesc": "Detayları görüntülemek için sol listeden bir proje seçin",
     "generalStatus": "Genel Durum",
     "overallProgress": "Genel İlerleme",
-    "objectiveInfo": "Hedef Bilgileri",
+    "objectiveInfo": "Proje Bilgileri",
     "actionsCount": "Aksiyonlar ({{count}})",
     "addAction": "Aksiyon Ekle",
     "actionsCompleted": "{{completed}}/{{total}} aksiyon tamamlandı",
     "clearFilters": "Temizle",
-    "noObjectivesFound": "Bu filtrelere uygun hedef bulunamadı",
+    "noObjectivesFound": "Bu filtrelere uygun proje bulunamadı",
     "sortByName": "Ada göre",
     "sortByDate": "Tarihe göre",
     "sortByProgress": "İlerlemeye göre",
@@ -411,15 +411,15 @@
     "vertical": "Dikey",
     "autoLayout": "Otomatik Yerleştir",
     "fitView": "Sığdır",
-    "parentObjective": "Ana Hedef",
-    "childObjective": "Alt Hedef",
+    "parentObjective": "Ana Proje",
+    "childObjective": "Alt Proje",
     "standalone": "Bağımsız",
     "actions": "aksiyon"
   },
   "wizard": {
-    "title": "Hedef-Aksiyon Sihirbazı",
-    "triggerButton": "Hedef Oluştur",
-    "step1Title": "Hedef Bilgileri",
+    "title": "Proje-Aksiyon Sihirbazı",
+    "triggerButton": "Proje Oluştur",
+    "step1Title": "Proje Bilgileri",
     "step2Title": "Sahiplik & Tarihler",
     "step3Title": "Aksiyonlar",
     "step4Title": "Özet & Onay",
@@ -429,11 +429,11 @@
     "addAction": "Aksiyon Ekle",
     "removeAction": "Aksiyonu Kaldır",
     "minOneAction": "En az bir aksiyon eklemelisiniz",
-    "successTitle": "Hedef Başarıyla Oluşturuldu!",
+    "successTitle": "Proje Başarıyla Oluşturuldu!",
     "successActions": "{{count}} aksiyon eklendi",
     "goToWorkspace": "Karargah'a Dön",
     "goToDetail": "Detaya Git",
-    "reviewHedef": "Hedef Özeti",
+    "reviewProje": "Proje Özeti",
     "reviewAksiyonlar": "Aksiyonlar Özeti",
     "actionNumber": "Aksiyon {{number}}"
   }

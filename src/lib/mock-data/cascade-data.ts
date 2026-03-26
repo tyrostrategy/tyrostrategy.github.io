@@ -3,7 +3,7 @@
 export interface CascadeTask {
   id: string;
   name: string;
-  level: "Hedef" | "Proje" | "Alt Görev";
+  level: "Proje" | "Proje" | "Alt Görev";
   source: "Türkiye" | "Kurumsal" | "International";
   planName: string;
   progress: number;
@@ -13,7 +13,7 @@ export interface CascadeTask {
   leader: string;
 }
 
-export interface CascadeHedef {
+export interface CascadeProje {
   id: string;
   name: string;
   source: string;
@@ -43,7 +43,7 @@ export interface CascadeGorev {
   endDate: string;
 }
 
-export const turkiyeHedefler: CascadeHedef[] = [
+export const turkiyeHedefler: CascadeProje[] = [
 {
   id: "turkiye-1",
   name: "Antep Fıstığı Ürünlerinin Çin Pazarına Girişi",
@@ -582,7 +582,7 @@ export const turkiyeHedefler: CascadeHedef[] = [
 }
 ];
 
-export const kurumsalHedefler: CascadeHedef[] = [
+export const kurumsalHedefler: CascadeProje[] = [
 {
   id: "kurumsal-64",
   name: "Deniz-Nehir Tipi Gemi İnşa Yatırımının Gerçekleştirilmesi",
@@ -2823,7 +2823,7 @@ export const kurumsalHedefler: CascadeHedef[] = [
 }
 ];
 
-export const internationalHedefler: CascadeHedef[] = [
+export const internationalHedefler: CascadeProje[] = [
 {
   id: "international-323",
   name: "Karbon Ticareti Programının Hayata Geçirilmesi",
@@ -3426,7 +3426,7 @@ export const internationalHedefler: CascadeHedef[] = [
 }
 ];
 
-export const allHedefler: CascadeHedef[] = [
+export const allProjeler: CascadeProje[] = [
   ...turkiyeHedefler,
   ...kurumsalHedefler,
   ...internationalHedefler,

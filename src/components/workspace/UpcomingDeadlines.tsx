@@ -4,7 +4,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import GlassCard from "@/components/ui/GlassCard";
 import SlidingPanel from "@/components/shared/SlidingPanel";
-import HedefDetail from "@/components/hedefler/HedefDetail";
+import ProjeDetail from "@/components/projeler/ProjeDetail";
 import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { useMyWorkspace, type DeadlineItem } from "@/hooks/useMyWorkspace";
 import { useDataStore } from "@/stores/dataStore";
@@ -38,7 +38,7 @@ function DeadlineRow({ item, onClick, showExpand, t }: DeadlineRowProps) {
   const urg = urgencyBadge(days, t);
 
   const typeConfig = {
-    hedef: { icon: Target, label: t("nav.objectives"), color: "text-tyro-gold", bgColor: "bg-tyro-gold/10" },
+    proje: { icon: Target, label: t("nav.objectives"), color: "text-tyro-gold", bgColor: "bg-tyro-gold/10" },
     aksiyon: { icon: ListChecks, label: t("nav.actions"), color: "text-tyro-info", bgColor: "bg-tyro-info/10" },
   };
 
@@ -46,11 +46,11 @@ function DeadlineRow({ item, onClick, showExpand, t }: DeadlineRowProps) {
   const TypeIcon = tc.icon;
   const pColor = progressColor(item.progress);
 
-  // Get children for hedef
+  // Get children for proje
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
 
-  const children = item.type === "hedef"
-    ? aksiyonlar.filter((a) => a.hedefId === item.id).map((a) => ({ name: a.name, progress: a.progress, endDate: a.endDate, status: a.status }))
+  const children = item.type === "proje"
+    ? aksiyonlar.filter((a) => a.projeId === item.id).map((a) => ({ name: a.name, progress: a.progress, endDate: a.endDate, status: a.status }))
     : [];
 
   const hasChildren = showExpand && children.length > 0;
@@ -139,11 +139,11 @@ export default function UpcomingDeadlines() {
   const [panelItem, setPanelItem] = useState<DeadlineItem | null>(null);
   const [panelTitle, setPanelTitle] = useState("");
 
-  const getHedefById = useDataStore((s) => s.getHedefById);
+  const getProjeById = useDataStore((s) => s.getProjeById);
   const getAksiyonById = useDataStore((s) => s.getAksiyonById);
 
   const typeConfig = {
-    hedef: { icon: Target, label: t("nav.objectives"), color: "text-tyro-gold", bgColor: "bg-tyro-gold/10" },
+    proje: { icon: Target, label: t("nav.objectives"), color: "text-tyro-gold", bgColor: "bg-tyro-gold/10" },
     aksiyon: { icon: ListChecks, label: t("nav.actions"), color: "text-tyro-info", bgColor: "bg-tyro-info/10" },
   };
 
@@ -158,12 +158,12 @@ export default function UpcomingDeadlines() {
 
   const renderPanelContent = () => {
     if (!panelItem) return null;
-    if (panelItem.type === "hedef") {
-      const hedef = getHedefById(panelItem.id);
-      if (!hedef) return null;
+    if (panelItem.type === "proje") {
+      const proje = getProjeById(panelItem.id);
+      if (!proje) return null;
       return (
-        <HedefDetail
-          hedef={hedef}
+        <ProjeDetail
+          proje={proje}
           onEdit={() => {}}
           onModeChange={(m) => {
             if (m === "aksiyonDetail") setPanelTitle(t("detail.actionDetail"));
@@ -253,7 +253,7 @@ export default function UpcomingDeadlines() {
             </div>
           </ModalHeader>
           <ModalBody className="py-4">
-            {(["hedef", "aksiyon"] as const).map((type) => {
+            {(["proje", "aksiyon"] as const).map((type) => {
               const items = upcomingDeadlines.filter((d) => d.type === type);
               if (items.length === 0) return null;
               const tc = typeConfig[type];

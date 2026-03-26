@@ -3,8 +3,8 @@ import {
   kurumsalHedefler,
   internationalHedefler,
 } from "@/lib/mock-data/cascade-data";
-import type { CascadeHedef } from "@/lib/mock-data/cascade-data";
-import type { Hedef, Aksiyon, EntityStatus, Source, TagDefinition } from "@/types";
+import type { CascadeProje } from "@/lib/mock-data/cascade-data";
+import type { Proje, Aksiyon, EntityStatus, Source, TagDefinition } from "@/types";
 import { getDepartmentByUser } from "@/config/departments";
 import { TAG_COLOR_PALETTE } from "@/config/tagColors";
 
@@ -23,19 +23,19 @@ function computeReviewDate(endDate: string): string {
   }
 }
 
-// Add "Cenk Şayli" as participant to some hedefler for workspace demo
+// Add "Cenk Şayli" as participant to some projeler for workspace demo
 const CURRENT_USER = "Cenk Şayli";
-function buildParticipants(leader: string, hedefId: string): string[] {
+function buildParticipants(leader: string, projeId: string): string[] {
   const base = [leader];
-  // Add current user to ~40% of hedefler using deterministic hash
-  const hash = hedefId.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  // Add current user to ~40% of projeler using deterministic hash
+  const hash = projeId.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
   if (hash % 5 < 2 && leader !== CURRENT_USER) {
     base.push(CURRENT_USER);
   }
   return base;
 }
 
-// Deterministic tag assignment based on hedef name keywords
+// Deterministic tag assignment based on proje name keywords
 // İsme bakarak kısa mock açıklama üret
 function generateHedefDescription(name: string, source: Source): string {
   const n = name.toLocaleLowerCase("tr");
@@ -74,7 +74,7 @@ function generateAksiyonDescription(name: string): string {
   if (n.includes("rapor")) return "İlerleme ve performans raporlarının hazırlanarak paydaşlara sunulması.";
   if (n.includes("analiz") || n.includes("araştırma")) return "Veri toplama, analiz ve değerlendirme çalışmalarının gerçekleştirilmesi.";
   if (n.includes("kurulum") || n.includes("devreye")) return "Sistem kurulumu, konfigürasyonu ve canlıya alma sürecinin yönetimi.";
-  if (n.includes("pazar")) return "Hedef pazar araştırması, rekabet analizi ve giriş stratejisinin belirlenmesi.";
+  if (n.includes("pazar")) return "Proje pazar araştırması, rekabet analizi ve giriş stratejisinin belirlenmesi.";
   if (n.includes("tebliğ") || n.includes("uygulama")) return "Onaylanan prosedürlerin ilgili birimlere tebliği ve uygulamaya alınması.";
   return "Belirlenen zaman çizelgesine uygun olarak görevin planlanması ve tamamlanması.";
 }
@@ -86,15 +86,15 @@ function assignTags(_name: string, _source: Source, progress: number, status: st
   return ["Geliştirme"];
 }
 
-function flattenHedefler(hedefler: CascadeHedef[], source: Source): Hedef[] {
-  return hedefler.map((h) => {
+function flattenProjeler(projeler: CascadeProje[], source: Source): Proje[] {
+  return projeler.map((h) => {
     // Compute progress as average of all tasks across all projects
     const allTasks = h.projects.flatMap((p) => p.tasks);
     const totalTasks = allTasks.length;
     const achievedTasks = allTasks.filter((t) => t.status === "Achieved").length;
     const progress = totalTasks > 0 ? Math.round((achievedTasks / totalTasks) * 100) : 0;
 
-    // Use the first project's leader for department, or fall back to hedef leader
+    // Use the first project's leader for department, or fall back to proje leader
     const primaryLeader = h.projects[0]?.leader || h.leader;
 
     return {
@@ -117,16 +117,16 @@ function flattenHedefler(hedefler: CascadeHedef[], source: Source): Hedef[] {
   });
 }
 
-function flattenAksiyonlar(hedefler: CascadeHedef[]): Aksiyon[] {
+function flattenAksiyonlar(projeler: CascadeProje[]): Aksiyon[] {
   const result: Aksiyon[] = [];
   let sortOrder = 0;
-  for (const h of hedefler) {
+  for (const h of projeler) {
     for (const p of h.projects) {
       for (const t of p.tasks) {
         const aksiyonStatus = mapStatus(t.status);
         result.push({
           id: t.id,
-          hedefId: h.id,
+          projeId: h.id,
           name: t.name,
           description: generateAksiyonDescription(t.name),
           owner: p.leader || h.leader,
@@ -145,36 +145,36 @@ function flattenAksiyonlar(hedefler: CascadeHedef[]): Aksiyon[] {
   return result;
 }
 
-const allSources: [CascadeHedef[], Source][] = [
+const allSources: [CascadeProje[], Source][] = [
   [turkiyeHedefler, "Türkiye"],
   [kurumsalHedefler, "Kurumsal"],
   [internationalHedefler, "International"],
 ];
 
 /**
- * Assign systematic IDs: O{YY}-{NNNN} for hedefler, A{YY}-{NNNN} for aksiyonlar
+ * Assign systematic IDs: O{YY}-{NNNN} for projeler, A{YY}-{NNNN} for aksiyonlar
  * Sorted by startDate, grouped by year
  */
-function assignSystematicIds(hedefler: Hedef[], aksiyonlar: Aksiyon[]): { hedefler: Hedef[]; aksiyonlar: Aksiyon[] } {
-  // Build old→new ID map for hedefler
-  const sortedHedefler = [...hedefler].sort((a, b) => a.startDate.localeCompare(b.startDate));
-  const hedefIdMap = new Map<string, string>();
-  const hedefYearCounters = new Map<string, number>();
+function assignSystematicIds(projeler: Proje[], aksiyonlar: Aksiyon[]): { projeler: Proje[]; aksiyonlar: Aksiyon[] } {
+  // Build old→new ID map for projeler
+  const sortedProjeler = [...projeler].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const projeIdMap = new Map<string, string>();
+  const projeYearCounters = new Map<string, number>();
 
-  for (const h of sortedHedefler) {
+  for (const h of sortedProjeler) {
     const year = h.startDate ? new Date(h.startDate).getFullYear() : new Date().getFullYear();
     const yy = String(year).slice(-2);
-    const count = (hedefYearCounters.get(yy) ?? 0) + 1;
-    hedefYearCounters.set(yy, count);
+    const count = (projeYearCounters.get(yy) ?? 0) + 1;
+    projeYearCounters.set(yy, count);
     const newId = `O${yy}-${String(count).padStart(4, "0")}`;
-    hedefIdMap.set(h.id, newId);
+    projeIdMap.set(h.id, newId);
   }
 
-  // Remap hedef IDs and parentObjectiveId
-  const remappedHedefler = sortedHedefler.map((h) => ({
+  // Remap proje IDs and parentObjectiveId
+  const remappedProjeler = sortedProjeler.map((h) => ({
     ...h,
-    id: hedefIdMap.get(h.id) ?? h.id,
-    parentObjectiveId: h.parentObjectiveId ? hedefIdMap.get(h.parentObjectiveId) : undefined,
+    id: projeIdMap.get(h.id) ?? h.id,
+    parentObjectiveId: h.parentObjectiveId ? projeIdMap.get(h.parentObjectiveId) : undefined,
   }));
 
   // Build old→new ID map for aksiyonlar, sorted by startDate
@@ -190,36 +190,36 @@ function assignSystematicIds(hedefler: Hedef[], aksiyonlar: Aksiyon[]): { hedefl
     return {
       ...a,
       id: newId,
-      hedefId: hedefIdMap.get(a.hedefId) ?? a.hedefId,
+      projeId: projeIdMap.get(a.projeId) ?? a.projeId,
     };
   });
 
-  return { hedefler: remappedHedefler, aksiyonlar: remappedAksiyonlar };
+  return { projeler: remappedProjeler, aksiyonlar: remappedAksiyonlar };
 }
 
-export function getInitialHedefler(): Hedef[] {
-  const all = allSources.flatMap(([h, s]) => flattenHedefler(h, s));
+export function getInitialProjeler(): Proje[] {
+  const all = allSources.flatMap(([h, s]) => flattenProjeler(h, s));
 
   // Assign parentObjectiveId for T-Alignment — realistic multi-group hierarchy
-  const bySource = new Map<string, Hedef[]>();
+  const bySource = new Map<string, Proje[]>();
   for (const h of all) {
     const list = bySource.get(h.source) ?? [];
     list.push(h);
     bySource.set(h.source, list);
   }
 
-  for (const [, hedefler] of bySource) {
-    if (hedefler.length < 4) continue;
-    hedefler[1].parentObjectiveId = hedefler[0].id;
-    hedefler[2].parentObjectiveId = hedefler[0].id;
-    if (hedefler.length > 3) hedefler[3].parentObjectiveId = hedefler[0].id;
-    if (hedefler.length > 6) {
-      hedefler[5].parentObjectiveId = hedefler[4].id;
-      hedefler[6].parentObjectiveId = hedefler[4].id;
+  for (const [, projeler] of bySource) {
+    if (projeler.length < 4) continue;
+    projeler[1].parentObjectiveId = projeler[0].id;
+    projeler[2].parentObjectiveId = projeler[0].id;
+    if (projeler.length > 3) projeler[3].parentObjectiveId = projeler[0].id;
+    if (projeler.length > 6) {
+      projeler[5].parentObjectiveId = projeler[4].id;
+      projeler[6].parentObjectiveId = projeler[4].id;
     }
-    if (hedefler.length > 9) {
-      hedefler[8].parentObjectiveId = hedefler[7].id;
-      hedefler[9].parentObjectiveId = hedefler[7].id;
+    if (projeler.length > 9) {
+      projeler[8].parentObjectiveId = projeler[7].id;
+      projeler[9].parentObjectiveId = projeler[7].id;
     }
   }
 
@@ -231,11 +231,11 @@ export function getInitialAksiyonlar(): Aksiyon[] {
   return allSources.flatMap(([h]) => flattenAksiyonlar(h));
 }
 
-/** Returns hedefler + aksiyonlar with systematic IDs assigned */
-export function getInitialData(): { hedefler: Hedef[]; aksiyonlar: Aksiyon[] } {
-  const hedefler = getInitialHedefler();
+/** Returns projeler + aksiyonlar with systematic IDs assigned */
+export function getInitialData(): { projeler: Proje[]; aksiyonlar: Aksiyon[] } {
+  const projeler = getInitialProjeler();
   const aksiyonlar = getInitialAksiyonlar();
-  return assignSystematicIds(hedefler, aksiyonlar);
+  return assignSystematicIds(projeler, aksiyonlar);
 }
 
 // ===== Parametrik Tag Tanımları =====

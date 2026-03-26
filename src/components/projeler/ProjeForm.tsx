@@ -13,7 +13,7 @@ import { getStatusOptions, getSourceOptions } from "@/lib/constants";
 import { departments } from "@/config/departments";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import TagChip from "@/components/ui/TagChip";
-import type { Hedef } from "@/types";
+import type { Proje } from "@/types";
 
 const CURRENT_USER = "Cenk \u015eayli";
 const allUsers = departments.flatMap((d) => d.users.map((u) => u.name));
@@ -35,18 +35,18 @@ const createHedefSchema = (t: TFunction) =>
     reviewDate: z.string().min(1, t("validation.reviewDateRequired", "Kontrol tarihi zorunludur")),
   });
 
-type HedefFormData = z.infer<ReturnType<typeof createHedefSchema>>;
+type ProjeFormData = z.infer<ReturnType<typeof createHedefSchema>>;
 
-interface HedefFormProps {
-  hedef?: Hedef;
+interface ProjeFormProps {
+  proje?: Proje;
   onSuccess: () => void;
 }
 
-export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
+export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
   const { t } = useTranslation();
-  const addHedef = useDataStore((s) => s.addHedef);
-  const updateHedef = useDataStore((s) => s.updateHedef);
-  const hedefler = useDataStore((s) => s.hedefler);
+  const addProje = useDataStore((s) => s.addProje);
+  const updateProje = useDataStore((s) => s.updateProje);
+  const projeler = useDataStore((s) => s.projeler);
   const [isLoading, setIsLoading] = useState(false);
 
   const hedefSchema = createHedefSchema(t);
@@ -57,21 +57,21 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<HedefFormData>({
+  } = useForm<ProjeFormData>({
     resolver: zodResolver(hedefSchema) as any,
     defaultValues: {
-      name: hedef?.name ?? "",
-      description: hedef?.description ?? "",
-      owner: hedef?.owner ?? CURRENT_USER,
-      participants: hedef?.participants ?? [],
-      department: hedef?.department ?? "",
-      source: hedef?.source ?? "T\u00fcrkiye",
-      status: hedef?.status ?? "Not Started",
-      tags: hedef?.tags ?? [],
-      parentObjectiveId: hedef?.parentObjectiveId ?? "",
-      startDate: hedef?.startDate ?? "",
-      endDate: hedef?.endDate ?? "",
-      reviewDate: hedef?.reviewDate ?? "",
+      name: proje?.name ?? "",
+      description: proje?.description ?? "",
+      owner: proje?.owner ?? CURRENT_USER,
+      participants: proje?.participants ?? [],
+      department: proje?.department ?? "",
+      source: proje?.source ?? "T\u00fcrkiye",
+      status: proje?.status ?? "Not Started",
+      tags: proje?.tags ?? [],
+      parentObjectiveId: proje?.parentObjectiveId ?? "",
+      startDate: proje?.startDate ?? "",
+      endDate: proje?.endDate ?? "",
+      reviewDate: proje?.reviewDate ?? "",
     },
   });
 
@@ -79,12 +79,12 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
   const watchStartDate = watch("startDate");
   const watchReviewDate = watch("reviewDate");
   useEffect(() => {
-    if (!hedef && watchStartDate && !watchReviewDate) {
+    if (!proje && watchStartDate && !watchReviewDate) {
       setValue("reviewDate", watchStartDate);
     }
   }, [watchStartDate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const onSubmit = (data: HedefFormData) => {
+  const onSubmit = (data: ProjeFormData) => {
     setIsLoading(true);
     try {
       const payload = {
@@ -92,23 +92,23 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         tags: data.tags.length > 0 ? data.tags : undefined,
         parentObjectiveId: data.parentObjectiveId || undefined,
       };
-      if (hedef) {
+      if (proje) {
         // Detect changed fields for structured toast
         const details: { label: string; value: string }[] = [];
-        if (data.name !== hedef.name) details.push({ label: "Ad", value: data.name });
-        if (data.status !== hedef.status) details.push({ label: "Durum", value: data.status });
-        if (data.owner !== hedef.owner) details.push({ label: "Sahip", value: data.owner });
-        if (data.source !== hedef.source) details.push({ label: "Kaynak", value: data.source });
-        if (data.department !== hedef.department) details.push({ label: "Departman", value: data.department });
-        if (data.startDate !== hedef.startDate) details.push({ label: "Başlangıç", value: data.startDate });
-        if (data.endDate !== hedef.endDate) details.push({ label: "Bitiş", value: data.endDate });
-        updateHedef(hedef.id, payload);
+        if (data.name !== proje.name) details.push({ label: "Ad", value: data.name });
+        if (data.status !== proje.status) details.push({ label: "Durum", value: data.status });
+        if (data.owner !== proje.owner) details.push({ label: "Sahip", value: data.owner });
+        if (data.source !== proje.source) details.push({ label: "Kaynak", value: data.source });
+        if (data.department !== proje.department) details.push({ label: "Departman", value: data.department });
+        if (data.startDate !== proje.startDate) details.push({ label: "Başlangıç", value: data.startDate });
+        if (data.endDate !== proje.endDate) details.push({ label: "Bitiş", value: data.endDate });
+        updateProje(proje.id, payload);
         toast.success(t("toast.objectiveUpdated"), {
           message: data.name,
           details: details.length > 0 ? details : [{ label: "Durum", value: "Değişiklik kaydedildi" }],
         });
       } else {
-        addHedef({ ...payload, progress: 0 });
+        addProje({ ...payload, progress: 0 });
         toast.success(t("toast.objectiveCreated"), { message: data.name });
       }
       onSuccess();
@@ -385,7 +385,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         name="parentObjectiveId"
         control={control}
         render={({ field }) => {
-          const availableHedefler = hedefler.filter((h) => !hedef || h.id !== hedef.id);
+          const availableHedefler = projeler.filter((h) => !proje || h.id !== proje.id);
           return (
             <div>
               <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
@@ -480,7 +480,7 @@ export default function HedefForm({ hedef, onSuccess }: HedefFormProps) {
         startContent={<Check size={14} />}
         className="mt-2 rounded-button font-semibold relative overflow-hidden group"
       >
-        <span className="relative z-10">{hedef ? t("common.save") : t("common.create")}</span>
+        <span className="relative z-10">{proje ? t("common.save") : t("common.create")}</span>
         <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
           <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
         </span>
