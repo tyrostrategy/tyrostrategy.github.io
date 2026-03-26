@@ -18,6 +18,10 @@ interface WorkspaceData {
   department: string;
   myProjeler: Proje[];
   myAksiyonlar: Aksiyon[];
+  totalProjeler: number;
+  achievedProjeler: number;
+  behindProjeler: number;
+  atRiskProjeler: number;
   totalAksiyonlar: number;
   achievedAksiyonlar: number;
   behindAksiyonlar: number;
@@ -25,6 +29,7 @@ interface WorkspaceData {
   overallProgress: number;
   aksiyonProgress: number;
   statusBreakdown: Record<string, number>;
+  projeStatusBreakdown: Record<string, number>;
   upcomingDeadlines: DeadlineItem[];
 }
 
@@ -52,24 +57,36 @@ export function useMyWorkspace(): WorkspaceData {
         myHedefIds.has(a.projeId)
     );
 
-    // Counts
+    // Proje counts
+    const totalProjeler = myProjeler.length;
+    const achievedProjeler = myProjeler.filter((h) => h.status === "Achieved").length;
+    const behindProjeler = myProjeler.filter((h) => h.status === "Behind").length;
+    const atRiskProjeler = myProjeler.filter((h) => h.status === "At Risk").length;
+
+    // Aksiyon counts
     const totalAksiyonlar = myAksiyonlar.length;
     const achievedAksiyonlar = myAksiyonlar.filter((a) => a.status === "Achieved").length;
     const behindAksiyonlar = myAksiyonlar.filter((a) => a.status === "Behind").length;
     const atRiskAksiyonlar = myAksiyonlar.filter((a) => a.status === "At Risk").length;
 
-    // Progress
+    // Progress — proje bazlı
     const overallProgress =
-      totalAksiyonlar > 0
-        ? Math.round(myAksiyonlar.reduce((sum, a) => sum + a.progress, 0) / totalAksiyonlar)
+      totalProjeler > 0
+        ? Math.round(myProjeler.reduce((sum, h) => sum + h.progress, 0) / totalProjeler)
         : 0;
     const aksiyonProgress =
       totalAksiyonlar > 0 ? Math.round((achievedAksiyonlar / totalAksiyonlar) * 100) : 0;
 
-    // Status breakdown for donut chart
+    // Status breakdown — aksiyon bazlı (eski)
     const statusBreakdown: Record<string, number> = {};
     for (const a of myAksiyonlar) {
       statusBreakdown[a.status] = (statusBreakdown[a.status] || 0) + 1;
+    }
+
+    // Status breakdown — proje bazlı
+    const projeStatusBreakdown: Record<string, number> = {};
+    for (const h of myProjeler) {
+      projeStatusBreakdown[h.status] = (projeStatusBreakdown[h.status] || 0) + 1;
     }
 
     // Upcoming deadlines — combine proje and aksiyon deadlines
@@ -116,6 +133,10 @@ export function useMyWorkspace(): WorkspaceData {
       department,
       myProjeler,
       myAksiyonlar,
+      totalProjeler,
+      achievedProjeler,
+      behindProjeler,
+      atRiskProjeler,
       totalAksiyonlar,
       achievedAksiyonlar,
       behindAksiyonlar,
@@ -123,6 +144,7 @@ export function useMyWorkspace(): WorkspaceData {
       overallProgress,
       aksiyonProgress,
       statusBreakdown,
+      projeStatusBreakdown,
       upcomingDeadlines,
     };
   }, [userName, department, projeler, aksiyonlar]);

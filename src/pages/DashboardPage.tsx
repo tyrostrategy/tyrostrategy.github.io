@@ -82,19 +82,18 @@ export default function DashboardPage() {
   const projeProgress =
     projeler.length > 0 ? Math.round((hedefTamamlanan.length / projeler.length) * 100) : 0;
 
-  // KPI 2: Aktif Hedefler — On Track veya At Risk
-  const aktivHedefler = projeler.filter((h) => h.status === "On Track" || h.status === "At Risk");
+  // KPI 2: Aktif Projeler — On Track veya At Risk
+  const aktivProjeler = projeler.filter((h) => h.status === "On Track" || h.status === "At Risk");
   const onTrackCount = projeler.filter((h) => h.status === "On Track").length;
 
-  // KPI 3: Aksiyon Tamamlanma — Achieved aksiyonlar / toplam aksiyon
-  const achievedAksiyonlar = aksiyonlar.filter((a) => a.status === "Achieved");
-  const aksiyonProgress =
-    aksiyonlar.length > 0 ? Math.round((achievedAksiyonlar.length / aksiyonlar.length) * 100) : 0;
+  // KPI 3: Gecikmeli / Riskli Projeler
+  const gecikenProjeler = projeler.filter((h) => h.status === "Behind" || h.status === "At Risk");
+  const behindCount = projeler.filter((h) => h.status === "Behind").length;
+  const atRiskCount = projeler.filter((h) => h.status === "At Risk").length;
 
-  // KPI 4: Geciken/Riskli — Behind veya At Risk aksiyonlar
-  const gecikenAksiyonlar = aksiyonlar.filter((a) => a.status === "Behind" || a.status === "At Risk");
-  const behindCount = aksiyonlar.filter((a) => a.status === "Behind").length;
-  const atRiskCount = aksiyonlar.filter((a) => a.status === "At Risk").length;
+  // KPI 4: Ortalama İlerleme
+  const avgProgress = projeler.length > 0
+    ? Math.round(projeler.reduce((s, h) => s + h.progress, 0) / projeler.length) : 0;
 
   const kpiCards = [
     {
@@ -108,8 +107,8 @@ export default function DashboardPage() {
       onClick: () => navigate("/projeler"),
     },
     {
-      label: "Aktif Hedefler",
-      value: aktivHedefler.length,
+      label: "Aktif Projeler",
+      value: aktivProjeler.length,
       icon: "Target",
       color: "var(--tyro-gold)",
       trend: onTrackCount,
@@ -118,24 +117,23 @@ export default function DashboardPage() {
       onClick: () => navigate("/projeler"),
     },
     {
-      label: "Aksiyon Tamamlanma",
-      value: achievedAksiyonlar.length,
-      target: aksiyonlar.length,
-      icon: "CheckCircle",
-      color: "var(--tyro-success)",
-      progress: aksiyonProgress,
-      contextText: `${achievedAksiyonlar.length}/${aksiyonlar.length} aksiyon`,
-      onClick: () => navigate("/aksiyonlar?status=Achieved"),
-    },
-    {
-      label: "Geciken / Riskli",
-      value: gecikenAksiyonlar.length,
+      label: "Gecikmeli / Riskli",
+      value: gecikenProjeler.length,
       icon: "AlertTriangle",
       color: "var(--tyro-danger)",
       trend: behindCount,
-      trendLabel: `gecikmi\u015f, ${atRiskCount} risk alt\u0131nda`,
-      contextText: `${aksiyonlar.length} toplam aksiyondan`,
-      onClick: () => navigate("/aksiyonlar?status=Behind,At+Risk"),
+      trendLabel: `gecikmeli, ${atRiskCount} risk altında`,
+      contextText: `${projeler.length} toplam projeden`,
+      onClick: () => navigate("/projeler"),
+    },
+    {
+      label: "Ortalama İlerleme",
+      value: avgProgress,
+      icon: "BarChart3",
+      color: "var(--tyro-info)",
+      progress: avgProgress,
+      contextText: `${projeler.length} proje ortalaması`,
+      onClick: () => navigate("/projeler"),
     },
   ];
 
@@ -252,17 +250,15 @@ export default function DashboardPage() {
         </div>
       </Suspense>
 
-      {/* Row 3: Proje Durum Dağılımı (4) + Son Aktiviteler (8) */}
-      <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="col-span-12 lg:col-span-4 h-64 rounded-2xl bg-tyro-surface animate-pulse" /><div className="col-span-12 lg:col-span-8 h-64 rounded-2xl bg-tyro-surface animate-pulse" /></div>}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-4 flex">
-            <ProjectStatusBreakdown />
-          </motion.div>
-          <motion.div variants={fadeUp} className="col-span-12 lg:col-span-8 flex">
-            <ActivityFeed />
-          </motion.div>
-        </div>
-      </Suspense>
+      {/* Row 3: Departman Bazlı + Proje Lideri Bazlı Dağılım */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+        <motion.div variants={fadeUp}>
+          <DepartmentDistribution projeler={projeler} />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <LeaderDistribution projeler={projeler} />
+        </motion.div>
+      </div>
     </motion.div>
   );
 }
@@ -380,5 +376,136 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
         </AnimatePresence>
       </GlassCard>
     </div>
+  );
+}
+
+// ===== Departman Bazlı Proje Dağılımı =====
+const STATUS_COLORS: Record<string, string> = {
+  "On Track": "#10b981",
+  "At Risk": "#f59e0b",
+  "Behind": "#ef4444",
+  "Achieved": "#06b6d4",
+  "Not Started": "#94a3b8",
+  "Cancelled": "#6b7280",
+  "On Hold": "#8b5cf6",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  "On Track": "Yolunda",
+  "At Risk": "Risk Altında",
+  "Behind": "Gecikmeli",
+  "Achieved": "Tamamlandı",
+  "Not Started": "Başlanmadı",
+  "Cancelled": "İptal",
+  "On Hold": "Askıda",
+};
+
+function DepartmentDistribution({ projeler }: { projeler: { department: string; status: string }[] }) {
+  const grouped = useMemo(() => {
+    const m = new Map<string, Record<string, number>>();
+    for (const p of projeler) {
+      const dept = p.department || "Diğer";
+      if (!m.has(dept)) m.set(dept, {});
+      const d = m.get(dept)!;
+      d[p.status] = (d[p.status] || 0) + 1;
+    }
+    return Array.from(m.entries())
+      .map(([dept, statuses]) => ({ dept, statuses, total: Object.values(statuses).reduce((a, b) => a + b, 0) }))
+      .sort((a, b) => b.total - a.total);
+  }, [projeler]);
+
+  return (
+    <GlassCard className="p-5 flex-1 flex flex-col">
+      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">Departman Bazlı Proje Dağılımı</h3>
+      <p className="text-[11px] text-tyro-text-secondary mb-4">Departmanlara göre proje statüleri</p>
+      <div className="flex-1 space-y-3 overflow-y-auto">
+        {grouped.map(({ dept, statuses, total }) => (
+          <div key={dept}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[12px] font-semibold text-tyro-text-primary">{dept}</span>
+              <span className="text-[11px] text-tyro-text-muted">{total} proje</span>
+            </div>
+            <div className="flex h-2.5 rounded-full overflow-hidden bg-tyro-bg">
+              {Object.entries(statuses).map(([status, count]) => (
+                <div
+                  key={status}
+                  className="h-full transition-all"
+                  style={{
+                    width: `${(count / total) * 100}%`,
+                    backgroundColor: STATUS_COLORS[status] || "#94a3b8",
+                  }}
+                  title={`${STATUS_LABELS[status] || status}: ${count}`}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Legend */}
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-4 pt-3 border-t border-tyro-border/20">
+        {Object.entries(STATUS_COLORS).slice(0, 5).map(([status, color]) => (
+          <div key={status} className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+            <span className="text-[10px] text-tyro-text-muted">{STATUS_LABELS[status]}</span>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+  );
+}
+
+// ===== Proje Lideri Bazlı Dağılım =====
+function LeaderDistribution({ projeler }: { projeler: { owner: string; status: string }[] }) {
+  const grouped = useMemo(() => {
+    const m = new Map<string, Record<string, number>>();
+    for (const p of projeler) {
+      const owner = p.owner || "Belirtilmemiş";
+      if (!m.has(owner)) m.set(owner, {});
+      const d = m.get(owner)!;
+      d[p.status] = (d[p.status] || 0) + 1;
+    }
+    return Array.from(m.entries())
+      .map(([owner, statuses]) => ({ owner, statuses, total: Object.values(statuses).reduce((a, b) => a + b, 0) }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10); // top 10
+  }, [projeler]);
+
+  return (
+    <GlassCard className="p-5 flex-1 flex flex-col">
+      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">Proje Lideri Bazlı Dağılım</h3>
+      <p className="text-[11px] text-tyro-text-secondary mb-4">Proje liderlerine göre proje statüleri</p>
+      <div className="flex-1 space-y-3 overflow-y-auto">
+        {grouped.map(({ owner, statuses, total }) => (
+          <div key={owner}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[12px] font-semibold text-tyro-text-primary truncate max-w-[200px]">{owner}</span>
+              <span className="text-[11px] text-tyro-text-muted shrink-0">{total} proje</span>
+            </div>
+            <div className="flex h-2.5 rounded-full overflow-hidden bg-tyro-bg">
+              {Object.entries(statuses).map(([status, count]) => (
+                <div
+                  key={status}
+                  className="h-full transition-all"
+                  style={{
+                    width: `${(count / total) * 100}%`,
+                    backgroundColor: STATUS_COLORS[status] || "#94a3b8",
+                  }}
+                  title={`${STATUS_LABELS[status] || status}: ${count}`}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Legend */}
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-4 pt-3 border-t border-tyro-border/20">
+        {Object.entries(STATUS_COLORS).slice(0, 5).map(([status, color]) => (
+          <div key={status} className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+            <span className="text-[10px] text-tyro-text-muted">{STATUS_LABELS[status]}</span>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
   );
 }
