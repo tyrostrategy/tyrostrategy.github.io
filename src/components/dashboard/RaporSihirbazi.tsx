@@ -94,6 +94,7 @@ export default function RaporSihirbazi() {
   const sidebarThemeId = useUIStore((s) => s.sidebarTheme);
   const companyName = useUIStore((s) => s.companyName);
   const theme = sidebarThemes[sidebarThemeId];
+  const accentColor = theme.accentColor;
 
   // State
   const [reportGenerated, setReportGenerated] = useState(false);
