@@ -39,43 +39,104 @@ function buildParticipants(leader: string, projeId: string): string[] {
 // İsme bakarak kısa mock açıklama üret
 function generateHedefDescription(name: string, source: Source): string {
   const n = name.toLocaleLowerCase("tr");
-  if (n.includes("erp")) return "Kurumsal kaynak planlama sisteminin devreye alınması ve iş süreçlerinin dijitalleştirilmesi.";
-  if (n.includes("ihracat") || n.includes("export")) return "Yeni pazarlara açılarak ihracat hacminin ve gelir çeşitliliğinin artırılması.";
-  if (n.includes("intranet")) return "Şirket içi iletişimi güçlendirecek dijital portal ve bilgi yönetim platformunun kurulması.";
-  if (n.includes("sigorta")) return "Grup şirketleri genelinde sigorta poliçelerinin konsolidasyonu ve risk yönetimi çerçevesinin oluşturulması.";
-  if (n.includes("risk")) return "Operasyonel ve finansal risklerin belirlenmesi, ölçülmesi ve azaltılmasına yönelik sistematik çalışma.";
-  if (n.includes("sulama")) return "Modern sulama altyapısı ile tarımsal verimliliğin artırılması ve su kaynaklarının etkin kullanımı.";
-  if (n.includes("mekanizasyon")) return "Tarımsal üretimde modern makine ve ekipman kullanımının yaygınlaştırılması.";
-  if (n.includes("yem") || n.includes("katkı")) return "Yem katkı ürünlerinde yeni pazar fırsatlarının değerlendirilmesi ve satış kanallarının geliştirilmesi.";
-  if (n.includes("rejeneratif") || n.includes("tarım")) return "Toprak sağlığını iyileştiren ve sürdürülebilir üretim modellerini destekleyen tarım uygulamaları.";
-  if (n.includes("protein") || n.includes("kapasite")) return "Üretim kapasitesinin artırılması ve tesislerin modernize edilmesi.";
-  if (n.includes("fıstık") || n.includes("çin")) return "Antep fıstığı ürünlerinin Çin pazarına girişi için pazar araştırması ve dağıtım ağının kurulması.";
-  if (n.includes("stok")) return "Stok seviyelerinin optimizasyonu, depo yönetimi ve tedarik zinciri verimliliğinin artırılması.";
-  if (n.includes("bütçe") || n.includes("kaynak")) return "Bütçe planlaması ve kaynakların stratejik önceliklere göre tahsisi.";
-  if (n.includes("lojistik")) return "Lojistik operasyonlarının iyileştirilmesi ve dağıtım maliyetlerinin düşürülmesi.";
-  if (n.includes("kalite") || n.includes("iso")) return "Kalite yönetim sistemlerinin güçlendirilmesi ve uluslararası standartlara uyum.";
-  if (n.includes("müşteri")) return "Müşteri memnuniyetinin artırılması ve uzun vadeli müşteri ilişkilerinin güçlendirilmesi.";
-  if (n.includes("dijital")) return "Dijital dönüşüm stratejisi kapsamında iş süreçlerinin teknoloji ile entegrasyonu.";
-  if (n.includes("operasyon")) return `${source} operasyonlarında verimlilik artışı ve süreç iyileştirme çalışmaları.`;
-  return `${source} stratejik hedefleri kapsamında planlanan çalışmaların yürütülmesi ve takibi.`;
+  // Türkiye projeleri
+  if (n.includes("fıstık") || n.includes("çin")) return "Antep fıstığı ürünlerinin Çin pazarına girişi için pazar araştırması, lojistik planlama ve dağıtım ağının kurulması.";
+  if (n.includes("sulama")) return "Muş bölgesinde modern sulama altyapısının kurulması, tarımsal verimliliğin artırılması ve su kaynaklarının etkin yönetimi.";
+  if (n.includes("mekanizasyon")) return "Muş arazisinde tarımsal mekanizasyon kapasitesinin güçlendirilmesi, modern ekipman temini ve operasyonel verimlilik artışı.";
+  if (n.includes("değişkenli tarım") || n.includes("faz 1")) return "Değişkenli tarım uygulamalarının pilot sahada test edilmesi ve ilk sezon verimlilik verilerinin toplanması.";
+  if (n.includes("rejeneratif") || n.includes("faz 2")) return "Rejeneratif tarım tekniklerinin yaygınlaştırılması, toprak sağlığı iyileştirme ve sürdürülebilir üretim modeli kurulumu.";
+  if (n.includes("yem") || n.includes("katkı")) return "Yem katkı ve premix ürünlerinde ihracat hacminin artırılması, yeni pazarlara açılma ve müşteri portföyünün genişletilmesi.";
+  if (n.includes("anıtkır") || n.includes("arsa")) return "Yıldız Alparslan Anıtkır yatırımı için arsa edinimi, imar ve ruhsat süreçlerinin yönetimi.";
+  // Kurumsal projeleri
+  if (n.includes("gemi") || n.includes("deniz")) return "Deniz-Nehir tipi gemi inşa projesi kapsamında tersane seçimi, kontrat yönetimi ve inşaat sürecinin takibi.";
+  if (n.includes("performans yönetim")) return "Bireysel performans yönetim sisteminin tasarlanması, yazılım seçimi ve organizasyon genelinde devreye alınması.";
+  if (n.includes("buğday") || n.includes("derin işleme")) return "Buğday derin işleme tesisi yatırımı kapsamında fizibilite, mühendislik tasarım ve inşaat süreçlerinin yönetimi.";
+  if (n.includes("farmerp") || n.includes("çiftlik")) return "Çiftlik yönetim sistemi FarmERP entegrasyonunun tamamlanması ve tarımsal operasyonların dijitalleştirilmesi.";
+  if (n.includes("protein") || n.includes("kapasite")) return "Giresun protein tesisi kapasite artırım projesi kapsamında üretim hattı genişletme ve modernizasyon çalışmaları.";
+  if (n.includes("sigorta") && n.includes("strateji")) return "Tiryaki grup şirketleri genelinde sigorta stratejisi ve prosedürlerinin belirlenmesi, risk yönetimi çerçevesinin oluşturulması.";
+  if (n.includes("sigorta") && n.includes("erp")) return "Sigorta süreçlerinin ERP sistemine entegrasyonu, poliçe takibi ve hasar yönetiminin dijitalleştirilmesi.";
+  if (n.includes("mkt")) return "Pazarlama süreçlerinin sistematik yönetimi, kampanya planlaması ve performans ölçümleme altyapısının kurulması.";
+  if (n.includes("hr") && n.includes("adc")) return "İnsan kaynakları ve idari işler süreçlerinin entegrasyonu, merkezi yönetim platformunun devreye alınması.";
+  if (n.includes("integrity")) return "Kurumsal dürüstlük ve uyum programının tasarlanması, etik kuralların güncellenmesi ve farkındalık eğitimlerinin planlanması.";
+  if (n.includes("intranet")) return "Kurumsal intranet portalinin kurulması, tedarikçi belirlenmesi ve satınalma sürecinin tamamlanması.";
+  if (n.includes("itsm")) return "BT servis yönetimi (ITSM) platformunun kurulması, süreç otomasyonu ve destek hizmetlerinin standardizasyonu.";
+  if (n.includes("kazakistan")) return "Kazakistan'da buğday işleme tesisi kurulumu için fizibilite, arazi seçimi ve yatırım planlaması.";
+  if (n.includes("konveyör") || n.includes("mamul depo")) return "Mamul depo konveyör hattının uzatılması, kapasite artışı ve depo içi lojistik verimliliğinin iyileştirilmesi.";
+  if (n.includes("nola") || n.includes("iskele")) return "NOLA tesisinde iskele ve depo yenileme, raylı sistem entegrasyonu ve altyapı modernizasyonu.";
+  if (n.includes("deodorizasyon") || n.includes("rafineri")) return "Deodorizasyon ünitesinin rafineriye dönüştürülmesi ve yenilenebilir enerji entegrasyonu.";
+  if (n.includes("kpk") || n.includes("bi rapor")) return "Operasyonel KPI'ların belirlenmesi ve BI raporlama altyapısının kurulması.";
+  if (n.includes("organik") && n.includes("izlenebilirlik")) return "Organik ürün izlenebilirlik süreçlerinin dijitalleştirilmesi ve sertifikasyon uyumluluğunun sağlanması.";
+  if (n.includes("pillar")) return "Yerel ve küresel asgari kurumlar vergisi (Pillar-2) mevzuatına uyum modeli tasarımı ve uygulama planı.";
+  if (n.includes("riziko") || n.includes("teftiş")) return "Riziko bazlı teftiş çalışması kapsamında risk haritalaması ve denetim planının oluşturulması.";
+  if (n.includes("sharepoint")) return "SharePoint platformuna geçiş, içerik migrasyonu ve kullanıcı eğitimlerinin tamamlanması.";
+  if (n.includes("iş kazası") || n.includes("sıfır")) return "Sıfır iş kazası hedefine ulaşılması için güvenlik kültürü programı, eğitim ve sahada iyileştirme çalışmaları.";
+  if (n.includes("sunrise") || n.includes("apollo")) return "Sunrise Apollo ERP dönüşüm projesi kapsamında sistem seçimi ve geçiş planlaması.";
+  if (n.includes("sürdürülebilirlik")) return "Kurumsal sürdürülebilirlik raporunun hazırlanması, ESG metriklerinin toplanması ve raporlama standartlarına uyum.";
+  if (n.includes("takdir") || n.includes("ödüllendirme")) return "Çalışan takdir ve ödüllendirme sisteminin tasarlanması, dijital platform seçimi ve organizasyon genelinde yaygınlaştırılması.";
+  if (n.includes("tagic") || n.includes("inovasyon")) return "Tiryaki Agro Global İnovasyon Merkezi'nin kurulması, Ar-Ge stratejisinin belirlenmesi ve proje portföyünün oluşturulması.";
+  if (n.includes("dijital akademi")) return "Tiryaki Dijital Akademi platformunun kurulması, eğitim içeriklerinin hazırlanması ve çalışan gelişim programının başlatılması.";
+  if (n.includes("ltip")) return "Uzun vadeli teşvik programının (LTIP) global düzeyde hayata geçirilmesi ve performansa dayalı ödüllendirme mekanizmasının kurulması.";
+  if (n.includes("yapay zeka") || n.includes("tyro")) return "Yapay zeka destekli HR ve Trader Agent araçlarının geliştirilmesi, pilot uygulama ve entegrasyon.";
+  if (n.includes("ukrayna")) return "Ukrayna orijinli organik ürünlerin üretilmesi ve tedarik zincirinin kurulması.";
+  if (n.includes("uluslararası çalışma") || n.includes("prosedür")) return "Uluslararası çalışma modelleri, prosedür ve sözleşmelerin standardizasyonu.";
+  if (n.includes("web site")) return "Kurumsal web sitelerinin güncellenmesi, modern tasarım ve içerik yönetim altyapısının kurulması.";
+  if (n.includes("yetkilendirilmiş yükümlü")) return "Yetkilendirilmiş Yükümlü Sistemi (YYS) kurulumu kapsamında gümrük süreçlerinin optimizasyonu ve sertifikasyon.";
+  // International projeleri
+  if (n.includes("carbon")) return "Karbon ticareti projesi kapsamında pilot saha hazırlığı, sertifikasyon ve ticaret platformuna entegrasyon.";
+  if (n.includes("djibouti")) return "Cibuti liman yatırımı için fizibilite çalışması, ortaklık müzakereleri ve yatırım planlaması.";
+  if (n.includes("faw") || n.includes("iraq port")) return "Grand Al Faw limanı projesi kapsamında Irak'ta liman operasyonları ve lojistik altyapı geliştirme.";
+  if (n.includes("sugar") || n.includes("venezuela") && n.includes("refinery")) return "Venezuela'da şeker rafinerisi yatırımı için fizibilite, mühendislik tasarım ve inşaat planlaması.";
+  if (n.includes("iraq agro")) return "Irak Agro Holding yapılanması, tarımsal operasyonların konsolidasyonu ve büyüme stratejisinin uygulanması.";
+  if (n.includes("organisational") || n.includes("training")) return "Irak operasyonlarında organizasyonel uyum ve eğitim programının tasarlanması ve uygulanması.";
+  if (n.includes("african") || n.includes("africa")) return "Afrika ülke yapılarının gözden geçirilmesi, organizasyonel düzenleme ve operasyonel verimlilik artışı.";
+  if (n.includes("coal") || n.includes("venezuela") && n.includes("coal")) return "Venezuela kömür tesisi projesi kapsamında tesis kurulumu, tedarik zinciri ve operasyonel planlama.";
+  // Fallback
+  return `${source} stratejik projeleri kapsamında planlanan çalışmaların yürütülmesi ve takibi.`;
 }
 
 function generateAksiyonDescription(name: string): string {
   const n = name.toLocaleLowerCase("tr");
-  if (n.includes("milestone") || n.includes("discovery")) return "Proje kapsamının belirlenmesi, paydaş görüşmeleri ve mevcut durum analizi.";
-  if (n.includes("tasarım")) return "Sistem mimarisi, kullanıcı arayüzü ve teknik tasarım dökümanlarının hazırlanması.";
+  // Genel iş süreçleri
+  if (n.includes("fizibilite")) return "Proje fizibilite çalışmasının hazırlanması, maliyet-fayda analizi ve karar raporunun sunulması.";
+  if (n.includes("ihale") || n.includes("teklif")) return "İhale sürecinin yönetimi, teklif değerlendirmesi ve en uygun tedarikçinin seçilmesi.";
+  if (n.includes("sözleşme") || n.includes("kontrat")) return "Sözleşme müzakereleri, hukuki inceleme ve imza sürecinin tamamlanması.";
   if (n.includes("bütçe") || n.includes("onay")) return "Maliyet analizi, bütçe taslağının hazırlanması ve yönetim onayının alınması.";
-  if (n.includes("test") || n.includes("pilot")) return "Geliştirilen çözümün pilot ortamda test edilmesi ve geri bildirim toplanması.";
-  if (n.includes("eğitim")) return "Kullanıcı eğitimlerinin planlanması ve gerçekleştirilmesi.";
-  if (n.includes("içerik")) return "Gerekli içeriklerin oluşturulması, çeviri ve lokalizasyon çalışmalarının yürütülmesi.";
   if (n.includes("tedarikçi") || n.includes("satınalma")) return "Tedarikçi seçimi, teklif değerlendirmesi ve satınalma sürecinin yönetimi.";
+  if (n.includes("test") || n.includes("pilot")) return "Geliştirilen çözümün pilot ortamda test edilmesi ve geri bildirim toplanması.";
+  if (n.includes("eğitim")) return "Kullanıcı eğitimlerinin planlanması, içerik hazırlığı ve gerçekleştirilmesi.";
+  if (n.includes("tasarım")) return "Sistem mimarisi, kullanıcı arayüzü ve teknik tasarım dokümanlarının hazırlanması.";
+  if (n.includes("geçiş") || n.includes("kapanış")) return "Canlıya geçiş planının uygulanması, veri migrasyonu ve projenin kapatılması.";
+  if (n.includes("devreye") || n.includes("go-live") || n.includes("launch")) return "Sistemin canlıya alınması, son kontrollerin yapılması ve kullanıcılara açılması.";
+  if (n.includes("kurulum") || n.includes("implementasyon")) return "Sistem kurulumu, konfigürasyonu ve entegrasyon testlerinin tamamlanması.";
+  // Tarım ve üretim
+  if (n.includes("hasat") || n.includes("ekim")) return "Tarımsal ekim/hasat planlamasının yapılması ve saha operasyonlarının koordinasyonu.";
+  if (n.includes("arazi") || n.includes("saha")) return "Arazi keşfi, saha değerlendirmesi ve uygunluk raporunun hazırlanması.";
+  if (n.includes("toprak")) return "Toprak analizi, verimlilik değerlendirmesi ve iyileştirme önerilerinin hazırlanması.";
+  if (n.includes("makine") || n.includes("ekipman")) return "Makine ve ekipman tedariki, kurulumu ve operasyonel hazırlığın tamamlanması.";
+  // İnşaat ve tesis
+  if (n.includes("inşaat") || n.includes("yapım")) return "İnşaat sürecinin yönetimi, ilerleme takibi ve kalite kontrolünün sağlanması.";
+  if (n.includes("mühendislik")) return "Mühendislik tasarım çalışmaları, teknik çizimlerin hazırlanması ve onay sürecinin yönetimi.";
+  if (n.includes("ruhsat") || n.includes("izin") || n.includes("imar")) return "Gerekli ruhsat ve izin başvurularının yapılması, resmi onay süreçlerinin takibi.";
+  // IT ve dijital
+  if (n.includes("migration") || n.includes("migrasyon") || n.includes("taşınma")) return "Veri ve sistem migrasyonu, uyumluluk testleri ve geçiş sürecinin yönetimi.";
+  if (n.includes("entegrasyon") || n.includes("integration")) return "Sistem entegrasyonu, API bağlantıları ve veri akışlarının yapılandırılması.";
+  if (n.includes("veri")) return "Veri toplama, temizleme ve analiz altyapısının hazırlanması.";
+  if (n.includes("yazılım") || n.includes("geliştirme")) return "Yazılım geliştirme, kod inceleme ve kalite güvence testlerinin tamamlanması.";
+  // Strateji ve yönetim
   if (n.includes("strateji") || n.includes("belirlenmesi")) return "Stratejik yönlendirmelerin netleştirilmesi ve eylem planının oluşturulması.";
   if (n.includes("prosedür")) return "İş süreçleri için standart prosedürlerin yazılması ve onaylanması.";
-  if (n.includes("rapor")) return "İlerleme ve performans raporlarının hazırlanarak paydaşlara sunulması.";
+  if (n.includes("tebliğ") || n.includes("duyuru")) return "Onaylanan kararların ilgili birimlere tebliği ve uygulamaya alınması.";
+  if (n.includes("rapor") || n.includes("sunum")) return "İlerleme ve performans raporlarının hazırlanarak paydaşlara sunulması.";
   if (n.includes("analiz") || n.includes("araştırma")) return "Veri toplama, analiz ve değerlendirme çalışmalarının gerçekleştirilmesi.";
-  if (n.includes("kurulum") || n.includes("devreye")) return "Sistem kurulumu, konfigürasyonu ve canlıya alma sürecinin yönetimi.";
-  if (n.includes("pazar")) return "Proje pazar araştırması, rekabet analizi ve giriş stratejisinin belirlenmesi.";
-  if (n.includes("tebliğ") || n.includes("uygulama")) return "Onaylanan prosedürlerin ilgili birimlere tebliği ve uygulamaya alınması.";
+  if (n.includes("pazar")) return "Pazar araştırması, rekabet analizi ve giriş stratejisinin belirlenmesi.";
+  if (n.includes("içerik")) return "Gerekli içeriklerin oluşturulması, çeviri ve lokalizasyon çalışmalarının yürütülmesi.";
+  if (n.includes("denetim") || n.includes("audit")) return "İç denetim çalışmalarının planlanması, yürütülmesi ve raporlanması.";
+  if (n.includes("risk")) return "Risk değerlendirmesi, kontrol noktalarının belirlenmesi ve azaltma planının hazırlanması.";
+  if (n.includes("performans") || n.includes("kpi")) return "Performans göstergelerinin tanımlanması, ölçüm yönteminin belirlenmesi ve raporlama sürecinin kurulması.";
+  // Lojistik ve operasyon
+  if (n.includes("lojistik") || n.includes("sevkiyat")) return "Lojistik planlama, sevkiyat koordinasyonu ve teslimat sürecinin yönetimi.";
+  if (n.includes("depo") || n.includes("stok")) return "Depo yönetimi, stok optimizasyonu ve envanter kontrol süreçlerinin iyileştirilmesi.";
+  // Fallback
   return "Belirlenen zaman çizelgesine uygun olarak görevin planlanması ve tamamlanması.";
 }
 
