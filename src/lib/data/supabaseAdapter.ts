@@ -165,14 +165,20 @@ export const supabaseAdapter: DataService = {
       projeTagsMap.set(link.proje_id, arr);
     }
 
-    // Fetch participants
-    const { data: partLinks } = await supabase.from("proje_participants").select("proje_id, user_name");
+    // Fetch participants (defensive — may have different column names)
     const projeParticipantsMap = new Map<string, string[]>();
-    for (const link of partLinks ?? []) {
-      const arr = projeParticipantsMap.get(link.proje_id) ?? [];
-      arr.push(link.user_name);
-      projeParticipantsMap.set(link.proje_id, arr);
-    }
+    try {
+      const { data: partLinks } = await supabase.from("proje_participants").select("*");
+      for (const link of partLinks ?? []) {
+        const projeId = link.proje_id;
+        const userName = link.user_name || link.display_name || "";
+        if (projeId && userName) {
+          const arr = projeParticipantsMap.get(projeId) ?? [];
+          arr.push(userName);
+          projeParticipantsMap.set(projeId, arr);
+        }
+      }
+    } catch { /* participants optional */ }
 
     return (data as DbProje[]).map((row) =>
       dbToProje(row, projeTagsMap.get(row.id) ?? [], projeParticipantsMap.get(row.id) ?? [row.owner])

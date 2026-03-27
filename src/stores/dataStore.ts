@@ -280,7 +280,7 @@ if (typeof window !== "undefined") {
       console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags`);
       useDataStore.setState({ projeler, aksiyonlar, tagDefinitions });
     }).catch((err) => {
-      console.error("[Supabase] Initial fetch failed, using cached data:", err);
+      console.error("[Supabase] Initial fetch failed, using cached data:", err?.message || err?.code || JSON.stringify(err));
     });
   }
 }
