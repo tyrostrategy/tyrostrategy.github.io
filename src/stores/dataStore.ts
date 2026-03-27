@@ -8,6 +8,15 @@ import {
   getInitialData,
 } from "@/lib/data/mock-adapter";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
+import { supabaseAdapter } from "@/lib/data/supabaseAdapter";
+
+const isSupabaseMode = import.meta.env.VITE_DATA_PROVIDER === "supabase";
+
+/** Fire-and-forget Supabase sync — doesn't block UI */
+function syncToSupabase(fn: () => Promise<unknown>) {
+  if (!isSupabaseMode) return;
+  fn().catch((err) => console.error("[Supabase Sync]", err));
+}
 
 interface DataState {
   projeler: Proje[];
@@ -115,11 +124,13 @@ export const useDataStore = create<DataState>()(
       addProje: (h) =>
         set((s) => {
           const id = generateSystematicId("P", h.startDate, s.projeler.map((x) => x.id));
-          return { projeler: [...s.projeler, { ...h, id, createdBy: h.createdBy ?? CURRENT_USER, createdAt: h.createdAt ?? now() }] };
+          const newProje = { ...h, id, createdBy: h.createdBy ?? CURRENT_USER, createdAt: h.createdAt ?? now() };
+          syncToSupabase(() => supabaseAdapter.createProje({ ...newProje }));
+          return { projeler: [...s.projeler, newProje] };
         }),
       updateProje: (id, data) =>
-        set((s) => ({
-          projeler: s.projeler.map((h) => {
+        set((s) => {
+          const projeler = s.projeler.map((h) => {
             if (h.id !== id) return h;
             const updated = { ...h, ...data };
             if (data.status === "Achieved" && h.status !== "Achieved") {
@@ -128,12 +139,15 @@ export const useDataStore = create<DataState>()(
               updated.completedAt = undefined;
             }
             return updated;
-          }),
-        })),
+          });
+          syncToSupabase(() => supabaseAdapter.updateProje(id, data));
+          return { projeler };
+        }),
       deleteProje: (id) => {
         const state = get();
         if (state.aksiyonlar.some((a) => a.projeId === id)) return false;
         set((s) => ({ projeler: s.projeler.filter((h) => h.id !== id) }));
+        syncToSupabase(() => supabaseAdapter.deleteProje(id));
         return true;
       },
 
@@ -144,6 +158,10 @@ export const useDataStore = create<DataState>()(
           const newAksiyon: Aksiyon = { ...a, id, createdBy: a.createdBy ?? CURRENT_USER, createdAt: a.createdAt ?? now() };
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
           const projeler = recalcProjeProgress(s.projeler, aksiyonlar, newAksiyon.projeId);
+          syncToSupabase(() => supabaseAdapter.createAksiyon({ ...newAksiyon }));
+          // Also sync parent proje progress
+          const updatedProje = projeler.find((p) => p.id === newAksiyon.projeId);
+          if (updatedProje) syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, { progress: updatedProje.progress, status: updatedProje.status }));
           return { aksiyonlar, projeler };
         }),
       updateAksiyon: (id, data) =>
@@ -158,11 +176,16 @@ export const useDataStore = create<DataState>()(
             }
             return updated;
           });
-          // Recalc parent proje progress
           const aksiyon = aksiyonlar.find((a) => a.id === id);
           const projeler = aksiyon
             ? recalcProjeProgress(s.projeler, aksiyonlar, aksiyon.projeId)
             : s.projeler;
+          syncToSupabase(() => supabaseAdapter.updateAksiyon(id, data));
+          // Also sync parent proje progress
+          if (aksiyon) {
+            const updatedProje = projeler.find((p) => p.id === aksiyon.projeId);
+            if (updatedProje) syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, { progress: updatedProje.progress, status: updatedProje.status }));
+          }
           return { aksiyonlar, projeler };
         }),
       deleteAksiyon: (id) => {
@@ -173,6 +196,11 @@ export const useDataStore = create<DataState>()(
           ? recalcProjeProgress(state.projeler, aksiyonlar, aksiyon.projeId)
           : state.projeler;
         set({ aksiyonlar, projeler });
+        syncToSupabase(() => supabaseAdapter.deleteAksiyon(id));
+        if (aksiyon) {
+          const updatedProje = projeler.find((p) => p.id === aksiyon.projeId);
+          if (updatedProje) syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, { progress: updatedProje.progress, status: updatedProje.status }));
+        }
         return true;
       },
 
@@ -180,18 +208,27 @@ export const useDataStore = create<DataState>()(
       addTagDefinition: (tag) => {
         const newTag: TagDefinition = { ...tag, id: uid() };
         set((s) => ({ tagDefinitions: [...s.tagDefinitions, newTag] }));
+        syncToSupabase(async () => {
+          const created = await supabaseAdapter.createTagDefinition(tag);
+          // Update local ID with Supabase-generated UUID
+          set((s) => ({ tagDefinitions: s.tagDefinitions.map((t) => t.id === newTag.id ? { ...t, id: created.id } : t) }));
+        });
         return newTag;
       },
-      updateTagDefinition: (id, data) =>
+      updateTagDefinition: (id, data) => {
         set((s) => ({
           tagDefinitions: s.tagDefinitions.map((t) =>
             t.id === id ? { ...t, ...data } : t
           ),
-        })),
-      deleteTagDefinition: (id) =>
+        }));
+        syncToSupabase(() => supabaseAdapter.updateTagDefinition(id, data));
+      },
+      deleteTagDefinition: (id) => {
         set((s) => ({
           tagDefinitions: s.tagDefinitions.filter((t) => t.id !== id),
-        })),
+        }));
+        syncToSupabase(() => supabaseAdapter.deleteTagDefinition(id));
+      },
       renameTag: (oldName, newName) =>
         set((s) => ({
           // Update tag definition name
@@ -232,4 +269,18 @@ export const useDataStore = create<DataState>()(
 // Manual hydrate — prevents infinite loop with useSyncExternalStore
 if (typeof window !== "undefined") {
   useDataStore.persist.rehydrate();
+
+  // If Supabase mode: fetch fresh data from DB on startup
+  if (isSupabaseMode) {
+    Promise.all([
+      supabaseAdapter.fetchProjeler(),
+      supabaseAdapter.fetchAksiyonlar(),
+      supabaseAdapter.fetchTagDefinitions(),
+    ]).then(([projeler, aksiyonlar, tagDefinitions]) => {
+      console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags`);
+      useDataStore.setState({ projeler, aksiyonlar, tagDefinitions });
+    }).catch((err) => {
+      console.error("[Supabase] Initial fetch failed, using cached data:", err);
+    });
+  }
 }
