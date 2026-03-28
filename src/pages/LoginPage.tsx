@@ -7,7 +7,8 @@ import { Shield, BarChart3, Target, LogIn, ChevronRight, Globe, LayoutDashboard 
 import { TyroLogo } from "@/components/ui/TyroLogo";
 import { RoleAvatar } from "@/components/ui/RoleAvatar";
 import { useUIStore } from "@/stores/uiStore";
-import { useState, useEffect } from "react";
+import { useDataStore } from "@/stores/dataStore";
+import { useState, useEffect, useMemo } from "react";
 import type { UserRole } from "@/types";
 
 interface DemoUser {
@@ -16,9 +17,16 @@ interface DemoUser {
   role: UserRole;
   accent: string;
   accentDark: string;
+  locale?: "tr" | "en";
 }
 
-const demoUsers: DemoUser[] = [
+const ROLE_COLORS: Record<string, { accent: string; accentDark: string }> = {
+  Admin: { accent: "#c8922a", accentDark: "#96700f" },
+  "Proje Lideri": { accent: "#3b82f6", accentDark: "#1d4ed8" },
+  Kullanıcı: { accent: "#64748b", accentDark: "#475569" },
+};
+
+const FALLBACK_USERS: DemoUser[] = [
   { name: "Cenk Şayli", department: "IT", role: "Admin", accent: "#c8922a", accentDark: "#96700f" },
   { name: "Kemal Yıldız", department: "Uluslararası Operasyonlar", role: "Proje Lideri", accent: "#3b82f6", accentDark: "#1d4ed8" },
   { name: "Burcu Gözen", department: "Finans", role: "Kullanıcı", accent: "#64748b", accentDark: "#475569" },
@@ -29,6 +37,21 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const setMockLoggedIn = useUIStore((s) => s.setMockLoggedIn);
   const { locale, setLocale } = useUIStore();
+  const dbUsers = useDataStore((s) => s.users);
+
+  // Use DB users if available, otherwise fallback to hardcoded
+  const demoUsers: DemoUser[] = useMemo(() => {
+    if (dbUsers.length > 0) {
+      return dbUsers.map((u) => ({
+        name: u.displayName,
+        department: u.department,
+        role: u.role,
+        locale: u.locale,
+        ...(ROLE_COLORS[u.role] ?? ROLE_COLORS.Kullanıcı),
+      }));
+    }
+    return FALLBACK_USERS;
+  }, [dbUsers]);
 
   const features = [
     { icon: Target, title: t("login.strategicPlanning"), desc: t("login.strategicPlanningDesc") },
@@ -38,7 +61,7 @@ export default function LoginPage() {
   ];
   const [loading, setLoading] = useState(false);
   const [featureIndex, setFeatureIndex] = useState(0);
-  const [selectedUser, setSelectedUser] = useState<string>("Cenk Şayli");
+  const [selectedUser, setSelectedUser] = useState<string>(demoUsers[0]?.name ?? "Cenk Şayli");
 
   useEffect(() => {
     const timer = setInterval(() => setFeatureIndex((i) => (i + 1) % features.length), 3000);
@@ -51,6 +74,10 @@ export default function LoginPage() {
       const user = demoUsers.find((u) => u.name === selectedUser);
       useUIStore.getState().setMockUserName(selectedUser);
       useUIStore.getState().setMockUserRole(user?.role ?? "Kullanıcı");
+      // Set user's preferred language
+      if (user?.locale) {
+        useUIStore.getState().setLocale(user.locale);
+      }
       setMockLoggedIn(true);
       navigate("/workspace");
     }, 600);

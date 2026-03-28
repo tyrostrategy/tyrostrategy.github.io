@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import i18n from "@/lib/i18n";
 import type { SidebarThemeId } from "@/config/sidebarThemes";
+import { isSupabaseMode } from "@/hooks/useSupabaseData";
+
+// Lazy import to avoid circular dependency
+const getSyncAdapter = () => import("@/lib/data/supabaseAdapter").then((m) => m.supabaseAdapter);
 
 interface UIState {
   sidebarCollapsed: boolean;
@@ -32,6 +36,12 @@ interface UIState {
   setLocale: (locale: "tr" | "en") => void;
 }
 
+function syncSetting(key: string, value: unknown) {
+  if (isSupabaseMode) {
+    getSyncAdapter().then((adapter) => adapter.upsertAppSetting(key, value)).catch(() => {});
+  }
+}
+
 export const useUIStore = create<UIState>((set) => ({
   sidebarCollapsed: false,
   commandPaletteOpen: false,
@@ -47,10 +57,12 @@ export const useUIStore = create<UIState>((set) => ({
   allowMultipleTags: localStorage.getItem("tyro-allow-multiple-tags") !== "false",
   setCompanyName: (name) => {
     localStorage.setItem("tyro-company-name", name);
+    syncSetting("company_name", name);
     set({ companyName: name });
   },
   setAllowMultipleTags: (v) => {
     localStorage.setItem("tyro-allow-multiple-tags", String(v));
+    syncSetting("allow_multiple_tags", v);
     set({ allowMultipleTags: v });
   },
   toggleSidebar: () =>
@@ -92,3 +104,19 @@ export const useUIStore = create<UIState>((set) => ({
     set({ locale });
   },
 }));
+
+// Startup: load settings from Supabase (overrides localStorage defaults)
+if (isSupabaseMode) {
+  getSyncAdapter().then((adapter) =>
+    adapter.fetchAppSettings().then((settings) => {
+      const map = new Map(settings.map((s) => [s.key, s.value]));
+      const updates: Partial<UIState> = {};
+      if (map.has("company_name")) updates.companyName = map.get("company_name") as string;
+      if (map.has("allow_multiple_tags")) updates.allowMultipleTags = map.get("allow_multiple_tags") as boolean;
+      if (Object.keys(updates).length > 0) {
+        console.log("[Supabase] Loaded app_settings:", Object.keys(updates));
+        useUIStore.setState(updates);
+      }
+    })
+  ).catch((err) => console.error("[Supabase] fetchAppSettings failed:", err));
+}

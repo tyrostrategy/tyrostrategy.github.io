@@ -101,6 +101,26 @@ export interface AdvancedFilters {
   aksiyonProgressMax?: number;
 }
 
+// ===== Application User =====
+export type UserRole = "Admin" | "Proje Lideri" | "Kullanıcı";
+
+export interface AppUser {
+  id: string;
+  email: string;
+  displayName: string;
+  department: string;
+  role: UserRole;
+  locale: "tr" | "en";
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// ===== App Settings (key-value) =====
+export interface AppSetting {
+  key: string;
+  value: unknown;
+}
+
 // ===== Backward compatibility aliases =====
 /** @deprecated Use Aksiyon instead */
 export type Gorev = Aksiyon;

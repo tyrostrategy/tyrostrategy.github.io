@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { UserRole, RolePermissions } from "@/types";
+import { isSupabaseMode } from "@/hooks/useSupabaseData";
 
 // ===== Varsayılan Rol Yetkileri =====
 
@@ -101,6 +102,12 @@ export const useRoleStore = create<RoleStore>((set, get) => ({
     set((state) => {
       const next = { ...state.permissions, [role]: perms };
       localStorage.setItem("tyro-role-permissions-v2", JSON.stringify(next));
+      // Supabase sync
+      if (isSupabaseMode) {
+        import("@/lib/data/supabaseAdapter").then((m) =>
+          m.supabaseAdapter.upsertRolePermissions(role, perms as unknown as Record<string, unknown>)
+        ).catch(() => {});
+      }
       return { permissions: next };
     });
   },
@@ -110,3 +117,24 @@ export const useRoleStore = create<RoleStore>((set, get) => ({
     set({ permissions: { ...DEFAULT_PERMISSIONS } });
   },
 }));
+
+// Startup: load from Supabase (overrides localStorage)
+if (isSupabaseMode) {
+  import("@/lib/data/supabaseAdapter").then((m) =>
+    m.supabaseAdapter.fetchRolePermissions().then((rows) => {
+      if (rows.length > 0) {
+        const current = useRoleStore.getState().permissions;
+        const updates: Record<string, RolePermissions> = {};
+        for (const row of rows) {
+          if (row.role in current) {
+            updates[row.role] = { ...(current as any)[row.role], ...row.permissions } as RolePermissions;
+          }
+        }
+        if (Object.keys(updates).length > 0) {
+          console.log("[Supabase] Loaded role_permissions:", Object.keys(updates));
+          useRoleStore.setState({ permissions: { ...current, ...updates } as Record<UserRole, RolePermissions> });
+        }
+      }
+    })
+  ).catch((err) => console.error("[Supabase] fetchRolePermissions failed:", err));
+}

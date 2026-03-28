@@ -4,7 +4,7 @@
  */
 import { supabase } from "@/lib/supabase";
 import type { DataService } from "./dataService";
-import type { Proje, Aksiyon, TagDefinition, EntityStatus, Source } from "@/types";
+import type { Proje, Aksiyon, TagDefinition, EntityStatus, Source, AppUser, AppSetting, UserRole } from "@/types";
 
 // ===== DB → App mappers =====
 
@@ -300,5 +300,84 @@ export const supabaseAdapter: DataService = {
     if (!supabase) return false;
     const { error } = await supabase.from("tag_definitions").delete().eq("id", id);
     return !error;
+  },
+
+  // ── Users ──
+
+  async fetchUsers(): Promise<AppUser[]> {
+    if (!supabase) return [];
+    const { data, error } = await supabase.from("users").select("*").order("display_name");
+    if (error) { console.error("[Supabase] fetchUsers:", error); return []; }
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      email: row.email,
+      displayName: row.display_name,
+      department: row.department ?? "",
+      role: (row.role as UserRole) ?? "Kullanıcı",
+      locale: row.locale ?? "tr",
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+  },
+
+  async createUser(user: Omit<AppUser, "id" | "createdAt" | "updatedAt">): Promise<AppUser | null> {
+    if (!supabase) return null;
+    const { data, error } = await supabase.from("users").insert({
+      email: user.email,
+      display_name: user.displayName,
+      department: user.department,
+      role: user.role,
+      locale: user.locale,
+    }).select().single();
+    if (error) { console.error("[Supabase] createUser:", error); return null; }
+    return { id: data.id, email: data.email, displayName: data.display_name, department: data.department ?? "", role: data.role, locale: data.locale ?? "tr", createdAt: data.created_at, updatedAt: data.updated_at };
+  },
+
+  async updateUser(id: string, data: Partial<AppUser>): Promise<void> {
+    if (!supabase) return;
+    const row: Record<string, unknown> = {};
+    if (data.email !== undefined) row.email = data.email;
+    if (data.displayName !== undefined) row.display_name = data.displayName;
+    if (data.department !== undefined) row.department = data.department;
+    if (data.role !== undefined) row.role = data.role;
+    if (data.locale !== undefined) row.locale = data.locale;
+    const { error } = await supabase.from("users").update(row).eq("id", id);
+    if (error) console.error("[Supabase] updateUser:", error);
+  },
+
+  async deleteUser(id: string): Promise<boolean> {
+    if (!supabase) return false;
+    const { error } = await supabase.from("users").delete().eq("id", id);
+    return !error;
+  },
+
+  // ── App Settings ──
+
+  async fetchAppSettings(): Promise<AppSetting[]> {
+    if (!supabase) return [];
+    const { data, error } = await supabase.from("app_settings").select("key, value");
+    if (error) { console.error("[Supabase] fetchAppSettings:", error); return []; }
+    return (data || []).map((row: any) => ({ key: row.key, value: row.value }));
+  },
+
+  async upsertAppSetting(key: string, value: unknown): Promise<void> {
+    if (!supabase) return;
+    const { error } = await supabase.from("app_settings").upsert({ key, value }, { onConflict: "key" });
+    if (error) console.error("[Supabase] upsertAppSetting:", error);
+  },
+
+  // ── Role Permissions ──
+
+  async fetchRolePermissions(): Promise<{ role: string; permissions: Record<string, unknown> }[]> {
+    if (!supabase) return [];
+    const { data, error } = await supabase.from("role_permissions").select("role, permissions");
+    if (error) { console.error("[Supabase] fetchRolePermissions:", error); return []; }
+    return (data || []).map((row: any) => ({ role: row.role, permissions: row.permissions }));
+  },
+
+  async upsertRolePermissions(role: string, permissions: Record<string, unknown>): Promise<void> {
+    if (!supabase) return;
+    const { error } = await supabase.from("role_permissions").upsert({ role, permissions }, { onConflict: "role" });
+    if (error) console.error("[Supabase] upsertRolePermissions:", error);
   },
 };

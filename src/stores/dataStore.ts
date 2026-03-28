@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Proje, Aksiyon, TagDefinition } from "@/types";
+import type { Proje, Aksiyon, TagDefinition, AppUser } from "@/types";
 import {
   getInitialProjeler,
   getInitialAksiyonlar,
@@ -22,6 +22,13 @@ interface DataState {
   projeler: Proje[];
   aksiyonlar: Aksiyon[];
   tagDefinitions: TagDefinition[];
+  users: AppUser[];
+
+  // CRUD — Users
+  addUser: (u: Omit<AppUser, "id" | "createdAt" | "updatedAt">) => void;
+  updateUser: (id: string, data: Partial<AppUser>) => void;
+  deleteUser: (id: string) => void;
+  getUserByName: (name: string) => AppUser | undefined;
 
   // CRUD — Proje
   addProje: (h: Omit<Proje, "id">) => void;
@@ -136,6 +143,27 @@ export const useDataStore = create<DataState>()(
     (set, get) => ({
       ...getInitialData(),
       tagDefinitions: getInitialTagDefinitions(),
+      users: [],
+
+      // Users CRUD
+      addUser: (u) =>
+        set((s) => {
+          const newUser = { ...u, id: uid(), createdAt: now() } as AppUser;
+          syncToSupabase(() => supabaseAdapter.createUser(u));
+          return { users: [...s.users, newUser] };
+        }),
+      updateUser: (id, data) => {
+        syncToSupabase(() => supabaseAdapter.updateUser(id, data));
+        set((s) => ({
+          users: s.users.map((u) => (u.id === id ? { ...u, ...data, updatedAt: now() } : u)),
+        }));
+      },
+      deleteUser: (id) =>
+        set((s) => {
+          syncToSupabase(() => supabaseAdapter.deleteUser(id));
+          return { users: s.users.filter((u) => u.id !== id) };
+        }),
+      getUserByName: (name) => get().users.find((u) => u.displayName === name),
 
       // Proje CRUD
       addProje: (h) =>
@@ -293,9 +321,10 @@ if (typeof window !== "undefined") {
       supabaseAdapter.fetchProjeler(),
       supabaseAdapter.fetchAksiyonlar(),
       supabaseAdapter.fetchTagDefinitions(),
-    ]).then(([projeler, aksiyonlar, tagDefinitions]) => {
-      console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags`);
-      useDataStore.setState({ projeler, aksiyonlar, tagDefinitions });
+      supabaseAdapter.fetchUsers(),
+    ]).then(([projeler, aksiyonlar, tagDefinitions, users]) => {
+      console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags, ${users.length} users`);
+      useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
     }).catch((err) => {
       console.error("[Supabase] Initial fetch failed, using cached data:", err?.message || err?.code || JSON.stringify(err));
     });
