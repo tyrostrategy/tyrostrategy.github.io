@@ -143,9 +143,14 @@ export default function CommandPalette() {
       close();
       if (item.path) {
         navigate(item.path);
+      } else if (item.category === "objectives") {
+        navigate(`/stratejik-kokpit?search=${encodeURIComponent(item.name)}`);
+      } else if (item.category === "actions") {
+        const parentProje = projeler.find((p) => aksiyonlar.some((a) => a.id === item.id && a.projeId === p.id));
+        navigate(`/stratejik-kokpit?search=${encodeURIComponent(parentProje?.name ?? item.name)}`);
       }
     },
-    [close, navigate]
+    [close, navigate, projeler, aksiyonlar]
   );
 
   // Auto-scroll selected item into view

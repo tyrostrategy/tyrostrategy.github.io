@@ -105,7 +105,7 @@ export default function KokpitPage() {
   const { canDeleteProje, getProjeDeleteReason } = usePermissions();
   const [activeTab, setActiveTab] = useState<TabId>("master");
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [toolbarSearch, setToolbarSearch] = useState("");
+  const [toolbarSearch, setToolbarSearch] = useState(searchParams.get("search") ?? "");
   const [selectedProjeId, setSelectedProjeId] = useState<string | null>(null);
   const selectedProje = projeler.find((p) => p.id === selectedProjeId) ?? null;
   const [confirmOpen, setConfirmOpen] = useState(false);
