@@ -480,7 +480,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
       </FormSection>
 
       {aksiyon && (aksiyon.createdBy || aksiyon.createdAt || aksiyon.completedAt) && (
-        <div className="rounded-xl bg-white/70 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.04)] overflow-hidden divide-y divide-tyro-border/15">
+        <div className="rounded-xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/30 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)] overflow-hidden divide-y divide-tyro-border/20">
           <div className="grid grid-cols-2 divide-x divide-tyro-border/15">
             <div className="px-3.5 py-2.5">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-tyro-text-muted/70 block mb-1">{t("common.createdAt")}</span>
