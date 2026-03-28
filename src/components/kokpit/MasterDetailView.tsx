@@ -355,16 +355,13 @@ function DetailPanel({
                 <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={proje.owner} />
                 <InfoCell label="Katılımcılar" value={proje.participants?.join(", ") || "—"} />
               </div>
-              {/* Row 3: Ana proje (sadece varsa) */}
+              {/* Row 3: Ana proje (sadece varsa) — tek satır birleşik */}
               {parentHedef && (
-                <div className="border-t border-tyro-border/15 grid grid-cols-4 divide-x divide-tyro-border/40">
-                  <InfoCell label="Ana Proje ID" value={parentHedef.id} />
-                  <div className="col-span-2 px-3 py-2">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Ana Proje Adı</span>
-                    <p className="text-[11px] font-medium text-tyro-text-primary truncate">{parentHedef.name}</p>
-                  </div>
-                  <div className="px-3 py-2">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Statü</span>
+                <div className="border-t border-tyro-border/15 px-3 py-2.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">Ana Proje</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] text-tyro-text-muted tabular-nums">{parentHedef.id}</span>
+                    <span className="text-[11px] font-medium text-tyro-text-primary truncate flex-1">{parentHedef.name}</span>
                     <StatusBadge status={parentHedef.status} />
                   </div>
                 </div>

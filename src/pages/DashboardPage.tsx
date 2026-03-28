@@ -165,10 +165,10 @@ export default function DashboardPage() {
             onClick={() => switchTab(tab.id)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
               isActive
-                ? "text-white shadow-sm"
+                ? "shadow-sm"
                 : "text-tyro-text-muted hover:bg-tyro-bg hover:text-tyro-text-secondary"
             }`}
-            style={isActive ? { backgroundColor: sidebarTheme.bg } : undefined}
+            style={isActive ? { backgroundColor: sidebarTheme.bg, color: sidebarTheme.isDark !== false ? "#ffffff" : "#1e293b" } : undefined}
           >
             <Icon size={14} />
             {tab.label}
