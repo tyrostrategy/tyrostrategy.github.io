@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pencil, Trash2, ArrowLeft, X } from "lucide-react";
+import { Pencil, Trash2, ArrowLeft, X, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
@@ -32,6 +32,7 @@ export default function AksiyonDetail({
 }: AksiyonDetailProps) {
   const { t } = useTranslation();
   const [mode, _setMode] = useState<"detail" | "editing">("detail");
+  const [projeCardOpen, setProjeCardOpen] = useState(false);
   const setMode = (m: "detail" | "editing") => { _setMode(m); onModeChange?.(m); };
   const sidebarTheme = useSidebarTheme();
   const getAksiyonById = useDataStore((s) => s.getAksiyonById);
@@ -148,21 +149,27 @@ export default function AksiyonDetail({
 
       {/* ── Parent Project Card ── */}
       {proje && (
-        <div className="relative rounded-xl overflow-hidden px-4 py-3" style={{ background: sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a" }}>
+        <div className="relative rounded-xl overflow-hidden" style={{ background: sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a" }}>
           <div className="absolute inset-0 opacity-[0.08]" style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)`,
             backgroundSize: "16px 16px",
           }} />
-          <div className="relative z-10">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60 block mb-1.5">Bağlı Proje: <span className="text-white/80 tabular-nums">{proje.id}</span></span>
-            <p className="text-[13px] font-semibold text-white leading-snug">{proje.name}</p>
-            <div className="flex items-center gap-2 flex-wrap mt-1.5">
-              <StatusBadge status={proje.status} />
-              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-white/15 text-white/80">{proje.source}</span>
-              <span className="text-[11px] text-white/70">{proje.owner}</span>
-              <span className="ml-auto text-[12px] font-bold tabular-nums text-white/80">%{proje.progress}</span>
+          <button type="button" onClick={() => setProjeCardOpen(!projeCardOpen)}
+            className="relative z-10 w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-white/5 transition-colors">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Bağlı Proje: <span className="text-white/80 tabular-nums">{proje.id}</span></span>
+            <ChevronDown size={14} className={`text-white/50 transition-transform duration-200 ${projeCardOpen ? "rotate-180" : ""}`} />
+          </button>
+          {projeCardOpen && (
+            <div className="relative z-10 px-4 pb-3">
+              <p className="text-[13px] font-semibold text-white leading-snug">{proje.name}</p>
+              <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                <StatusBadge status={proje.status} />
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-white/15 text-white/80">{proje.source}</span>
+                <span className="text-[11px] text-white/70">{proje.owner}</span>
+                <span className="ml-auto text-[12px] font-bold tabular-nums text-white/80">%{proje.progress}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 

@@ -3,7 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Textarea, Select, SelectItem, DatePicker, Autocomplete, AutocompleteItem } from "@heroui/react";
-import { Check, Tag } from "lucide-react";
+import { Check, Tag, X, ArrowLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { useDataStore } from "@/stores/dataStore";
@@ -13,7 +13,7 @@ import { getStatusOptions, getSourceOptions } from "@/lib/constants";
 import { departments } from "@/config/departments";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import TagChip from "@/components/ui/TagChip";
-import EntityHeader from "@/components/shared/EntityHeader";
+import StatusBadge from "@/components/ui/StatusBadge";
 import FormSection from "@/components/shared/FormSection";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import type { Proje } from "@/types";
@@ -43,15 +43,24 @@ type ProjeFormData = z.infer<ReturnType<typeof createHedefSchema>>;
 interface ProjeFormProps {
   proje?: Proje;
   onSuccess: () => void;
+  onClose?: () => void;
 }
 
-export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
+export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps) {
   const { t } = useTranslation();
   const addProje = useDataStore((s) => s.addProje);
   const updateProje = useDataStore((s) => s.updateProje);
   const projeler = useDataStore((s) => s.projeler);
   const [isLoading, setIsLoading] = useState(false);
-  const accentColor = useSidebarTheme().accentColor ?? "#c8922a";
+  const sidebarTheme = useSidebarTheme();
+  const accentColor = sidebarTheme.accentColor ?? "#c8922a";
+  const isDark = sidebarTheme.isDark !== false;
+  const txtColor = isDark ? "#ffffff" : "#1e293b";
+  const btnBg = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)";
+  const btnBgHover = isDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.12)";
+  const btnBorder = isDark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.1)";
+  const btnBorderHover = isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.2)";
+  const sepColor = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)";
 
   const hedefSchema = createHedefSchema(t);
 
@@ -140,16 +149,51 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit) as any} className="flex flex-col h-full max-h-full overflow-hidden">
-      {/* Entity Header — edit mode only */}
+      {/* Themed Header — edit mode */}
       {proje && (
-        <EntityHeader
-          id={proje.id}
-          name={watch("name") || proje.name}
-          description={proje.description}
-          status={watch("status") as any}
-          progress={proje.progress}
-          tags={watch("tags")}
-        />
+        <div className="relative rounded-xl overflow-hidden px-4 py-3 shrink-0" style={{ background: sidebarTheme.bg }}>
+          <div className="absolute inset-0 opacity-[0.06]" style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, ${sidebarTheme.accentColor ?? "rgba(255,255,255,0.4)"} 1px, transparent 0)`,
+            backgroundSize: "20px 20px",
+          }} />
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }} />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                {onClose && (
+                  <button type="button" onClick={onClose}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
+                    style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}` }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; }}>
+                    <ArrowLeft size={14} />
+                  </button>
+                )}
+                <span className="text-[13px] font-bold tabular-nums" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>{proje.id}</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Proje Düzenleme</span>
+              </div>
+              {onClose && (
+                <button type="button" onClick={onClose}
+                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
+                  style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
+                  <X size={15} />
+                </button>
+              )}
+            </div>
+            <div className="h-px rounded-full mb-2" style={{ background: `linear-gradient(to right, transparent, ${sepColor} 30%, ${sepColor} 70%, transparent)` }} />
+            <h3 className="text-[15px] font-bold leading-snug" style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}>
+              {watch("name") || proje.name}
+            </h3>
+            <div className="flex items-center flex-wrap gap-2 mt-2">
+              <StatusBadge status={(watch("status") as any) ?? proje.status} />
+              <span className="ml-auto text-[13px] font-extrabold tabular-nums" style={{ color: txtColor }}>
+                %{proje.progress}
+              </span>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Scrollable form body */}

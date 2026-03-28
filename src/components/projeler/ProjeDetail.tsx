@@ -72,6 +72,7 @@ export default function ProjeDetail({
         <ProjeForm
           proje={currentHedef}
           onSuccess={() => setMode("detail")}
+          onClose={() => setMode("detail")}
         />
       </div>
     );

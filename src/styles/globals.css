@@ -153,11 +153,11 @@ table[aria-label] thead th {
 }
 .form-scroll-wrapper.has-scroll-top::before { opacity: 1; }
 .form-scroll-wrapper.has-scroll-bottom::after { opacity: 1; }
-/* Scroll-more chevron indicator */
+/* Scroll-more chevron indicator — sits between gradient and footer */
 .form-scroll-chevron {
   display: none;
   position: absolute;
-  bottom: 4px;
+  bottom: -14px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;

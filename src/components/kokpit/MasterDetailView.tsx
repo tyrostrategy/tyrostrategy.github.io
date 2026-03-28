@@ -991,12 +991,13 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
         isOpen={projePanelOpen}
         onClose={() => setHedefPanelOpen(false)}
         title="Proje Kartını Düzenle"
-        icon={<Pencil size={16} className="text-amber-500" />}
+        hideHeader
       >
         {selectedProje && (
           <ProjeForm
             proje={selectedProje}
             onSuccess={() => setHedefPanelOpen(false)}
+            onClose={() => setHedefPanelOpen(false)}
           />
         )}
       </SlidingPanel>
