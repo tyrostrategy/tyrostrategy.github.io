@@ -86,7 +86,25 @@ function now(): string {
   return new Date().toISOString();
 }
 
-/** Recalculate a Proje's progress from its aksiyonlar */
+/** Calculate status from progress + dates (same logic for both aksiyon and proje) */
+function suggestStatusFromProgress(progress: number, startDate: string, endDate: string): EntityStatus {
+  if (progress === 0) return "Not Started";
+  if (progress >= 100) return "Achieved";
+  if (!startDate || !endDate) return "On Track";
+  const now = Date.now();
+  const startMs = new Date(startDate).getTime();
+  const endMs = new Date(endDate).getTime();
+  const totalDuration = endMs - startMs;
+  if (totalDuration <= 0) return "On Track";
+  const elapsed = now - startMs;
+  const expectedProgress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+  const diff = expectedProgress - progress;
+  if (diff > 20) return "Behind";
+  if (diff > 10) return "At Risk";
+  return "On Track";
+}
+
+/** Recalculate a Proje's progress + status from its aksiyonlar */
 function recalcProjeProgress(
   projeler: Proje[],
   aksiyonlar: Aksiyon[],
@@ -101,13 +119,12 @@ function recalcProjeProgress(
   return projeler.map((h) => {
     if (h.id !== projeId) return h;
     const updated: Partial<Proje> = { progress: avg };
-    if (allAchieved && h.status !== "Achieved") {
-      // Tüm aksiyonlar tamamlandı → proje otomatik tamamlanır
+    if (allAchieved) {
       updated.status = "Achieved";
-      updated.completedAt = new Date().toISOString();
-    } else if (!allAchieved && h.status === "Achieved") {
-      // Bir aksiyon geri alındı → proje tamamlanmış statüsünden çıkar
-      updated.status = "On Track";
+      if (h.status !== "Achieved") updated.completedAt = new Date().toISOString();
+    } else {
+      // Tarih bazlı statü hesapla (aksiyon ile aynı mantık)
+      updated.status = suggestStatusFromProgress(avg, h.startDate, h.endDate);
       updated.completedAt = undefined;
     }
     return { ...h, ...updated };
