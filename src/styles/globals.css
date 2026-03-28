@@ -72,6 +72,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ===== Hide scrollbar utility ===== */
+.scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
 /* ===== DatePicker: Bugünü vurgula ===== */
 span[data-today="true"] {
   position: relative;

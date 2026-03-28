@@ -221,9 +221,9 @@ export default function KokpitPage() {
       </div>
 
       {/* Toolbar — search + filters left, actions right */}
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none pb-0.5">
         {/* Search */}
-        <div className="relative w-[220px] shrink-0">
+        <div className="relative w-[160px] sm:w-[220px] shrink-0">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-tyro-text-muted pointer-events-none" />
           <input
             type="text"
