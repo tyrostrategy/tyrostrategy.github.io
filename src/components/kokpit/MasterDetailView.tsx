@@ -401,7 +401,7 @@ function DetailPanel({
 
         <div className="flex flex-col gap-2">
           {aksiyonlar
-            .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+            .sort((a, b) => a.id.localeCompare(b.id))
             .map((aksiyon, idx) => (
               <AksiyonRow
                 key={aksiyon.id}
@@ -555,7 +555,10 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
     const effectiveSort = externalSortBy ?? sortBy;
     const effectiveSortAsc = externalSortAsc ?? sortAsc;
 
-    if (effectiveStatus !== "all") list = list.filter((h) => h.status === effectiveStatus);
+    if (effectiveStatus !== "all") {
+      const statuses = effectiveStatus.includes(",") ? effectiveStatus.split(",").map((s) => s.trim()) : [effectiveStatus];
+      list = list.filter((h) => statuses.includes(h.status));
+    }
     if (effectiveSource !== "all") list = list.filter((h) => h.source === effectiveSource);
 
     // Sort with direction

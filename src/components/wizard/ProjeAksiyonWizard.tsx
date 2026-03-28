@@ -199,7 +199,6 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
             endDate: a.endDate,
             status: "Not Started",
             progress: 0,
-            sortOrder: i,
           });
         });
 

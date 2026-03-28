@@ -75,7 +75,6 @@ export interface Aksiyon {
   progress: number;
   startDate: string;
   endDate: string;
-  sortOrder?: number;
   createdBy?: string;
   createdAt?: string;
   updatedBy?: string;

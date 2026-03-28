@@ -61,7 +61,7 @@ export default function BentoKPI() {
         </div>
         <button
           type="button"
-          onClick={() => navigate("/projeler")}
+          onClick={() => navigate("/stratejik-kokpit")}
           className="text-[12px] font-semibold text-tyro-navy hover:underline cursor-pointer"
         >
           Tümünü Gör &rsaquo;
@@ -76,7 +76,7 @@ export default function BentoKPI() {
           <div className="grid grid-cols-3 gap-3">
             {/* Projelerim */}
             <div
-              onClick={() => navigate("/projeler")}
+              onClick={() => navigate("/stratejik-kokpit")}
               className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-tyro-navy/20 transition-all"
             >
               <FolderKanban size={18} className="text-tyro-navy mb-2" />
@@ -86,7 +86,7 @@ export default function BentoKPI() {
 
             {/* Tamamlanan */}
             <div
-              onClick={() => navigate("/projeler")}
+              onClick={() => navigate("/stratejik-kokpit?status=Achieved")}
               className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-emerald-300/40 transition-all"
             >
               <Trophy size={18} className="text-emerald-500 mb-2" />
@@ -96,7 +96,7 @@ export default function BentoKPI() {
 
             {/* Kontrol Edilmesi Gereken */}
             <div
-              onClick={() => navigate("/projeler?reviewOverdue=true")}
+              onClick={() => navigate("/stratejik-kokpit?reviewOverdue=true")}
               className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-amber-300/40 transition-all"
             >
               <ShieldAlert size={18} className="text-amber-500 mb-2" />
@@ -110,7 +110,7 @@ export default function BentoKPI() {
             {statusCounts.filter((s) => s.status !== "Achieved").map((s) => (
               <div
                 key={s.status}
-                onClick={() => navigate("/projeler")}
+                onClick={() => navigate(`/stratejik-kokpit?status=${s.status}`)}
                 className={`rounded-xl border p-2.5 cursor-pointer hover:shadow-sm transition-all text-center ${s.count === 0 ? "opacity-30" : "hover:scale-[1.03]"}`}
                 style={{
                   backgroundColor: `${s.color}08`,

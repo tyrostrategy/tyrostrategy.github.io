@@ -113,7 +113,7 @@ export default function DashboardPage() {
       color: "var(--tyro-navy)",
       progress: projeProgress,
       contextText: `${hedefTamamlanan.length}/${projeler.length} proje`,
-      onClick: () => navigate("/projeler"),
+      onClick: () => navigate("/stratejik-kokpit?status=Achieved"),
     },
     {
       label: "Aktif Projeler",
@@ -123,7 +123,7 @@ export default function DashboardPage() {
       trend: onTrackCount,
       trendLabel: "yolunda",
       contextText: `${projeler.length} toplam proje`,
-      onClick: () => navigate("/projeler"),
+      onClick: () => navigate("/stratejik-kokpit?status=On Track,At Risk,Behind,On Hold"),
     },
     {
       label: "Gecikmeli / Riskli",
@@ -133,7 +133,7 @@ export default function DashboardPage() {
       trend: behindCount,
       trendLabel: `gecikmeli, ${atRiskCount} risk altında`,
       contextText: `${projeler.length} toplam projeden`,
-      onClick: () => navigate("/projeler"),
+      onClick: () => navigate("/stratejik-kokpit?status=Behind,At Risk"),
     },
     {
       label: "Ortalama İlerleme",
@@ -142,7 +142,7 @@ export default function DashboardPage() {
       color: "var(--tyro-info)",
       progress: avgProgress,
       contextText: `${projeler.length} proje ortalaması`,
-      onClick: () => navigate("/projeler"),
+      onClick: () => navigate("/stratejik-kokpit"),
     },
   ];
 
@@ -300,7 +300,7 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <GlassCard className="p-6 overflow-hidden flex-1 flex flex-col cursor-pointer" onClick={() => navigate("/projeler")}>
+      <GlassCard className="p-6 overflow-hidden flex-1 flex flex-col cursor-pointer" onClick={() => navigate("/stratejik-kokpit?status=Achieved")}>
         <div className="flex items-center justify-between mb-4">
           <span className="text-[13px] font-semibold text-tyro-text-secondary">{kpi.label}</span>
           <div

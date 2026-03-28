@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useCallback, lazy, Suspense } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
@@ -82,8 +83,22 @@ export default function KokpitPage() {
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
   const brandColor = sidebarTheme.brandStrategy ?? accentColor;
-  const projeler = useDataStore((s) => s.projeler);
+  const [searchParams] = useSearchParams();
+  const reviewOverdue = searchParams.get("reviewOverdue") === "true";
+  const allProjeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
+
+  // Apply reviewOverdue pre-filter when navigated from dashboard
+  const projeler = useMemo(() => {
+    if (!reviewOverdue) return allProjeler;
+    const now = new Date();
+    const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    return allProjeler.filter((h) => {
+      if (h.status === "Achieved" || h.status === "Cancelled") return false;
+      if (!h.reviewDate) return true;
+      return new Date(h.reviewDate) <= oneMonthAgo;
+    });
+  }, [allProjeler, reviewOverdue]);
   const updateAksiyon = useDataStore((s) => s.updateAksiyon);
 
   const deleteProje = useDataStore((s) => s.deleteProje);
@@ -100,7 +115,7 @@ export default function KokpitPage() {
   const [reviewPopoverOpen, setReviewPopoverOpen] = useState(false);
   const [reviewDateDraft, setReviewDateDraft] = useState("");
   const updateProje = useDataStore((s) => s.updateProje);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") ?? "all");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [sortAsc, setSortAsc] = useState(true);
@@ -576,7 +591,8 @@ function TabloView({
       });
     }
     if (externalStatusFilter !== "all") {
-      result = result.filter((h) => h.status === externalStatusFilter);
+      const statuses = externalStatusFilter.includes(",") ? externalStatusFilter.split(",").map((s) => s.trim()) : [externalStatusFilter];
+      result = result.filter((h) => statuses.includes(h.status));
     }
     if (externalSourceFilter !== "all") {
       result = result.filter((h) => h.source === externalSourceFilter);
@@ -668,7 +684,7 @@ function TabloView({
                       transition={{ duration: 0.25 }}
                       className="overflow-hidden"
                     >
-                      {childAksiyonlar.map((aksiyon) => (
+                      {[...childAksiyonlar].sort((a, b) => a.id.localeCompare(b.id)).map((aksiyon) => (
                         <div
                           key={aksiyon.id}
                           className="grid grid-cols-[minmax(250px,2fr)_100px_120px_130px_100px_100px_100px_100px] gap-2 px-4 py-2.5 bg-tyro-bg/30 hover:bg-tyro-bg/50 transition-colors items-center"
@@ -757,7 +773,7 @@ function TabloView({
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden border-t border-tyro-border/30 pt-2 mt-2 space-y-1.5"
                     >
-                      {childAksiyonlar.map((a) => (
+                      {[...childAksiyonlar].sort((a, b) => a.id.localeCompare(b.id)).map((a) => (
                         <button
                           key={a.id}
                           onClick={() => onAksiyonClick(a)}
@@ -1401,7 +1417,7 @@ function WBSHedefNode({ proje }: { proje: Proje }) {
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            {childAksiyonlar.map((a) => (
+            {[...childAksiyonlar].sort((a, b) => a.id.localeCompare(b.id)).map((a) => (
               <WBSAksiyonNode key={a.id} aksiyon={a} />
             ))}
           </motion.div>

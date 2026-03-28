@@ -61,7 +61,6 @@ function dbToAksiyon(row: Record<string, unknown>): Aksiyon {
     status: row.status as EntityStatus,
     startDate: row.start_date as string,
     endDate: row.end_date as string,
-    sortOrder: (row.sort_order as number) || 0,
     completedAt: (row.completed_at as string) || undefined,
     createdBy: (row.created_by as string) || "",
     createdAt: (row.created_at as string) || "",
@@ -79,7 +78,6 @@ function aksiyonToDb(a: Partial<Aksiyon>): Record<string, unknown> {
   if (a.status !== undefined) row.status = a.status;
   if (a.startDate !== undefined) row.start_date = a.startDate;
   if (a.endDate !== undefined) row.end_date = a.endDate;
-  if (a.sortOrder !== undefined) row.sort_order = a.sortOrder;
   if (a.completedAt !== undefined) row.completed_at = a.completedAt || null;
   if (a.createdBy !== undefined) row.created_by = a.createdBy;
   return row;
@@ -146,7 +144,7 @@ export async function fetchAksiyonlar(): Promise<Aksiyon[]> {
   const { data: rows, error } = await supabase
     .from("aksiyonlar")
     .select("*")
-    .order("sort_order", { ascending: true });
+    .order("created_at", { ascending: true });
 
   if (error) { console.error("[Supabase] fetchAksiyonlar:", error); return []; }
   return (rows || []).map(dbToAksiyon);

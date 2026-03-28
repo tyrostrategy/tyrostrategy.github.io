@@ -181,7 +181,6 @@ function flattenProjeler(projeler: CascadeProje[], source: Source): Proje[] {
 
 function flattenAksiyonlar(projeler: CascadeProje[]): Aksiyon[] {
   const result: Aksiyon[] = [];
-  let sortOrder = 0;
   for (const h of projeler) {
     for (const p of h.projects) {
       for (const t of p.tasks) {
@@ -196,7 +195,6 @@ function flattenAksiyonlar(projeler: CascadeProje[]): Aksiyon[] {
           status: aksiyonStatus,
           startDate: t.startDate,
           endDate: t.endDate,
-          sortOrder: sortOrder++,
           createdBy: h.leader,
           createdAt: t.startDate,
           completedAt: aksiyonStatus === "Achieved" ? t.endDate : undefined,

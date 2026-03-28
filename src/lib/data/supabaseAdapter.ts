@@ -37,7 +37,6 @@ interface DbAksiyon {
   status: string;
   start_date: string;
   end_date: string;
-  sort_order: number;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -102,7 +101,6 @@ function dbToAksiyon(row: DbAksiyon): Aksiyon {
     status: row.status as EntityStatus,
     startDate: row.start_date,
     endDate: row.end_date,
-    sortOrder: row.sort_order,
     createdBy: row.created_by ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -120,7 +118,6 @@ function aksiyonToDb(data: Partial<Aksiyon>): Record<string, unknown> {
   if (data.status !== undefined) map.status = data.status;
   if (data.startDate !== undefined) map.start_date = data.startDate;
   if (data.endDate !== undefined) map.end_date = data.endDate;
-  if (data.sortOrder !== undefined) map.sort_order = data.sortOrder;
   if (data.completedAt !== undefined) map.completed_at = data.completedAt;
   return map;
 }
@@ -240,14 +237,14 @@ export const supabaseAdapter: DataService = {
 
   async fetchAksiyonlar(): Promise<Aksiyon[]> {
     if (!supabase) return [];
-    const { data, error } = await supabase.from("aksiyonlar").select("*").order("sort_order");
+    const { data, error } = await supabase.from("aksiyonlar").select("*").order("created_at");
     if (error) throw error;
     return (data as DbAksiyon[]).map(dbToAksiyon);
   },
 
   async fetchAksiyonlarByProje(projeId: string): Promise<Aksiyon[]> {
     if (!supabase) return [];
-    const { data, error } = await supabase.from("aksiyonlar").select("*").eq("proje_id", projeId).order("sort_order");
+    const { data, error } = await supabase.from("aksiyonlar").select("*").eq("proje_id", projeId).order("created_at");
     if (error) throw error;
     return (data as DbAksiyon[]).map(dbToAksiyon);
   },
