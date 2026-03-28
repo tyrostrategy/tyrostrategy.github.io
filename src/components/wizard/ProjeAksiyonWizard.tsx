@@ -38,7 +38,7 @@ const createWizardSchema = (t: TFunction) =>
         z.object({
           name: z.string().min(1, t("validation.actionNameRequired")),
           description: z.string().optional().default(""),
-          owner: z.string().min(1, t("validation.assigneeRequired")),
+          owner: z.string().optional().default(""),
           startDate: z.string().min(1, t("validation.startDateRequired")),
           endDate: z.string().min(1, t("validation.endDateRequired")),
         }),
@@ -194,7 +194,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
             projeId: newHedefId,
             name: a.name,
             description: a.description || undefined,
-            owner: a.owner,
+            owner: a.owner || data.owner,
             startDate: a.startDate,
             endDate: a.endDate,
             status: "Not Started",

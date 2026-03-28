@@ -1,11 +1,9 @@
 import { useFieldArray, Controller, type Control, type FieldErrors } from "react-hook-form";
-import { Input, Textarea, Autocomplete, AutocompleteItem, DatePicker, Button } from "@heroui/react";
+import { Input, Textarea, DatePicker, Button } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { departments } from "@/config/departments";
 import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
-const allUsers = departments.flatMap((d) => d.users.map((u) => u.name));
 
 interface Props {
   control: Control<any>;
@@ -83,34 +81,6 @@ export default function StepAksiyonlar({ control, errors }: Props) {
                       maxRows={3}
                       classNames={{ inputWrapper: "border-tyro-border" }}
                     />
-                  </div>
-                )}
-              />
-
-              <Controller
-                name={`aksiyonlar.${index}.owner`}
-                control={control}
-                render={({ field: f }) => (
-                  <div>
-                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
-                      {t("forms.action.assignee")}<span className="text-tyro-danger ml-0.5">*</span>
-                    </label>
-                    <Autocomplete
-                      defaultInputValue={f.value}
-                      onInputChange={(v) => f.onChange(v)}
-                      onSelectionChange={(key) => { if (key) f.onChange(String(key)); }}
-                      variant="bordered"
-                      size="sm"
-                      placeholder={t("forms.action.assigneePlaceholder")}
-                      isInvalid={!!(errors.aksiyonlar as any)?.[index]?.owner}
-                      errorMessage={(errors.aksiyonlar as any)?.[index]?.owner?.message}
-                      classNames={{ base: "w-full" }}
-                      allowsCustomValue
-                    >
-                      {allUsers.map((name) => (
-                        <AutocompleteItem key={name}>{name}</AutocompleteItem>
-                      ))}
-                    </Autocomplete>
                   </div>
                 )}
               />
