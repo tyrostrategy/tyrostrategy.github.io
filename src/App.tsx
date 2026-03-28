@@ -59,13 +59,13 @@ export default function App() {
           >
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/dashboard" element={<ProtectedRoute pageKey="kpi"><DashboardPage /></ProtectedRoute>} />
-            <Route path="/projeler" element={<ProjelerPage />} />
+            <Route path="/projeler" element={<ProtectedRoute pageKey="projeler"><ProjelerPage /></ProtectedRoute>} />
             <Route path="/aksiyonlar" element={<ProtectedRoute pageKey="aksiyonlar"><AksiyonlarPage /></ProtectedRoute>} />
             <Route path="/stratejik-kokpit" element={<ProtectedRoute pageKey="stratejikKokpit"><KokpitPage /></ProtectedRoute>} />
-            <Route path="/gantt" element={<GanttPage />} />
+            <Route path="/gantt" element={<ProtectedRoute pageKey="gantt"><GanttPage /></ProtectedRoute>} />
             {/* WBS/Tree page removed */}
-            <Route path="/strategy-map" element={<StrategyMapPage />} />
-            <Route path="/t-alignment" element={<TAlignmentPage />} />
+            <Route path="/strategy-map" element={<ProtectedRoute pageKey="tMap"><StrategyMapPage /></ProtectedRoute>} />
+            <Route path="/t-alignment" element={<ProtectedRoute pageKey="tAlignment"><TAlignmentPage /></ProtectedRoute>} />
             <Route path="/kullanicilar" element={<ProtectedRoute pageKey="kullanicilar"><KullanicilarPage /></ProtectedRoute>} />
             <Route path="/veri-yonetimi" element={<ProtectedRoute pageKey="ayarlar"><VeriYonetimiPage /></ProtectedRoute>} />
             <Route path="/ayarlar" element={<ProtectedRoute pageKey="ayarlar"><AyarlarPage /></ProtectedRoute>} />

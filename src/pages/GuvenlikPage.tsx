@@ -35,6 +35,8 @@ export default function GuvenlikPage() {
     gantt: t("nav.gantt"),
     wbs: t("nav.wbs"),
     stratejikKokpit: t("nav.stratejikKokpit"),
+    tMap: "T-Map",
+    tAlignment: "T-Align",
     kullanicilar: t("nav.users"),
     ayarlar: t("nav.settings"),
     guvenlik: t("nav.security"),
