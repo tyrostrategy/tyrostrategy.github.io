@@ -58,7 +58,7 @@ export default function StepAksiyonlar({ control, errors }: Props) {
                       errorMessage={(errors.aksiyonlar as any)?.[index]?.name?.message}
                       variant="bordered"
                       size="sm"
-                      classNames={{ inputWrapper: "border-tyro-border" }}
+                      classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
                     />
                   </div>
                 )}
@@ -79,7 +79,7 @@ export default function StepAksiyonlar({ control, errors }: Props) {
                       size="sm"
                       minRows={1}
                       maxRows={3}
-                      classNames={{ inputWrapper: "border-tyro-border" }}
+                      classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
                     />
                   </div>
                 )}

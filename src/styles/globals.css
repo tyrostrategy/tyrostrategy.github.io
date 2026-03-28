@@ -72,6 +72,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ===== DatePicker: Bugünü vurgula ===== */
+[data-slot="cell"] td[data-today="true"] > span,
+td[data-today="true"] > span,
+[data-today="true"] {
+  position: relative;
+}
+td[data-today="true"]::after,
+[data-slot="cell"][data-today="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--tyro-navy);
+}
+
 /* ===== Glassmorphism ===== */
 @layer components {
   .glass-card {

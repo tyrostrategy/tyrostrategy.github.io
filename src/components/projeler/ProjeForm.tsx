@@ -157,7 +157,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
               errorMessage={errors.name?.message}
               variant="bordered"
               size="sm"
-              classNames={{ inputWrapper: "border-tyro-border" }}
+              classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
             />
           </div>
         )}
@@ -178,7 +178,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
               size="sm"
               minRows={2}
               maxRows={4}
-              classNames={{ inputWrapper: "border-tyro-border" }}
+              classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
             />
           </div>
         )}
@@ -204,7 +204,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
               placeholder={t("forms.objective.ownerPlaceholder")}
               isInvalid={!!errors.owner}
               errorMessage={errors.owner?.message}
-              classNames={{ base: "w-full" }}
+              classNames={{ base: "w-full", input: "font-semibold text-tyro-text-primary" }}
               allowsCustomValue
             >
               {allUsers.map((name) => (
@@ -231,7 +231,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
               }}
               variant="bordered"
               size="sm"
-              classNames={{ trigger: "border-tyro-border" }}
+              classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.participantsPlaceholder")}
             >
               {allUsers.map((name) => (
@@ -258,7 +258,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
               }}
               variant="bordered"
               size="sm"
-              classNames={{ trigger: "border-tyro-border" }}
+              classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.departmentPlaceholder")}
             >
               {departmentNames.map((name) => (
@@ -291,7 +291,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
                 size="sm"
                 isInvalid={!!errors.source}
                 errorMessage={errors.source?.message}
-                classNames={{ trigger: "border-tyro-border" }}
+                classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
                 placeholder={t("forms.objective.sourcePlaceholder")}
               >
                 {sourceOptions.map((opt) => (
@@ -319,7 +319,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
                 size="sm"
                 isInvalid={!!errors.status}
                 errorMessage={errors.status?.message}
-                classNames={{ trigger: "border-tyro-border" }}
+                classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
                 placeholder={t("forms.objective.statusPlaceholder")}
               >
                 {statusOptions.map((opt) => (
@@ -387,7 +387,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
                 variant="bordered"
                 size="sm"
                 placeholder={t("forms.objective.tagsPlaceholder", "Etiket yazın veya seçin...")}
-                classNames={{ base: "w-full" }}
+                classNames={{ base: "w-full", input: "font-semibold text-tyro-text-primary" }}
                 allowsCustomValue
                 menuTrigger="input"
               >
@@ -423,7 +423,7 @@ export default function ProjeForm({ proje, onSuccess }: ProjeFormProps) {
                 }}
                 variant="bordered"
                 size="sm"
-                classNames={{ trigger: "border-tyro-border" }}
+                classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
                 placeholder={t("forms.objective.parentObjectivePlaceholder")}
               >
                 {availableHedefler.map((h) => (

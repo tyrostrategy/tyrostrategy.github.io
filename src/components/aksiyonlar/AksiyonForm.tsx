@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Textarea, Select, SelectItem, DatePicker, Autocomplete, AutocompleteItem } from "@heroui/react";
+import { Button, Input, Textarea, Select, SelectItem, DatePicker } from "@heroui/react";
 import { Check, X } from "lucide-react";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { useTranslation } from "react-i18next";
@@ -12,13 +12,11 @@ import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import { toast } from "@/stores/toastStore";
 import { getStatusOptions } from "@/lib/constants";
 import { formatDate } from "@/lib/dateUtils";
-import { departments } from "@/config/departments";
 import StatusBadge from "@/components/ui/StatusBadge";
 import FormSection from "@/components/shared/FormSection";
 import type { Aksiyon, EntityStatus } from "@/types";
 
 const CURRENT_USER = "Cenk \u015eayli";
-const allUsers = departments.flatMap((d) => d.users.map((u) => u.name));
 
 const createAksiyonSchema = (t: TFunction) =>
   z.object({
@@ -73,7 +71,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
     defaultValues: {
       name: aksiyon?.name ?? "",
       description: aksiyon?.description ?? "",
-      owner: aksiyon?.owner ?? CURRENT_USER,
+      owner: aksiyon?.owner ?? proje?.owner ?? CURRENT_USER,
       projeId: aksiyon?.projeId ?? defaultProjeId ?? "",
       progress: aksiyon?.progress ?? 0,
       status: aksiyon?.status ?? "Not Started",
@@ -166,23 +164,17 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
             backgroundSize: "20px 20px",
           }} />
           <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }} />
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Yeni Aksiyon Oluştur</span>
-              {onClose && (
-                <button type="button" onClick={onClose}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
-                  style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
-                  <X size={15} />
-                </button>
-              )}
-            </div>
-            <div className="h-px rounded-full mb-2" style={{ background: `linear-gradient(to right, transparent, ${sepColor} 30%, ${sepColor} 70%, transparent)` }} />
-            <h3 className="text-[15px] font-bold leading-snug" style={{ color: sidebarTheme.textPrimary ?? "#ffffff" }}>
-              {watch("name") || "Aksiyon adı giriniz..."}
-            </h3>
+          <div className="relative z-10 flex items-center justify-between">
+            <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>Yeni Aksiyon Oluştur</span>
+            {onClose && (
+              <button type="button" onClick={onClose}
+                className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
+                style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
+                <X size={15} />
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -268,7 +260,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
                 errorMessage={errors.name?.message}
                 variant="bordered"
                 size="sm"
-                classNames={{ inputWrapper: "border-tyro-border" }}
+                classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
               />
             </div>
           )}
@@ -289,76 +281,12 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
                 size="sm"
                 minRows={2}
                 maxRows={4}
-                classNames={{ inputWrapper: "border-tyro-border" }}
+                classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
               />
             </div>
           )}
         />
       </FormSection>
-
-      {/* Section: Sorumluluk — only in create mode */}
-      {!aksiyon && (
-        <FormSection title="Sorumluluk">
-      <Controller
-        name="owner"
-        control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
-              {t("common.owner")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <Autocomplete
-              defaultInputValue={field.value}
-              onInputChange={(v) => field.onChange(v)}
-              onSelectionChange={(key) => { if (key) field.onChange(String(key)); }}
-              variant="bordered"
-              size="sm"
-              placeholder={t("forms.objective.ownerPlaceholder")}
-              isInvalid={!!errors.owner}
-              errorMessage={errors.owner?.message}
-              classNames={{ base: "w-full" }}
-              allowsCustomValue
-              isDisabled={!!aksiyon}
-            >
-              {allUsers.map((name) => (
-                <AutocompleteItem key={name}>{name}</AutocompleteItem>
-              ))}
-            </Autocomplete>
-          </div>
-        )}
-      />
-
-      <Controller
-        name="projeId"
-        control={control}
-        render={({ field }) => (
-          <div>
-            <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">
-              {t("nav.objectives")}<span className="text-tyro-danger ml-0.5">*</span>
-            </label>
-            <Select
-              selectedKeys={field.value ? [field.value] : []}
-              onSelectionChange={(keys) => {
-                const val = Array.from(keys)[0] as string;
-                field.onChange(val ?? "");
-              }}
-              variant="bordered"
-              size="sm"
-              isInvalid={!!errors.projeId}
-              errorMessage={errors.projeId?.message}
-              classNames={{ trigger: "border-tyro-border" }}
-              placeholder={t("forms.action.objectivePlaceholder")}
-              isDisabled={!!aksiyon}
-            >
-              {projeler.map((h) => (
-                <SelectItem key={h.id}>{h.name}</SelectItem>
-              ))}
-            </Select>
-          </div>
-        )}
-      />
-        </FormSection>
-      )}
 
       {/* Section: İlerleme & Durum */}
       <FormSection title="İlerleme & Durum">
@@ -458,7 +386,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
                 size="sm"
                 isInvalid={!!errors.status}
                 errorMessage={errors.status?.message}
-                classNames={{ trigger: "border-tyro-border" }}
+                classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
                 placeholder={t("forms.objective.statusPlaceholder")}
               >
                 {statusOptions.map((opt) => (

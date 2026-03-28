@@ -29,7 +29,7 @@ export default function StepProjeBasics({ control, errors }: Props) {
               errorMessage={errors.name?.message as string}
               variant="bordered"
               size="sm"
-              classNames={{ inputWrapper: "border-tyro-border" }}
+              classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
             />
           </div>
         )}
@@ -50,7 +50,7 @@ export default function StepProjeBasics({ control, errors }: Props) {
               size="sm"
               minRows={2}
               maxRows={4}
-              classNames={{ inputWrapper: "border-tyro-border" }}
+              classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
             />
           </div>
         )}
@@ -74,7 +74,7 @@ export default function StepProjeBasics({ control, errors }: Props) {
               size="sm"
               isInvalid={!!errors.source}
               errorMessage={errors.source?.message as string}
-              classNames={{ trigger: "border-tyro-border" }}
+              classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.sourcePlaceholder")}
             >
               {sourceOptions.map((opt) => (
@@ -101,7 +101,7 @@ export default function StepProjeBasics({ control, errors }: Props) {
               }}
               variant="bordered"
               size="sm"
-              classNames={{ trigger: "border-tyro-border" }}
+              classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.departmentPlaceholder")}
             >
               {departmentNames.map((name) => (

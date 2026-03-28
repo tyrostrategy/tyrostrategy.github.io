@@ -34,7 +34,7 @@ export default function StepOwnershipDates({ control, errors }: Props) {
               placeholder={t("forms.objective.ownerPlaceholder")}
               isInvalid={!!errors.owner}
               errorMessage={errors.owner?.message as string}
-              classNames={{ base: "w-full" }}
+              classNames={{ base: "w-full", input: "font-semibold text-tyro-text-primary" }}
               allowsCustomValue
             >
               {allUsers.map((name) => (
@@ -61,7 +61,7 @@ export default function StepOwnershipDates({ control, errors }: Props) {
               }}
               variant="bordered"
               size="sm"
-              classNames={{ trigger: "border-tyro-border" }}
+              classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.participantsPlaceholder")}
             >
               {allUsers.map((name) => (
@@ -88,7 +88,7 @@ export default function StepOwnershipDates({ control, errors }: Props) {
               }}
               variant="bordered"
               size="sm"
-              classNames={{ trigger: "border-tyro-border" }}
+              classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.parentObjectivePlaceholder")}
             >
               {projeler.map((h) => (
