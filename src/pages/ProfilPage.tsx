@@ -54,19 +54,17 @@ export default function ProfilPage() {
           </div>
         </div>
 
-        {/* Avatar + Name — left aligned, avatar overlapping cover */}
-        <div className="relative px-6 pt-3">
-          <div className="flex items-end gap-4 -mt-16">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-xl font-bold border-4 border-white dark:border-tyro-surface shadow-lg shrink-0"
-              style={{ backgroundColor: roleColor }}>
-              {initials}
-            </div>
-            <div className="pb-1 min-w-0">
-              <h1 className="text-[20px] font-bold text-tyro-text-primary leading-tight">{currentUser.name}</h1>
-              <p className="text-[13px] text-tyro-text-muted flex items-center gap-1.5 mt-0.5">
-                <Mail size={12} /> {currentUser.email}
-              </p>
-            </div>
+        {/* Avatar + Name — left aligned */}
+        <div className="flex items-center gap-4 px-6 -mt-10 relative z-10">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-xl font-bold border-4 border-white dark:border-tyro-surface shadow-lg shrink-0"
+            style={{ backgroundColor: roleColor }}>
+            {initials}
+          </div>
+          <div className="min-w-0 pt-12">
+            <h1 className="text-[20px] font-bold text-tyro-text-primary leading-tight">{currentUser.name}</h1>
+            <p className="text-[13px] text-tyro-text-muted flex items-center gap-1.5 mt-0.5">
+              <Mail size={12} /> {currentUser.email}
+            </p>
           </div>
         </div>
 
