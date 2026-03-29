@@ -50,7 +50,9 @@ if (hasRealAuth) {
           msalInstance.setActiveAccount(response.account);
         }
       })
-      .catch(console.error);
+      .catch((err) => {
+        console.error("[MSAL] handleRedirectPromise failed:", err);
+      });
   });
 }
 

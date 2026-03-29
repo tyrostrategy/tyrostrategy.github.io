@@ -86,23 +86,23 @@ export default function AksiyonDetail({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-bold tabular-nums" style={{ color: txtMuted }}>{currentAksiyon.id}</span>
-              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: txtMuted, opacity: 0.7 }}>Aksiyon Detayı</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: txtMuted, opacity: 0.7 }}>{t("kokpit.actionDetail")}</span>
             </div>
             <div className="flex items-center gap-2">
               <button type="button" onClick={() => setMode("editing")}
-                className="h-8 px-3.5 rounded-xl flex items-center gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
+                className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
                 style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
-                <Pencil size={13} /> {t("common.edit")}
+                <Pencil size={13} /> <span className="hidden sm:inline">{t("common.edit")}</span>
               </button>
               {onDelete && (
                 <button type="button" onClick={onDelete}
-                  className="h-8 px-3.5 rounded-xl flex items-center gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
+                  className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
                   style={{ backgroundColor: btnBg, color: "#ef4444", border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                   onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}>
-                  <Trash2 size={13} /> {t("common.delete")}
+                  <Trash2 size={13} /> <span className="hidden sm:inline">{t("common.delete")}</span>
                 </button>
               )}
               {onClose && (
@@ -156,7 +156,7 @@ export default function AksiyonDetail({
           }} />
           <button type="button" onClick={() => setProjeCardOpen(!projeCardOpen)}
             className="relative z-10 w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-white/5 transition-colors">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">Bağlı Proje: <span className="text-white tabular-nums">{proje.id}</span></span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">{t("kokpit.linkedProject")}: <span className="text-white tabular-nums">{proje.id}</span></span>
             <ChevronDown size={14} className={`text-white/80 transition-transform duration-200 ${projeCardOpen ? "rotate-180" : ""}`} />
           </button>
           {projeCardOpen && (

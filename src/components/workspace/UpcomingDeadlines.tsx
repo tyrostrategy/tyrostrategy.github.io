@@ -119,7 +119,7 @@ function DeadlineRow({ item, onClick, showExpand, t }: DeadlineRowProps) {
           })}
           {children.length > 5 && (
             <p className="text-[11px] text-tyro-text-muted pt-0.5">
-              {(t as any)("workspace.andMore", { count: children.length - 5 })}
+              {t("workspace.andMore", { count: children.length - 5 })}
             </p>
           )}
         </div>

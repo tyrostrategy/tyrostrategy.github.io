@@ -1,35 +1,33 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, DatePicker } from "@heroui/react";
 import { X, RotateCcw } from "lucide-react";
 import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { useDataStore } from "@/stores/dataStore";
 
 interface AdvancedFilterPanelProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const sourceOptions = ["Türkiye", "Kurumsal", "International"];
-const statusOptions = [
-  { key: "On Track", label: "Yolunda", color: "bg-tyro-success" },
-  { key: "Achieved", label: "Tamamlandı", color: "bg-tyro-navy" },
-  { key: "Behind", label: "Gecikmiş", color: "bg-tyro-danger" },
-  { key: "At Risk", label: "Risk Altında", color: "bg-tyro-warning" },
-  { key: "Not Started", label: "Başlanmadı", color: "bg-tyro-text-muted" },
-];
-const departmanOptions = ["Türkiye Operasyonları", "Kurumsal", "International"];
-const liderOptions = [
-  "Kerime İkizler",
-  "Recep Mergen",
-  "Güven Emrah Erenler",
-  "Nazlı Deniz Çetin",
-  "Arzu Örsel",
-  "Suat Söbüçovalı",
-  "Tarkan Ferhat Yılmaz",
-  "Yiğit Karacı",
-];
-
 export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterPanelProps) {
+  const { t } = useTranslation();
+  const projeler = useDataStore((s) => s.projeler);
+
+  // Derive filter options from actual data
+  const sourceOptions = useMemo(() => [...new Set(projeler.map((p) => p.source).filter(Boolean))], [projeler]);
+  const departmanOptions = useMemo(() => [...new Set(projeler.map((p) => p.department).filter(Boolean))], [projeler]);
+  const liderOptions = useMemo(() => [...new Set(projeler.map((p) => p.owner).filter(Boolean))].sort(), [projeler]);
+
+  const statusOptions = [
+    { key: "On Track", label: t("status.onTrack"), color: "bg-tyro-success" },
+    { key: "Achieved", label: t("status.achieved"), color: "bg-tyro-navy" },
+    { key: "Behind", label: t("status.behind"), color: "bg-tyro-danger" },
+    { key: "At Risk", label: t("status.atRisk"), color: "bg-tyro-warning" },
+    { key: "Not Started", label: t("status.notStarted"), color: "bg-tyro-text-muted" },
+  ];
+
   const [kaynak, setKaynak] = useState<Set<string>>(new Set());
   const [durum, setDurum] = useState<Set<string>>(new Set());
   const [departman, setDepartman] = useState<Set<string>>(new Set());
@@ -95,7 +93,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-tyro-border">
               <div className="flex items-center gap-2.5">
-                <h2 className="text-base font-bold text-tyro-text-primary">Gelişmiş Filtre</h2>
+                <h2 className="text-base font-bold text-tyro-text-primary">{t("dashboard.advancedFilter")}</h2>
                 {activeCount > 0 && (
                   <span className="flex items-center justify-center w-5 h-5 rounded-full bg-tyro-navy text-white text-[11px] font-bold">
                     {activeCount}
@@ -105,7 +103,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Filtreleri kapat"
+                aria-label={t("common.closeFilters")}
                 className="w-10 h-10 rounded-lg flex items-center justify-center text-tyro-text-muted hover:bg-tyro-bg transition-colors cursor-pointer"
               >
                 <X size={18} />
@@ -115,7 +113,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
             {/* Content */}
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
               {/* Kaynak */}
-              <FilterSection title="Kaynak">
+              <FilterSection title={t("dashboard.source")}>
                 <div className="flex flex-wrap gap-2">
                   {sourceOptions.map((s) => (
                     <ChipToggle key={s} label={s} active={kaynak.has(s)} onClick={() => toggleSet(kaynak, s, setKaynak)} />
@@ -124,7 +122,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               </FilterSection>
 
               {/* Durum */}
-              <FilterSection title="Durum">
+              <FilterSection title={t("dashboard.status")}>
                 <div className="flex flex-wrap gap-2">
                   {statusOptions.map((s) => (
                     <ChipToggle
@@ -139,7 +137,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               </FilterSection>
 
               {/* Departman */}
-              <FilterSection title="Departman">
+              <FilterSection title={t("dashboard.department")}>
                 <div className="flex flex-wrap gap-2">
                   {departmanOptions.map((d) => (
                     <ChipToggle key={d} label={d} active={departman.has(d)} onClick={() => toggleSet(departman, d, setDepartman)} />
@@ -148,7 +146,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               </FilterSection>
 
               {/* Proje Lideri */}
-              <FilterSection title="Proje Lideri">
+              <FilterSection title={t("dashboard.projectLeader")}>
                 <div className="flex flex-wrap gap-2">
                   {liderOptions.map((l) => (
                     <ChipToggle key={l} label={l} active={lider.has(l)} onClick={() => toggleSet(lider, l, setLider)} />
@@ -157,10 +155,10 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               </FilterSection>
 
               {/* Tarih Aralığı */}
-              <FilterSection title="Tarih Aralığı">
+              <FilterSection title={t("dashboard.dateRange")}>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Başlangıç</label>
+                    <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("dashboard.start")}</label>
                     <DatePicker
                       value={toCalendarDate(dateFrom)}
                       onChange={(date) => setDateFrom(fromCalendarDate(date))}
@@ -170,7 +168,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                     />
                   </div>
                   <div>
-                    <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Bitiş</label>
+                    <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("dashboard.end")}</label>
                     <DatePicker
                       value={toCalendarDate(dateTo)}
                       onChange={(date) => setDateTo(fromCalendarDate(date))}
@@ -183,7 +181,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               </FilterSection>
 
               {/* İlerleme Aralığı */}
-              <FilterSection title="İlerleme Aralığı">
+              <FilterSection title={t("dashboard.progressRange")}>
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
                     <label className="text-[11px] font-semibold text-tyro-text-secondary mb-1 block">Min %{progressMin}</label>
@@ -221,7 +219,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                 onPress={clearAll}
                 isDisabled={activeCount === 0}
               >
-                Temizle
+                {t("common.clear")}
               </Button>
               <div className="flex-1" />
               <Button
@@ -230,7 +228,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                 className="rounded-button text-xs font-semibold px-6"
                 onPress={onClose}
               >
-                Uygula {activeCount > 0 ? `(${activeCount})` : ""}
+                {t("common.apply")} {activeCount > 0 ? `(${activeCount})` : ""}
               </Button>
             </div>
           </motion.div>

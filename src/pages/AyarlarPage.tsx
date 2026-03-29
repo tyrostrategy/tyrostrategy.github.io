@@ -88,8 +88,8 @@ export default function AyarlarPage() {
     toast.success(t("settings.tagUpdated"), {
       message: trimmed,
       details: trimmed !== oldName
-        ? [{ label: "Eski Ad", value: oldName }, { label: "Yeni Ad", value: trimmed }]
-        : [{ label: "Değişiklik", value: "Renk güncellendi" }],
+        ? [{ label: t("settings.oldName"), value: oldName }, { label: t("settings.newName"), value: trimmed }]
+        : [{ label: t("settings.change"), value: t("settings.colorUpdated") }],
     });
     setEditingId(null);
   };
@@ -102,39 +102,39 @@ export default function AyarlarPage() {
     <div className="flex flex-col gap-5 max-w-2xl">
 
       {/* ── Kuruluş Bilgileri ── */}
-      <SettingsCard title="Kuruluş Bilgileri">
-        <SettingsRow label={t("settings.appName")} description="Uygulamanın sistem adı (salt okunur)">
+      <SettingsCard title={t("settings.organizationInfo")}>
+        <SettingsRow label={t("settings.appName")} description={t("settings.appNameDesc")}>
           <span className="text-[13px] font-semibold text-tyro-text-primary">TYRO Strategy</span>
         </SettingsRow>
-        <SettingsRow label="Şirket Adı" description="Uygulama genelinde görüntülenen şirket adı">
+        <SettingsRow label={t("settings.companyName")} description={t("settings.companyNameDesc")}>
           <Input
             value={companyName}
             onValueChange={setCompanyName}
             variant="bordered"
             size="sm"
-            className="w-[200px]"
+            className="w-full sm:w-[200px]"
             classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }}
           />
         </SettingsRow>
       </SettingsCard>
 
       {/* ── Numara Serisi ── */}
-      <SettingsCard title="Numara Serisi Şablonu">
-        <SettingsRow label="Proje ID" description="Örn: P26-0001">
+      <SettingsCard title={t("settings.numberSeries")}>
+        <SettingsRow label={t("settings.projectId")} description={t("settings.projectIdDesc")}>
           <span className="text-[13px] font-mono font-semibold text-tyro-text-secondary tabular-nums">P{"{"}<span style={{ color: accentColor }}>YY</span>{"}"}-{"{"}<span style={{ color: accentColor }}>NNNN</span>{"}"}</span>
         </SettingsRow>
-        <SettingsRow label="Aksiyon ID" description="Örn: A26-0001">
+        <SettingsRow label={t("settings.actionId")} description={t("settings.actionIdDesc")}>
           <span className="text-[13px] font-mono font-semibold text-tyro-text-secondary tabular-nums">A{"{"}<span style={{ color: accentColor }}>YY</span>{"}"}-{"{"}<span style={{ color: accentColor }}>NNNN</span>{"}"}</span>
         </SettingsRow>
-        <p className="text-[10px] text-tyro-text-muted px-5 pb-3">YY = Oluşturulma yılı, NNNN = Otomatik sıra numarası</p>
+        <p className="text-[10px] text-tyro-text-muted px-5 pb-3">{t("settings.numberSeriesHelp")}</p>
       </SettingsCard>
 
       {/* ── Kurallar ── */}
-      <SettingsCard title="Kurallar">
-        <SettingsRow label="Çoklu etiket" description="Kapalıyken projelere yalnızca tek etiket atanabilir">
+      <SettingsCard title={t("settings.rules")}>
+        <SettingsRow label={t("settings.multiTag")} description={t("settings.multiTagDesc")}>
           <Switch isSelected={allowMultipleTags} onValueChange={setAllowMultipleTags} size="sm" />
         </SettingsRow>
-        <SettingsRow label="Gecikmeli eşiği" description={`Beklenen ilerlemeye göre %${behindThreshold}'den fazla geride → Gecikmeli`}>
+        <SettingsRow label={t("settings.behindThreshold")} description={t("settings.behindThresholdDesc", { value: behindThreshold })}>
           <Select
             selectedKeys={[String(behindThreshold)]}
             onSelectionChange={(keys) => setBehindThreshold(Number(Array.from(keys)[0]))}
@@ -144,7 +144,7 @@ export default function AyarlarPage() {
             {[10, 15, 20, 25, 30].map((v) => <SelectItem key={String(v)} textValue={`%${v}`}>%{v}</SelectItem>)}
           </Select>
         </SettingsRow>
-        <SettingsRow label="Risk altında eşiği" description={`Beklenen ilerlemeye göre %${atRiskThreshold}'den fazla geride → Risk Altında`}>
+        <SettingsRow label={t("settings.atRiskThreshold")} description={t("settings.atRiskThresholdDesc", { value: atRiskThreshold })}>
           <Select
             selectedKeys={[String(atRiskThreshold)]}
             onSelectionChange={(keys) => setAtRiskThreshold(Number(Array.from(keys)[0]))}
@@ -157,24 +157,24 @@ export default function AyarlarPage() {
       </SettingsCard>
 
       {/* ── Entegrasyon ── */}
-      <SettingsCard title="Entegrasyonlar">
-        <SettingsRow label="Supabase (PostgreSQL)" description="Veritabanı ve gerçek zamanlı veri servisi">
+      <SettingsCard title={t("settings.integrations")}>
+        <SettingsRow label="Supabase (PostgreSQL)" description={t("settings.supabaseDesc")}>
           {isSupabaseMode ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Bağlı
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {t("settings.connected")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-tyro-bg text-tyro-text-muted">
-              <span className="w-1.5 h-1.5 rounded-full bg-tyro-text-muted" /> Mock Veri
+              <span className="w-1.5 h-1.5 rounded-full bg-tyro-text-muted" /> {t("settings.mockData")}
             </span>
           )}
         </SettingsRow>
-        <SettingsRow label="Azure AD (MSAL)" description="Kurumsal kimlik doğrulama servisi">
+        <SettingsRow label="Azure AD (MSAL)" description={t("settings.azureAdDesc")}>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Demo Modu
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> {t("settings.demoModeLabel")}
           </span>
         </SettingsRow>
-        <SettingsRow label="Veri Sağlayıcı" description="Aktif veri kaynağı modu">
+        <SettingsRow label={t("settings.dataProvider")} description={t("settings.dataProviderDesc")}>
           <span className="text-[13px] font-mono font-semibold text-tyro-text-primary tabular-nums">
             {isSupabaseMode ? "supabase" : "mock"}
           </span>
@@ -183,19 +183,19 @@ export default function AyarlarPage() {
 
       {/* ── Hakkında ── */}
       <SettingsCard title={t("settings.about")}>
-        <SettingsRow label="Uygulama" description="Stratejik proje yönetim platformu">
+        <SettingsRow label={t("settings.application")} description={t("settings.applicationDesc")}>
           <span className="text-[13px] font-semibold text-tyro-text-primary">TYRO Strategy</span>
         </SettingsRow>
-        <SettingsRow label={t("settings.version")} description="Mevcut uygulama sürümü">
+        <SettingsRow label={t("settings.version")} description={t("settings.versionDesc")}>
           <span className="text-[13px] font-mono font-semibold text-tyro-text-primary tabular-nums">1.0.0</span>
         </SettingsRow>
-        <SettingsRow label="Platform" description="Kullanılan teknoloji yığını">
+        <SettingsRow label={t("settings.platform")} description={t("settings.platformDesc")}>
           <span className="text-[12px] font-medium text-tyro-text-secondary">React · HeroUI · Supabase · Vite</span>
         </SettingsRow>
-        <SettingsRow label="Geliştirici" description="Uygulama geliştirme ortağı">
+        <SettingsRow label={t("settings.developer")} description={t("settings.developerDesc")}>
           <span className="text-[13px] font-semibold text-tyro-text-primary">TTECH Business Solutions</span>
         </SettingsRow>
-        <SettingsRow label="Kuruluş" description="Lisans sahibi kuruluş">
+        <SettingsRow label={t("settings.organization")} description={t("settings.organizationDesc")}>
           <span className="text-[13px] font-semibold text-tyro-text-primary">{companyName}</span>
         </SettingsRow>
       </SettingsCard>
@@ -210,7 +210,7 @@ export default function AyarlarPage() {
             <Tag size={18} className="text-tyro-gold" />
             <h2 className="text-base font-bold text-tyro-text-primary">{t("settings.tagManagement")}</h2>
           </div>
-          <span className="text-[11px] text-tyro-text-muted">{tagDefinitions.length} etiket</span>
+          <span className="text-[11px] text-tyro-text-muted">{tagDefinitions.length} {t("settings.tagCount")}</span>
         </div>
         <p className="text-[12px] text-tyro-text-muted mb-4">{t("settings.tagManagementDesc")}</p>
 
@@ -280,7 +280,7 @@ export default function AyarlarPage() {
                     </span>
                     {usageCount > 0 && (
                       <span className="text-[11px] text-tyro-text-muted shrink-0">
-                        {usageCount} proje
+                        {usageCount} {t("settings.projectCount")}
                       </span>
                     )}
                     <button
@@ -353,7 +353,7 @@ export default function AyarlarPage() {
       />
 
       <Tabs
-        aria-label="Ayarlar sekmeleri"
+        aria-label={t("settings.settingsTabs")}
         variant="underlined"
         color="primary"
         classNames={{
@@ -404,7 +404,7 @@ export default function AyarlarPage() {
 function SettingsCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.04)] overflow-hidden">
-      <div className="px-5 py-3 border-b border-tyro-border/15">
+      <div className="px-4 sm:px-5 py-3 border-b border-tyro-border/15">
         <h2 className="text-[13px] font-bold text-tyro-text-primary">{title}</h2>
       </div>
       <div className="divide-y divide-tyro-border/10">
@@ -416,10 +416,10 @@ function SettingsCard({ title, children }: { title: string; children: React.Reac
 
 function SettingsRow({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between px-5 py-3.5 gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 gap-2 sm:gap-4">
       <div className="min-w-0">
         <p className="text-[13px] font-semibold text-tyro-text-primary">{label}</p>
-        {description && <p className="text-[11px] text-tyro-text-muted mt-0.5">{description}</p>}
+        {description && <p className="text-[11px] text-tyro-text-muted mt-0.5 break-words">{description}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>

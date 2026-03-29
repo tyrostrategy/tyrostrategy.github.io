@@ -74,21 +74,24 @@ describe("RoleAvatar", () => {
   describe("sizes", () => {
     it("sm size renders 32px inner circle", () => {
       const { container } = render(<RoleAvatar name="Test" role="Admin" size="sm" />);
-      const inner = container.querySelector(".bg-tyro-navy") as HTMLElement;
+      const inner = container.querySelector("[style*='width: 32px']") as HTMLElement;
+      expect(inner).toBeInTheDocument();
       expect(inner?.style.width).toBe("32px");
       expect(inner?.style.height).toBe("32px");
     });
 
     it("md size renders 40px inner circle", () => {
       const { container } = render(<RoleAvatar name="Test" role="Admin" size="md" />);
-      const inner = container.querySelector(".bg-tyro-navy") as HTMLElement;
+      const inner = container.querySelector("[style*='width: 40px']") as HTMLElement;
+      expect(inner).toBeInTheDocument();
       expect(inner?.style.width).toBe("40px");
       expect(inner?.style.height).toBe("40px");
     });
 
     it("lg size renders 56px inner circle", () => {
       const { container } = render(<RoleAvatar name="Test" role="Admin" size="lg" />);
-      const inner = container.querySelector(".bg-tyro-navy") as HTMLElement;
+      const inner = container.querySelector("[style*='width: 56px']") as HTMLElement;
+      expect(inner).toBeInTheDocument();
       expect(inner?.style.width).toBe("56px");
       expect(inner?.style.height).toBe("56px");
     });

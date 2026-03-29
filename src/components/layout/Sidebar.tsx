@@ -94,7 +94,7 @@ function getNavSections(t: (key: string) => string) {
       items: [
         { id: "users", label: t("nav.users"), icon: UsersRound, path: "/kullanicilar", pageKey: "kullanicilar" as const },
         { id: "guvenlik", label: t("nav.security"), icon: Shield, path: "/guvenlik", pageKey: "guvenlik" as const },
-        { id: "veri-yonetimi", label: "Veri Yönetimi", icon: Database, path: "/veri-yonetimi", pageKey: "ayarlar" as const },
+        { id: "veri-yonetimi", label: t("nav.dataManagement"), icon: Database, path: "/veri-yonetimi", pageKey: "ayarlar" as const },
         { id: "settings", label: t("nav.settings"), icon: SlidersHorizontal, path: "/ayarlar", pageKey: "ayarlar" as const },
       ],
     },
@@ -195,7 +195,7 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
             transition={{ duration: 0.4, ease: "easeOut" }}
             whileHover={{ scale: 1.15, opacity: 1 }}
             whileTap={{ scale: 0.9 }}
-            title={pinned ? "Sidebar'ı serbest bırak" : "Sidebar'ı sabitle"}
+            title={pinned ? t("nav.unpinSidebar") : t("nav.pinSidebar")}
           >
             {pinned ? <Pin size={14} /> : <PinOff size={14} />}
           </motion.button>

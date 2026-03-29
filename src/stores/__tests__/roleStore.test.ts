@@ -34,8 +34,7 @@ describe("roleStore", () => {
       const perms = useRoleStore.getState().getPermissions("Admin");
       expect(perms.pages.kpi).toBe(true);
       expect(perms.pages.projeler).toBe(true);
-      expect(perms.pages.projeler).toBe(true);
-      expect(perms.pages.gorevler).toBe(true);
+      expect(perms.pages.aksiyonlar).toBe(true);
       expect(perms.pages.gantt).toBe(true);
       expect(perms.pages.wbs).toBe(true);
       expect(perms.pages.kullanicilar).toBe(true);
@@ -43,11 +42,10 @@ describe("roleStore", () => {
       expect(perms.pages.guvenlik).toBe(true);
     });
 
-    it("Admin has full CRUD on proje, proje, gorev", () => {
+    it("Admin has full CRUD on proje and aksiyon", () => {
       const perms = useRoleStore.getState().getPermissions("Admin");
       expect(perms.proje).toEqual({ create: true, edit: true, delete: true });
-      expect(perms.proje).toEqual({ create: true, edit: true, delete: true });
-      expect(perms.gorev).toEqual({ create: true, edit: true, delete: true });
+      expect(perms.aksiyon).toEqual({ create: true, edit: true, delete: true });
     });
 
     it("Admin has editOnlyOwn=false and viewOnlyOwn=false", () => {
@@ -64,11 +62,10 @@ describe("roleStore", () => {
       expect(perms.pages.guvenlik).toBe(false);
     });
 
-    it("Proje Lideri can access projeler, projeler, gorevler, gantt, wbs", () => {
+    it("Proje Lideri can access projeler, aksiyonlar, gantt, wbs", () => {
       const perms = useRoleStore.getState().getPermissions("Proje Lideri");
       expect(perms.pages.projeler).toBe(true);
-      expect(perms.pages.projeler).toBe(true);
-      expect(perms.pages.gorevler).toBe(true);
+      expect(perms.pages.aksiyonlar).toBe(true);
       expect(perms.pages.gantt).toBe(true);
       expect(perms.pages.wbs).toBe(true);
     });
@@ -76,8 +73,7 @@ describe("roleStore", () => {
     it("Proje Lideri has restricted CRUD permissions", () => {
       const perms = useRoleStore.getState().getPermissions("Proje Lideri");
       expect(perms.proje).toEqual({ create: false, edit: false, delete: false });
-      expect(perms.proje).toEqual({ create: false, edit: true, delete: false });
-      expect(perms.gorev).toEqual({ create: true, edit: true, delete: false });
+      expect(perms.aksiyon).toEqual({ create: true, edit: true, delete: false });
       expect(perms.editOnlyOwn).toBe(true);
       expect(perms.viewOnlyOwn).toBe(true);
     });
@@ -90,11 +86,10 @@ describe("roleStore", () => {
       expect(perms.pages.guvenlik).toBe(false);
     });
 
-    it("Kullanıcı has minimal CRUD (only gorev create/edit)", () => {
+    it("Kullanıcı has minimal CRUD (only aksiyon create/edit)", () => {
       const perms = useRoleStore.getState().getPermissions("Kullanıcı");
       expect(perms.proje).toEqual({ create: false, edit: false, delete: false });
-      expect(perms.proje).toEqual({ create: false, edit: false, delete: false });
-      expect(perms.gorev).toEqual({ create: true, edit: true, delete: false });
+      expect(perms.aksiyon).toEqual({ create: true, edit: true, delete: false });
       expect(perms.editOnlyOwn).toBe(true);
       expect(perms.viewOnlyOwn).toBe(true);
     });
@@ -137,7 +132,7 @@ describe("roleStore", () => {
       useRoleStore.getState().updatePermissions("Admin", customPerms);
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        "tyro-role-permissions",
+        "tyro-role-permissions-v2",
         expect.any(String)
       );
 
@@ -150,7 +145,7 @@ describe("roleStore", () => {
     it("does not affect other roles when updating one role", () => {
       const customPerms: RolePermissions = {
         ...DEFAULT_PERMISSIONS["Kullanıcı"],
-        gorev: { create: false, edit: false, delete: false },
+        aksiyon: { create: false, edit: false, delete: false },
       };
 
       useRoleStore.getState().updatePermissions("Kullanıcı", customPerms);
@@ -186,7 +181,7 @@ describe("roleStore", () => {
       useRoleStore.getState().updatePermissions("Admin", DEFAULT_PERMISSIONS["Admin"]);
       useRoleStore.getState().resetToDefaults();
 
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith("tyro-role-permissions");
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith("tyro-role-permissions-v2");
     });
   });
 
@@ -194,14 +189,14 @@ describe("roleStore", () => {
     it("saves to localStorage on updatePermissions", () => {
       useRoleStore.getState().updatePermissions("Admin", DEFAULT_PERMISSIONS["Admin"]);
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        "tyro-role-permissions",
+        "tyro-role-permissions-v2",
         expect.any(String)
       );
     });
 
     it("removes from localStorage on resetToDefaults", () => {
       useRoleStore.getState().resetToDefaults();
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith("tyro-role-permissions");
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith("tyro-role-permissions-v2");
     });
   });
 });

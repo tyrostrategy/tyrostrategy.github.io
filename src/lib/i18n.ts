@@ -13,6 +13,14 @@ i18n.use(initReactI18next).init({
   lng: savedLocale,
   fallbackLng: "tr",
   interpolation: { escapeValue: false },
+
+  // Dev-time: log missing translation keys to console
+  ...(import.meta.env.DEV && {
+    saveMissing: true,
+    missingKeyHandler: (_lngs: readonly string[], ns: string, key: string) => {
+      console.warn(`[i18n] Missing key: "${ns}:${key}"`);
+    },
+  }),
 });
 
 export default i18n;

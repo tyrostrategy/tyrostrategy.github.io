@@ -157,13 +157,13 @@ export default function ProjeDetail({
                     <button
                       type="button"
                       onClick={() => setMode("editing")}
-                      className="h-8 px-3.5 rounded-xl flex items-center gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
+                      className="h-8 px-2 sm:px-3.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-[12px] font-semibold transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.03] active:scale-[0.97]"
                       style={{ backgroundColor: btnBg, color: txtColor, border: `1px solid ${btnBorder}`, boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = btnBgHover; e.currentTarget.style.borderColor = btnBorderHover; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = btnBg; e.currentTarget.style.borderColor = btnBorder; }}
                     >
                       <Pencil size={13} />
-                      Düzenle
+                      <span className="hidden sm:inline">{t("common.edit")}</span>
                     </button>
                     {onClose && (
                       <button
@@ -240,7 +240,7 @@ export default function ProjeDetail({
             <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.owner ?? "-"}</p>
           </div>
           <div className="px-3 py-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Katılımcılar</span>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.participants")}</span>
             <p className="text-[12px] font-medium text-tyro-text-primary truncate">{currentHedef.participants?.join(", ") || "-"}</p>
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function ProjeDetail({
             <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.source}</p>
           </div>
           <div className="px-3 py-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Departman</span>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.department")}</span>
             <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.department || "-"}</p>
           </div>
         </div>
@@ -269,7 +269,7 @@ export default function ProjeDetail({
         {/* Kontrol Tarihi */}
         <div className="grid grid-cols-2 divide-x divide-tyro-border/20">
           <div className="px-3 py-2">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">Kontrol Tarihi</span>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.controlDate")}</span>
             <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.reviewDate ? formatDate(currentHedef.reviewDate) : "-"}</p>
           </div>
           <div className="px-3 py-2" />
@@ -306,7 +306,7 @@ export default function ProjeDetail({
             >
               <GitBranch size={15} className="text-tyro-text-muted shrink-0" />
               <span className="text-[13px] font-bold text-tyro-text-primary flex-1 text-left">
-                Proje İlişkileri
+                {t("common.projectRelations")}
                 {(parentHedef ? 1 : 0) + relatedHedefler.length > 0 && (
                   <span className="ml-1.5 text-[11px] font-medium text-tyro-text-muted">
                     ({(parentHedef ? 1 : 0) + relatedHedefler.length})

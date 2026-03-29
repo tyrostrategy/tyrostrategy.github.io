@@ -2,6 +2,7 @@ import { create } from "zustand";
 import i18n from "@/lib/i18n";
 import type { SidebarThemeId } from "@/config/sidebarThemes";
 import { isSupabaseMode } from "@/hooks/useSupabaseData";
+import { toast } from "@/stores/toastStore";
 
 // Lazy import to avoid circular dependency
 const getSyncAdapter = () => import("@/lib/data/supabaseAdapter").then((m) => m.supabaseAdapter);
@@ -38,11 +39,16 @@ interface UIState {
   toggleTheme: () => void;
   setSidebarTheme: (theme: SidebarThemeId) => void;
   setLocale: (locale: "tr" | "en") => void;
+  workspaceRefreshFn: (() => Promise<void>) | null;
+  setWorkspaceRefreshFn: (fn: (() => Promise<void>) | null) => void;
 }
 
 function syncSetting(key: string, value: unknown) {
   if (isSupabaseMode) {
-    getSyncAdapter().then((adapter) => adapter.upsertAppSetting(key, value)).catch(() => {});
+    getSyncAdapter().then((adapter) => adapter.upsertAppSetting(key, value)).catch((err) => {
+      console.error("[Supabase] syncSetting failed:", err);
+      toast.error(i18n.t("toast.syncFailed"));
+    });
   }
 }
 
@@ -119,6 +125,8 @@ export const useUIStore = create<UIState>((set) => ({
     i18n.changeLanguage(locale);
     set({ locale });
   },
+  workspaceRefreshFn: null,
+  setWorkspaceRefreshFn: (fn) => set({ workspaceRefreshFn: fn }),
 }));
 
 // Startup: load settings from Supabase (overrides localStorage defaults)
@@ -136,5 +144,8 @@ if (isSupabaseMode) {
         useUIStore.setState(updates);
       }
     })
-  ).catch((err) => console.error("[Supabase] fetchAppSettings failed:", err));
+  ).catch((err) => {
+    console.error("[Supabase] fetchAppSettings failed:", err);
+    toast.error(i18n.t("toast.settingsLoadFailed"));
+  });
 }

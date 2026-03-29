@@ -36,7 +36,7 @@ const createHedefSchema = (t: TFunction) =>
     parentObjectiveId: z.string().optional(),
     startDate: z.string().min(1, t("validation.startDateRequired")),
     endDate: z.string().min(1, t("validation.endDateRequired")),
-    reviewDate: z.string().min(1, t("validation.reviewDateRequired", "Kontrol tarihi zorunludur")),
+    reviewDate: z.string().min(1, t("validation.reviewDateRequired")),
   });
 
 type ProjeFormData = z.infer<ReturnType<typeof createHedefSchema>>;
@@ -72,11 +72,11 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
     setValue,
     formState: { errors },
   } = useForm<ProjeFormData>({
-    resolver: zodResolver(hedefSchema) as any,
+    resolver: zodResolver(hedefSchema),
     defaultValues: {
       name: proje?.name ?? "",
       description: proje?.description ?? "",
-      owner: proje?.owner ?? CURRENT_USER,
+      owner: proje?.owner ?? (localStorage.getItem("tyro-mock-user") || "Demo User"),
       participants: proje?.participants ?? [],
       department: proje?.department ?? "",
       source: proje?.source ?? "T\u00fcrkiye",
@@ -103,17 +103,17 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
       if (proje) {
         // Detect changed fields for structured toast
         const details: { label: string; value: string }[] = [];
-        if (data.name !== proje.name) details.push({ label: "Ad", value: data.name });
-        if (data.status !== proje.status) details.push({ label: "Durum", value: data.status });
-        if (data.owner !== proje.owner) details.push({ label: "Sahip", value: data.owner });
-        if (data.source !== proje.source) details.push({ label: "Kaynak", value: data.source });
-        if (data.department !== proje.department) details.push({ label: "Departman", value: data.department });
-        if (data.startDate !== proje.startDate) details.push({ label: "Başlangıç", value: data.startDate });
-        if (data.endDate !== proje.endDate) details.push({ label: "Bitiş", value: data.endDate });
+        if (data.name !== proje.name) details.push({ label: t("common.name"), value: data.name });
+        if (data.status !== proje.status) details.push({ label: t("common.status"), value: data.status });
+        if (data.owner !== proje.owner) details.push({ label: t("common.owner"), value: data.owner });
+        if (data.source !== proje.source) details.push({ label: t("common.source"), value: data.source });
+        if (data.department !== proje.department) details.push({ label: t("common.department"), value: data.department });
+        if (data.startDate !== proje.startDate) details.push({ label: t("common.startDate"), value: data.startDate });
+        if (data.endDate !== proje.endDate) details.push({ label: t("common.endDate"), value: data.endDate });
         updateProje(proje.id, payload);
         toast.success(t("toast.objectiveUpdated"), {
           message: data.name,
-          details: details.length > 0 ? details : [{ label: "Durum", value: "Değişiklik kaydedildi" }],
+          details: details.length > 0 ? details : [{ label: t("common.status"), value: t("toast.changeSaved") }],
         });
       } else {
         addProje({ ...payload, progress: 0 });
@@ -143,7 +143,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
   }, []);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit) as any} className="flex flex-col h-full max-h-full overflow-hidden">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full max-h-full overflow-hidden">
       {/* Themed Header — edit mode */}
       {proje && (
         <div className="relative rounded-xl overflow-hidden px-4 py-3 shrink-0" style={{ background: sidebarTheme.bg }}>
@@ -165,7 +165,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
                   </button>
                 )}
                 <span className="text-[13px] font-bold tabular-nums" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>{proje.id}</span>
-                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Proje Düzenleme</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>{t("forms.objective.editTitle")}</span>
               </div>
               {onClose && (
                 <button type="button" onClick={onClose}
@@ -182,7 +182,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
               {watch("name") || proje.name}
             </h3>
             <div className="flex items-center flex-wrap gap-2 mt-2">
-              <StatusBadge status={(watch("status") as any) ?? proje.status} />
+              <StatusBadge status={watch("status") ?? proje.status} />
               <span className="ml-auto text-[13px] font-extrabold tabular-nums" style={{ color: txtColor }}>
                 %{proje.progress}
               </span>
@@ -193,10 +193,9 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
 
       {/* Scrollable form body */}
       <div className={`form-scroll-wrapper flex-1 min-h-0 ${scrollState.top ? "has-scroll-top" : ""} ${scrollState.bottom ? "has-scroll-bottom" : ""}`}>
-        <span className="form-scroll-chevron text-[10px] text-tyro-text-muted flex items-center gap-1">↓ Diğer alanlar</span>
         <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
-      <FormSection title="Proje Bilgileri">
+      <FormSection title={t("forms.objective.sectionTitle")}>
       <Controller
         name="name"
         control={control}
@@ -396,7 +395,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
             const trimmed = tag.trim();
             if (!trimmed || field.value.includes(trimmed)) { setTagInput(""); return; }
             if (!allowMultiple && field.value.length >= 1) {
-              toast.error("Tek etiket kuralı aktif", { message: "Ayarlar sayfasından 'Projede birden fazla etiket seçebilme' kuralını aktif edin." });
+              toast.error(t("toast.singleTagRule"), { message: t("toast.singleTagRuleDesc") });
               setTagInput("");
               return;
             }
@@ -435,7 +434,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
                 inputValue={tagInput}
                 onInputChange={setTagInput}
                 onSelectionChange={(key) => { if (key) addTag(String(key)); }}
-                onKeyDown={(e: any) => {
+                onKeyDown={(e: React.KeyboardEvent) => {
                   if (e.key === "Enter" && tagInput.trim()) {
                     e.preventDefault();
                     addTag(tagInput);
@@ -561,18 +560,30 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
 
       {/* Sticky footer */}
       <div className="shrink-0 pt-3 pb-1 border-t border-tyro-border/20 bg-tyro-surface/80 backdrop-blur-sm">
-        <Button
-          type="submit"
-          isLoading={isLoading}
-          startContent={<Check size={14} />}
-          className="w-full rounded-button font-semibold relative overflow-hidden group text-white"
-          style={{ backgroundColor: accentColor }}
-        >
-          <span className="relative z-10">{proje ? t("common.save") : t("common.create")}</span>
-          <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
-            <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
-          </span>
-        </Button>
+        <div className="flex gap-2">
+          {onClose && (
+            <Button
+              type="button"
+              variant="bordered"
+              onPress={onClose}
+              className="flex-1 rounded-button font-semibold border-tyro-border"
+            >
+              {t("common.cancel")}
+            </Button>
+          )}
+          <Button
+            type="submit"
+            isLoading={isLoading}
+            startContent={<Check size={14} />}
+            className={`${onClose ? "flex-1" : "w-full"} rounded-button font-semibold relative overflow-hidden group text-white`}
+            style={{ backgroundColor: accentColor }}
+          >
+            <span className="relative z-10">{proje ? t("common.save") : t("common.create")}</span>
+            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
+              <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
+            </span>
+          </Button>
+        </div>
       </div>
     </form>
   );

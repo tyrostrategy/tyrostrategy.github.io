@@ -50,14 +50,6 @@ const KokpitAdvancedFilter = lazy(() => import("@/components/kokpit/KokpitAdvanc
 // ─── Tab types ────────────────────────────────────────────────
 type TabId = "master" | "tablo";
 
-const SORT_LABELS: Record<string, string> = {
-  id: "Proje No",
-  name: "Ada Göre",
-  progress: "İlerlemeye Göre",
-  endDate: "Bitiş Tarihine Göre",
-  reviewDate: "Kontrol Tarihine Göre",
-  status: "Duruma Göre",
-};
 
 // ─── Shared colour maps ──────────────────────────────────────
 const sourceColors: Record<string, string> = {
@@ -95,6 +87,14 @@ const LABEL_COL_W = 240;
 // ─── Main Component ──────────────────────────────────────────
 export default function KokpitPage() {
   const { t } = useTranslation();
+  const SORT_LABELS: Record<string, string> = {
+    id: t("kokpit.sort.id"),
+    name: t("kokpit.sort.name"),
+    progress: t("kokpit.sort.progress"),
+    endDate: t("kokpit.sort.endDate"),
+    reviewDate: t("kokpit.sort.reviewDate"),
+    status: t("kokpit.sort.status"),
+  };
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
   const brandColor = sidebarTheme.brandStrategy ?? accentColor;
@@ -206,30 +206,31 @@ export default function KokpitPage() {
 
   // ─── Tabs & sort labels ──────────────────────────────────
   const tabs: { id: TabId; label: string }[] = [
-    { id: "master", label: "Genel" },
-    { id: "tablo", label: "Liste" },
+    { id: "master", label: t("kokpit.general") },
+    { id: "tablo", label: t("kokpit.viewList") },
   ];
   return (
     <div>
-      {/* Header with tabs on the right */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+      {/* Header — desktop only */}
+      <div className="hidden sm:flex items-start justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-[20px] sm:text-[22px] font-bold text-tyro-text-primary">{t("pages.strategicHQ.title")}</h1>
-          <p className="text-[12px] sm:text-[13px] text-tyro-text-muted mt-0.5">{t("pages.strategicHQ.subtitle")}</p>
+          <h1 className="text-[22px] font-bold text-tyro-text-primary">{t("pages.strategicHQ.title")}</h1>
+          <p className="text-[13px] text-tyro-text-muted mt-0.5">{t("pages.strategicHQ.subtitle")}</p>
         </div>
-        {/* Tabs removed — moved to toolbar as view select */}
       </div>
 
       {/* Toolbar — search + filters left, actions right */}
-      <div className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none pb-0.5">
-        {/* Search */}
-        <div className="relative w-[160px] sm:w-[220px] shrink-0">
+      <div className="flex items-center gap-2 mb-3">
+        {/* Left: scrollable filters */}
+        <div className="flex items-center gap-2 flex-1 min-w-0 overflow-x-auto scrollbar-none pb-0.5">
+        {/* Search — full width on mobile, fixed on desktop */}
+        <div className="relative flex-1 sm:flex-none sm:w-[220px] shrink-0">
           <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-tyro-text-muted pointer-events-none" />
           <input
             type="text"
             value={toolbarSearch}
             onChange={(e) => setToolbarSearch(e.target.value)}
-            placeholder="Ara..."
+            placeholder={t("common.search")}
             className="w-full h-9 pl-8 pr-7 rounded-lg border border-tyro-border bg-tyro-surface text-[13px] text-tyro-text-primary placeholder:text-tyro-text-muted focus:outline-none focus:border-tyro-navy focus:ring-2 focus:ring-tyro-navy/10 transition-all"
           />
           {toolbarSearch && (
@@ -242,99 +243,101 @@ export default function KokpitPage() {
             </button>
           )}
         </div>
-        {/* View mode dropdown */}
-        <Dropdown>
-          <DropdownTrigger>
-            <button
-              type="button"
-              className="h-9 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
+        {/* View mode dropdown — desktop only */}
+        <div className="hidden sm:block">
+          <Dropdown>
+            <DropdownTrigger>
+              <button
+                type="button"
+                className="h-9 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
+              >
+                {activeTab === "master" ? <LayoutDashboard size={14} className="text-tyro-text-secondary" /> : <LayoutList size={14} className="text-tyro-text-secondary" />}
+                <span className="text-[13px] font-medium text-tyro-text-secondary">{t("common.view")}</span>
+                <ChevronDown size={12} className="text-tyro-text-muted" />
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label={t("common.view")}
+              selectionMode="single"
+              selectedKeys={new Set([activeTab])}
+              onSelectionChange={(keys) => setActiveTab(Array.from(keys)[0] as TabId)}
             >
-              {activeTab === "master" ? <LayoutDashboard size={14} className="text-tyro-text-secondary" /> : <LayoutList size={14} className="text-tyro-text-secondary" />}
-              <span className="text-[13px] font-medium text-tyro-text-secondary">Görünüm</span>
-              <ChevronDown size={12} className="text-tyro-text-muted" />
-            </button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Görünüm"
-            selectionMode="single"
-            selectedKeys={new Set([activeTab])}
-            onSelectionChange={(keys) => setActiveTab(Array.from(keys)[0] as TabId)}
-          >
-            <DropdownItem key="master" startContent={<LayoutDashboard size={14} />}>Genel</DropdownItem>
-            <DropdownItem key="tablo" startContent={<LayoutList size={14} />}>Liste</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+              <DropdownItem key="master" startContent={<LayoutDashboard size={14} />}>{t("kokpit.general")}</DropdownItem>
+              <DropdownItem key="tablo" startContent={<LayoutList size={14} />}>{t("kokpit.viewList")}</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
         {/* Advanced filter button */}
-        <Tooltip content="Gelişmiş filtreleme seçenekleri" placement="bottom" delay={500} closeDelay={0}>
+        <Tooltip content={t("kokpit.filter.tooltip")} placement="bottom" delay={500} closeDelay={0}>
           <button
             type="button"
             onClick={() => setAdvFilterOpen(true)}
             className="h-9 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0 relative"
           >
             <SlidersHorizontal size={14} className="text-tyro-text-secondary" />
-            <span className="text-[13px] font-medium text-tyro-text-secondary">Filtre</span>
+            <span className="text-[13px] font-medium text-tyro-text-secondary hidden sm:inline">{t("common.filter")}</span>
             {advFilterCount > 0 && (
               <span className="flex items-center justify-center w-4 h-4 rounded-full text-white text-[10px] font-bold" style={{ backgroundColor: brandColor }}>{advFilterCount}</span>
             )}
           </button>
         </Tooltip>
-        {/* Sort dropdown */}
-        <Dropdown>
-          <DropdownTrigger>
+        {/* Sort dropdown + direction — desktop only */}
+        <div className="hidden sm:flex items-center gap-2">
+          <Dropdown>
+            <DropdownTrigger>
+              <button
+                type="button"
+                className="h-9 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
+              >
+                <ArrowUpDown size={14} className="text-tyro-text-secondary" />
+                <span className="text-[13px] font-medium text-tyro-text-secondary">{SORT_LABELS[sortBy] ?? t("common.sort")}</span>
+                <ChevronDown size={12} className="text-tyro-text-muted" />
+              </button>
+            </DropdownTrigger>
+            <DropdownMenu
+              aria-label={t("common.sort")}
+              selectionMode="single"
+              selectedKeys={new Set([sortBy])}
+              onSelectionChange={(keys) => setSortBy(Array.from(keys)[0] as string)}
+            >
+              <DropdownItem key="id">{t("kokpit.sort.id")}</DropdownItem>
+              <DropdownItem key="name">{t("kokpit.sort.name")}</DropdownItem>
+              <DropdownItem key="progress">{t("kokpit.sort.progress")}</DropdownItem>
+              <DropdownItem key="endDate">{t("kokpit.sort.endDate")}</DropdownItem>
+              <DropdownItem key="reviewDate">{t("kokpit.sort.reviewDate")}</DropdownItem>
+              <DropdownItem key="status">{t("kokpit.sort.status")}</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+          <Tooltip content={sortAsc ? t("kokpit.sortAsc") : t("kokpit.sortDesc")} placement="bottom" delay={500} closeDelay={0}>
             <button
               type="button"
-              className="h-9 px-3 rounded-lg border border-tyro-border bg-tyro-surface flex items-center gap-1.5 cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
+              onClick={() => setSortAsc(!sortAsc)}
+              className="h-9 w-9 rounded-lg border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
             >
-              <ArrowUpDown size={14} className="text-tyro-text-secondary" />
-              <span className="text-[13px] font-medium text-tyro-text-secondary">{SORT_LABELS[sortBy] ?? "Sırala"}</span>
-              <ChevronDown size={12} className="text-tyro-text-muted" />
+              <ArrowUpDown size={13} className={`text-tyro-text-secondary transition-transform ${sortAsc ? "" : "rotate-180"}`} />
             </button>
-          </DropdownTrigger>
-          <DropdownMenu
-            aria-label="Sıralama"
-            selectionMode="single"
-            selectedKeys={new Set([sortBy])}
-            onSelectionChange={(keys) => setSortBy(Array.from(keys)[0] as string)}
-          >
-            <DropdownItem key="id">Proje No</DropdownItem>
-            <DropdownItem key="name">Ada Göre</DropdownItem>
-            <DropdownItem key="progress">İlerlemeye Göre</DropdownItem>
-            <DropdownItem key="endDate">Bitiş Tarihine Göre</DropdownItem>
-            <DropdownItem key="reviewDate">Kontrol Tarihine Göre</DropdownItem>
-            <DropdownItem key="status">Duruma Göre</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
-        {/* Sort direction toggle */}
-        <Tooltip content={sortAsc ? "Artan sıralama (tıkla: azalan)" : "Azalan sıralama (tıkla: artan)"} placement="bottom" delay={500} closeDelay={0}>
-          <button
-            type="button"
-            onClick={() => setSortAsc(!sortAsc)}
-            className="h-9 w-9 rounded-lg border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-navy/5 transition-all shrink-0"
-          >
-            <ArrowUpDown size={13} className={`text-tyro-text-secondary transition-transform ${sortAsc ? "" : "rotate-180"}`} />
-          </button>
-        </Tooltip>
+          </Tooltip>
+        </div>
         {/* Clear filters — show when any filter is active */}
         {(toolbarSearch || advFilterCount > 0) && (
-          <Tooltip content="Tüm filtreleri ve aramayı temizle" placement="bottom" delay={500} closeDelay={0}>
+          <Tooltip content={t("common.clearFilters")} placement="bottom" delay={500} closeDelay={0}>
             <button
               type="button"
               onClick={() => { setToolbarSearch(""); setSortBy("id"); setSortAsc(false); setAdvFilters(null); setAdvFilterOpen(false); }}
               className="h-9 px-2.5 rounded-lg text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer shrink-0"
             >
-              Temizle
+              {t("common.clear")}
             </button>
           </Tooltip>
         )}
 
-        {/* Spacer */}
-        <div className="flex-1" />
+        </div>{/* end scrollable left */}
 
-        {/* Action buttons — right aligned */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Action buttons — right side, hidden on mobile (FABs instead) */}
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
           {/* Yeni — dropdown */}
           <div className="relative">
-            <Tooltip content="Yeni proje veya aksiyon oluştur" placement="bottom" delay={500} closeDelay={0}>
+            <Tooltip content={t("kokpit.createNewTooltip")} placement="bottom" delay={500} closeDelay={0}>
               <motion.button
                 type="button"
                 onClick={() => { setNewMenuOpen(!newMenuOpen); setEditMenuOpen(false); }}
@@ -343,20 +346,20 @@ export default function KokpitPage() {
                 whileTap={{ scale: 0.96 }}
               >
                 <Plus size={15} strokeWidth={2.5} />
-                Yeni
-              <ChevronDown size={12} className={`transition-transform ${newMenuOpen ? "rotate-180" : ""}`} />
+                <span className="hidden sm:inline">{t("common.new")}</span>
+              <ChevronDown size={12} className={`transition-transform hidden sm:block ${newMenuOpen ? "rotate-180" : ""}`} />
               </motion.button>
             </Tooltip>
             <AnimatePresence>
               {newMenuOpen && (
                 <>
-                  <motion.div className="fixed inset-0 z-40" onClick={() => setNewMenuOpen(false)} />
+                  <motion.div className="fixed inset-0 z-40 hidden sm:block" onClick={() => setNewMenuOpen(false)} />
                   <motion.div
                     initial={{ opacity: 0, y: -4, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.95 }}
                     transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-12 z-50 w-[220px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5"
+                    className="absolute right-0 top-12 z-50 w-[220px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5 hidden sm:block"
                   >
                     <button
                       type="button"
@@ -364,7 +367,7 @@ export default function KokpitPage() {
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
                       <Wand2 size={16} className="text-tyro-gold" />
-                      Proje Sihirbazı
+                      {t("kokpit.projectWizard")}
                     </button>
                     <div className="h-px bg-tyro-border/20 mx-3" />
                     <button
@@ -373,7 +376,7 @@ export default function KokpitPage() {
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
                       <CircleCheckBig size={16} className="text-emerald-500" />
-                      Yeni Aksiyon
+                      {t("kokpit.newAction")}
                     </button>
                   </motion.div>
                 </>
@@ -382,7 +385,7 @@ export default function KokpitPage() {
           </div>
           {/* Düzenle — dropdown */}
           <div className="relative">
-            <Tooltip content={selectedProje ? "Seçili projeyi düzenle" : "Önce bir proje seçin"} placement="bottom" delay={500} closeDelay={0}>
+            <Tooltip content={selectedProje ? t("kokpit.editTooltip") : t("kokpit.selectProjectFirst")} placement="bottom" delay={500} closeDelay={0}>
               <motion.button
                 type="button"
                 onClick={() => { if (!selectedProje) return; setEditMenuOpen(!editMenuOpen); setNewMenuOpen(false); }}
@@ -394,20 +397,20 @@ export default function KokpitPage() {
                 whileTap={selectedProje ? { scale: 0.96 } : {}}
               >
                 <Pencil size={14} />
-                Düzenle
-                <ChevronDown size={12} className={`transition-transform ${editMenuOpen ? "rotate-180" : ""}`} />
+                <span className="hidden sm:inline">{t("common.edit")}</span>
+                <ChevronDown size={12} className={`transition-transform hidden sm:block ${editMenuOpen ? "rotate-180" : ""}`} />
               </motion.button>
             </Tooltip>
             <AnimatePresence>
               {editMenuOpen && selectedProje && (
                 <>
-                  <motion.div className="fixed inset-0 z-40" onClick={() => setEditMenuOpen(false)} />
+                  <motion.div className="fixed inset-0 z-40 hidden sm:block" onClick={() => setEditMenuOpen(false)} />
                   <motion.div
                     initial={{ opacity: 0, y: -4, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -4, scale: 0.95 }}
                     transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-12 z-50 w-[240px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5"
+                    className="absolute right-0 top-12 z-50 w-[240px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5 hidden sm:block"
                   >
                     <button
                       type="button"
@@ -415,7 +418,7 @@ export default function KokpitPage() {
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
                       <Eye size={16} className="text-tyro-navy" />
-                      Projeyi Görüntüle
+                      {t("kokpit.viewProject")}
                     </button>
                     <div className="h-px bg-tyro-border/20 mx-3" />
                     <button
@@ -424,7 +427,7 @@ export default function KokpitPage() {
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
                       <Pencil size={16} className="text-amber-500" />
-                      Projeyi Düzenle
+                      {t("kokpit.editProject")}
                     </button>
                     <div className="h-px bg-tyro-border/20 mx-3" />
                     <button
@@ -437,40 +440,42 @@ export default function KokpitPage() {
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
                     >
                       <CalendarCheck size={16} className="text-teal-500" />
-                      Kontrol Tarihini Güncelle
+                      {t("kokpit.updateReviewDate")}
                     </button>
                   </motion.div>
                 </>
               )}
             </AnimatePresence>
           </div>
-          {/* Sil */}
-          <Tooltip content={selectedProje ? "Seçili projeyi sil" : "Önce bir proje seçin"} placement="bottom" delay={500} closeDelay={0}>
-            <motion.button
-              type="button"
-              onClick={() => {
-                if (!selectedProje) return;
-                const reason = getProjeDeleteReason(selectedProje.id);
-                if (reason) {
-                  toast.error(`"${selectedProje.name}" silinemez`, {
-                    message: reason,
-                  });
-                  return;
-                }
-                setConfirmOpen(true);
-              }}
-              className={`h-9 px-3.5 rounded-lg border flex items-center gap-1.5 text-[13px] font-semibold transition-all ${
-                selectedProje
-                  ? "border-red-200 text-red-500 hover:bg-red-50 cursor-pointer"
-                  : "border-tyro-border/40 text-tyro-text-muted/40 cursor-default"
-              }`}
-              whileHover={selectedProje ? { scale: 1.04 } : {}}
-              whileTap={selectedProje ? { scale: 0.96 } : {}}
-            >
-              <Trash2 size={14} />
-              Sil
-            </motion.button>
-          </Tooltip>
+          {/* Sil — desktop only */}
+          <div className="hidden sm:block">
+            <Tooltip content={selectedProje ? t("kokpit.deleteTooltip") : t("kokpit.selectProjectFirst")} placement="bottom" delay={500} closeDelay={0}>
+              <motion.button
+                type="button"
+                onClick={() => {
+                  if (!selectedProje) return;
+                  const reason = getProjeDeleteReason(selectedProje.id);
+                  if (reason) {
+                    toast.error(`"${selectedProje.name}" silinemez`, {
+                      message: reason,
+                    });
+                    return;
+                  }
+                  setConfirmOpen(true);
+                }}
+                className={`h-9 px-3.5 rounded-lg border flex items-center gap-1.5 text-[13px] font-semibold transition-all ${
+                  selectedProje
+                    ? "border-red-200 text-red-500 hover:bg-red-50 cursor-pointer"
+                    : "border-tyro-border/40 text-tyro-text-muted/40 cursor-default"
+                }`}
+                whileHover={selectedProje ? { scale: 1.04 } : {}}
+                whileTap={selectedProje ? { scale: 0.96 } : {}}
+              >
+                <Trash2 size={14} />
+                {t("common.delete")}
+              </motion.button>
+            </Tooltip>
+          </div>
         </div>
       </div>
 
@@ -532,7 +537,7 @@ export default function KokpitPage() {
       <SlidingPanel
         isOpen={aksiyonPanelOpen}
         onClose={() => setAksiyonPanelOpen(false)}
-        title="Yeni Aksiyon Oluştur"
+        title={t("kokpit.newAction")}
         hideHeader
       >
         {selectedProje && (
@@ -561,7 +566,7 @@ export default function KokpitPage() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[300px] rounded-2xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-2xl p-5"
             >
-              <h3 className="text-[14px] font-bold text-tyro-text-primary mb-3">Kontrol Tarihini Güncelle</h3>
+              <h3 className="text-[14px] font-bold text-tyro-text-primary mb-3">{t("kokpit.updateReviewDate")}</h3>
               <p className="text-[11px] text-tyro-text-muted mb-3">{selectedProje.name}</p>
               <div className="mb-3">
                 <DatePicker
@@ -579,19 +584,19 @@ export default function KokpitPage() {
                   onClick={() => setReviewPopoverOpen(false)}
                   className="flex-1 h-9 rounded-lg border border-tyro-border text-[12px] font-semibold text-tyro-text-secondary hover:bg-tyro-bg transition-colors cursor-pointer"
                 >
-                  İptal
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     updateProje(selectedProje.id, { reviewDate: reviewDateDraft });
-                    toast.success("Güncellendi", { field: `Kontrol Tarihi: ${reviewDateDraft}` });
+                    toast.success(t("kokpit.reviewDateUpdated"), { field: reviewDateDraft });
                     setReviewPopoverOpen(false);
                   }}
                   className="flex-1 h-9 rounded-lg bg-teal-500 text-white text-[12px] font-semibold hover:bg-teal-600 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                 >
                   <Check size={14} />
-                  Güncelle
+                  {t("common.update")}
                 </button>
               </div>
             </motion.div>
@@ -608,13 +613,13 @@ export default function KokpitPage() {
             const name = selectedProje.name;
             deleteProje(selectedProje.id);
             setSelectedProjeId(null);
-            toast.success("Proje silindi", { field: name });
+            toast.success(t("kokpit.projectDeleted"), { field: name });
           }
           setConfirmOpen(false);
         }}
-        title="Projeyi Sil"
-        message={`"${selectedProje?.name ?? ""}" projesini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`}
-        confirmLabel="Sil"
+        title={t("kokpit.deleteProject")}
+        message={t("kokpit.confirmDeleteMessage", { name: selectedProje?.name ?? "" })}
+        confirmLabel={t("common.delete")}
         variant="danger"
       />
 
@@ -629,6 +634,106 @@ export default function KokpitPage() {
           onApply={(f) => { setAdvFilters(f); setAdvFilterOpen(false); }}
         />
       </Suspense>
+
+      {/* ── Mobile FABs — Yeni + Düzenle ── */}
+      <div className="sm:hidden">
+        {/* New — primary FAB */}
+        <motion.button
+          type="button"
+          onClick={() => { setNewMenuOpen(!newMenuOpen); setEditMenuOpen(false); }}
+          className="fixed bottom-24 right-4 z-20 w-12 h-12 rounded-full backdrop-blur-[16px] backdrop-saturate-[1.4] border border-tyro-gold/30 shadow-[0_4px_24px_rgba(200,146,42,0.3),inset_0_1px_0_rgba(255,255,255,0.5)] flex items-center justify-center cursor-pointer"
+          style={{ background: `radial-gradient(ellipse at 50% 30%, ${brandColor}d9, ${brandColor}a6 70%)` }}
+          whileTap={{ scale: 0.9 }}
+          aria-label={t("common.new")}
+        >
+          <Plus size={22} strokeWidth={2.5} className="text-white" />
+        </motion.button>
+
+        {/* Edit — secondary FAB (only when project selected) */}
+        {selectedProje && (
+          <motion.button
+            type="button"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            onClick={() => { setEditMenuOpen(!editMenuOpen); setNewMenuOpen(false); }}
+            className="fixed bottom-24 right-[72px] z-20 w-11 h-11 rounded-full backdrop-blur-[20px] backdrop-saturate-[1.8] border border-white/40 dark:border-white/15 shadow-[0_4px_20px_rgba(0,0,0,0.1),0_0_32px_rgba(255,255,255,0.08),inset_0_1.5px_0_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.04)] flex items-center justify-center cursor-pointer overflow-hidden"
+            style={{ background: "radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.75), rgba(255,255,255,0.45) 60%, rgba(240,245,250,0.35) 100%)" }}
+            whileTap={{ scale: 0.9 }}
+            aria-label={t("common.edit")}
+          >
+            <Pencil size={15} style={{ color: brandColor }} />
+          </motion.button>
+        )}
+
+        {/* New menu dropdown — anchored above FAB */}
+        <AnimatePresence>
+          {newMenuOpen && (
+            <>
+              <motion.div className="fixed inset-0 z-40" onClick={() => setNewMenuOpen(false)} />
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="fixed bottom-[136px] right-4 z-50 w-[220px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5"
+              >
+                <button
+                  type="button"
+                  onClick={() => { setNewMenuOpen(false); setWizardOpen(true); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                >
+                  <Wand2 size={16} className="text-tyro-gold" />
+                  {t("kokpit.projectWizard")}
+                </button>
+                <div className="h-px bg-tyro-border/20 mx-3" />
+                <button
+                  type="button"
+                  onClick={() => { setNewMenuOpen(false); setAksiyonPanelOpen(true); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                >
+                  <CircleCheckBig size={16} className="text-emerald-500" />
+                  {t("kokpit.newAction")}
+                </button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Edit menu dropdown — anchored above FAB */}
+        <AnimatePresence>
+          {editMenuOpen && selectedProje && (
+            <>
+              <motion.div className="fixed inset-0 z-40" onClick={() => setEditMenuOpen(false)} />
+              <motion.div
+                initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="fixed bottom-[136px] right-4 z-50 w-[240px] rounded-xl bg-white dark:bg-tyro-surface border border-tyro-border/40 shadow-xl overflow-hidden py-1.5"
+              >
+                <button
+                  type="button"
+                  onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                >
+                  <Eye size={16} className="text-tyro-navy" />
+                  {t("kokpit.viewProject")}
+                </button>
+                <div className="h-px bg-tyro-border/20 mx-3" />
+                <button
+                  type="button"
+                  onClick={() => { setEditMenuOpen(false); openHedefPanel(selectedProje, "editing"); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                >
+                  <Pencil size={16} className="text-amber-500" />
+                  {t("kokpit.editProject")}
+                </button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

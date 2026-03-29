@@ -2,32 +2,36 @@ import { describe, it, expect } from "vitest";
 import { progressColor, hexToHSL } from "../colorUtils";
 
 describe("progressColor", () => {
-  it("returns green (#22c55e) for 100%", () => {
-    expect(progressColor(100)).toBe("#22c55e");
+  it("returns emerald (#10b981) for 100%", () => {
+    expect(progressColor(100)).toBe("#10b981");
   });
 
-  it("returns green (#22c55e) for values above 100%", () => {
-    expect(progressColor(150)).toBe("#22c55e");
+  it("returns emerald (#10b981) for values above 100%", () => {
+    expect(progressColor(150)).toBe("#10b981");
   });
 
-  it("returns light green (#4ade80) for 75-99%", () => {
-    expect(progressColor(75)).toBe("#4ade80");
-    expect(progressColor(99)).toBe("#4ade80");
+  it("returns emerald (#10b981) for 76-99%", () => {
+    expect(progressColor(76)).toBe("#10b981");
+    expect(progressColor(99)).toBe("#10b981");
   });
 
-  it("returns yellow (#facc15) for 50-74%", () => {
-    expect(progressColor(50)).toBe("#facc15");
-    expect(progressColor(74)).toBe("#facc15");
+  it("returns yellow (#eab308) for 51-75%", () => {
+    expect(progressColor(51)).toBe("#eab308");
+    expect(progressColor(75)).toBe("#eab308");
   });
 
-  it("returns orange (#fb923c) for 25-49%", () => {
-    expect(progressColor(25)).toBe("#fb923c");
-    expect(progressColor(49)).toBe("#fb923c");
+  it("returns amber (#f59e0b) for 26-50%", () => {
+    expect(progressColor(26)).toBe("#f59e0b");
+    expect(progressColor(50)).toBe("#f59e0b");
   });
 
-  it("returns red (#ef4444) for below 25%", () => {
-    expect(progressColor(0)).toBe("#ef4444");
-    expect(progressColor(24)).toBe("#ef4444");
+  it("returns red (#ef4444) for 1-25%", () => {
+    expect(progressColor(1)).toBe("#ef4444");
+    expect(progressColor(25)).toBe("#ef4444");
+  });
+
+  it("returns slate (#94a3b8) for 0%", () => {
+    expect(progressColor(0)).toBe("#94a3b8");
   });
 
   it("returns red for negative values", () => {

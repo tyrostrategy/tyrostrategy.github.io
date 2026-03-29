@@ -13,8 +13,9 @@ vi.mock("@/lib/i18n", () => ({
 // Mock mock-adapter
 vi.mock("@/lib/data/mock-adapter", () => ({
   getInitialProjeler: () => [],
-  getInitialProjeler: () => [],
-  getInitialGorevler: () => [],
+  getInitialAksiyonlar: () => [],
+  getInitialData: () => ({ projeler: [], aksiyonlar: [] }),
+  getInitialTagDefinitions: () => [],
 }));
 
 beforeEach(() => {

@@ -1,13 +1,19 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useDataStore } from "../dataStore";
+
+// Mock mock-adapter
+vi.mock("@/lib/data/mock-adapter", () => ({
+  getInitialProjeler: () => [],
+  getInitialAksiyonlar: () => [],
+  getInitialData: () => ({ projeler: [], aksiyonlar: [] }),
+  getInitialTagDefinitions: () => [],
+}));
 
 // Reset the store before each test to avoid shared state
 beforeEach(() => {
-  // Clear all items for a clean slate
   useDataStore.setState({
     projeler: [],
-    projeler: [],
-    gorevler: [],
+    aksiyonlar: [],
   });
 });
 
@@ -17,7 +23,10 @@ describe("Proje CRUD", () => {
       name: "Test Proje",
       source: "Kurumsal",
       status: "On Track",
-      leader: "Test Leader",
+      owner: "Test Owner",
+      participants: ["Test Owner"],
+      department: "IT",
+      progress: 0,
       startDate: "2024-01-01",
       endDate: "2024-12-31",
     });
@@ -26,7 +35,7 @@ describe("Proje CRUD", () => {
     expect(projeler).toHaveLength(1);
     expect(projeler[0].name).toBe("Test Proje");
     expect(projeler[0].id).toBeTruthy();
-    expect(projeler[0].id).toMatch(/^gen-/);
+    expect(projeler[0].id).toMatch(/^P\d{2}-\d{4}$/);
   });
 
   it("updateProje updates an existing proje", () => {
@@ -34,7 +43,10 @@ describe("Proje CRUD", () => {
       name: "Original",
       source: "Türkiye",
       status: "Not Started",
-      leader: "Leader",
+      owner: "Owner",
+      participants: ["Owner"],
+      department: "IT",
+      progress: 0,
       startDate: "2024-01-01",
       endDate: "2024-06-30",
     });
@@ -45,15 +57,18 @@ describe("Proje CRUD", () => {
     const updated = useDataStore.getState().projeler[0];
     expect(updated.name).toBe("Updated");
     expect(updated.status).toBe("Achieved");
-    expect(updated.leader).toBe("Leader"); // unchanged field
+    expect(updated.owner).toBe("Owner"); // unchanged field
   });
 
-  it("deleteProje removes a proje by id", () => {
+  it("deleteProje removes a proje by id (when no child aksiyonlar)", () => {
     useDataStore.getState().addProje({
       name: "To Delete",
       source: "International",
       status: "Behind",
-      leader: "Leader",
+      owner: "Owner",
+      participants: ["Owner"],
+      department: "IT",
+      progress: 0,
       startDate: "2024-01-01",
       endDate: "2024-06-30",
     });
@@ -65,190 +80,107 @@ describe("Proje CRUD", () => {
     expect(useDataStore.getState().projeler).toHaveLength(0);
   });
 
-  it("getHedefById returns the correct proje", () => {
+  it("getProjeById returns the correct proje", () => {
     useDataStore.getState().addProje({
       name: "Find Me",
       source: "Kurumsal",
       status: "On Track",
-      leader: "Leader",
+      owner: "Owner",
+      participants: ["Owner"],
+      department: "IT",
+      progress: 0,
       startDate: "2024-01-01",
       endDate: "2024-12-31",
     });
 
     const id = useDataStore.getState().projeler[0].id;
-    const found = useDataStore.getState().getHedefById(id);
+    const found = useDataStore.getState().getProjeById(id);
     expect(found).toBeDefined();
     expect(found!.name).toBe("Find Me");
   });
 
-  it("getHedefById returns undefined for nonexistent id", () => {
-    expect(useDataStore.getState().getHedefById("nonexistent")).toBeUndefined();
+  it("getProjeById returns undefined for nonexistent id", () => {
+    expect(useDataStore.getState().getProjeById("nonexistent")).toBeUndefined();
   });
 });
 
-describe("Proje CRUD", () => {
-  it("addProje adds a new proje with generated id", () => {
-    useDataStore.getState().addProje({
-      projeId: "h1",
-      name: "Test Proje",
-      department: "IT",
-      projectLeader: "Leader",
-      participants: ["Leader"],
-      startDate: "2024-01-01",
-      endDate: "2024-06-30",
-      status: "On Track",
-      progress: 50,
-    });
-
-    const projeler = useDataStore.getState().projeler;
-    expect(projeler).toHaveLength(1);
-    expect(projeler[0].name).toBe("Test Proje");
-    expect(projeler[0].id).toMatch(/^gen-/);
-    expect(projeler[0].projeId).toBe("h1");
-  });
-
-  it("updateProje updates an existing proje", () => {
-    useDataStore.getState().addProje({
-      projeId: "h1",
-      name: "Original Proje",
-      department: "HR",
-      projectLeader: "Leader",
-      participants: [],
-      startDate: "2024-01-01",
-      endDate: "2024-06-30",
-      status: "Not Started",
-      progress: 0,
-    });
-
-    const id = useDataStore.getState().projeler[0].id;
-    useDataStore.getState().updateProje(id, { progress: 75, status: "On Track" });
-
-    const updated = useDataStore.getState().projeler[0];
-    expect(updated.progress).toBe(75);
-    expect(updated.status).toBe("On Track");
-    expect(updated.name).toBe("Original Proje");
-  });
-
-  it("deleteProje removes a proje by id", () => {
-    useDataStore.getState().addProje({
-      projeId: "h1",
-      name: "To Delete",
-      department: "IT",
-      projectLeader: "Leader",
-      participants: [],
-      startDate: "2024-01-01",
-      endDate: "2024-06-30",
-      status: "On Track",
-      progress: 0,
-    });
-
-    const id = useDataStore.getState().projeler[0].id;
-    useDataStore.getState().deleteProje(id);
-    expect(useDataStore.getState().projeler).toHaveLength(0);
-  });
-
-  it("getProjelerByHedefId returns matching projeler", () => {
-    useDataStore.getState().addProje({
-      projeId: "h1",
-      name: "Proje A",
-      department: "IT",
-      projectLeader: "Leader",
-      participants: [],
-      startDate: "2024-01-01",
-      endDate: "2024-06-30",
-      status: "On Track",
-      progress: 0,
-    });
-    useDataStore.getState().addProje({
-      projeId: "h2",
-      name: "Proje B",
-      department: "HR",
-      projectLeader: "Leader",
-      participants: [],
-      startDate: "2024-01-01",
-      endDate: "2024-06-30",
-      status: "On Track",
-      progress: 0,
-    });
-
-    const result = useDataStore.getState().getProjelerByHedefId("h1");
-    expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("Proje A");
-  });
-});
-
-describe("Gorev CRUD", () => {
-  it("addGorev adds a new gorev with generated id", () => {
-    useDataStore.getState().addGorev({
+describe("Aksiyon CRUD", () => {
+  it("addAksiyon adds a new aksiyon with generated id", () => {
+    useDataStore.getState().addAksiyon({
       projeId: "p1",
-      name: "Test Gorev",
+      name: "Test Aksiyon",
+      owner: "Worker",
       progress: 0,
       status: "Not Started",
       startDate: "2024-01-01",
       endDate: "2024-03-31",
     });
 
-    const gorevler = useDataStore.getState().gorevler;
-    expect(gorevler).toHaveLength(1);
-    expect(gorevler[0].name).toBe("Test Gorev");
-    expect(gorevler[0].id).toMatch(/^gen-/);
-    expect(gorevler[0].projeId).toBe("p1");
+    const aksiyonlar = useDataStore.getState().aksiyonlar;
+    expect(aksiyonlar).toHaveLength(1);
+    expect(aksiyonlar[0].name).toBe("Test Aksiyon");
+    expect(aksiyonlar[0].id).toMatch(/^A\d{2}-\d{4}$/);
+    expect(aksiyonlar[0].projeId).toBe("p1");
   });
 
-  it("updateGorev updates an existing gorev", () => {
-    useDataStore.getState().addGorev({
+  it("updateAksiyon updates an existing aksiyon", () => {
+    useDataStore.getState().addAksiyon({
       projeId: "p1",
-      name: "Original Gorev",
+      name: "Original Aksiyon",
+      owner: "Worker",
       progress: 0,
       status: "Not Started",
       startDate: "2024-01-01",
       endDate: "2024-03-31",
     });
 
-    const id = useDataStore.getState().gorevler[0].id;
-    useDataStore.getState().updateGorev(id, { progress: 100, status: "Achieved" });
+    const id = useDataStore.getState().aksiyonlar[0].id;
+    useDataStore.getState().updateAksiyon(id, { progress: 100, status: "Achieved" });
 
-    const updated = useDataStore.getState().gorevler[0];
+    const updated = useDataStore.getState().aksiyonlar[0];
     expect(updated.progress).toBe(100);
     expect(updated.status).toBe("Achieved");
-    expect(updated.name).toBe("Original Gorev");
+    expect(updated.name).toBe("Original Aksiyon");
   });
 
-  it("deleteGorev removes a gorev by id", () => {
-    useDataStore.getState().addGorev({
+  it("deleteAksiyon removes an aksiyon by id", () => {
+    useDataStore.getState().addAksiyon({
       projeId: "p1",
       name: "To Delete",
+      owner: "Worker",
       progress: 0,
       status: "Not Started",
       startDate: "2024-01-01",
       endDate: "2024-03-31",
     });
 
-    const id = useDataStore.getState().gorevler[0].id;
-    useDataStore.getState().deleteGorev(id);
-    expect(useDataStore.getState().gorevler).toHaveLength(0);
+    const id = useDataStore.getState().aksiyonlar[0].id;
+    useDataStore.getState().deleteAksiyon(id);
+    expect(useDataStore.getState().aksiyonlar).toHaveLength(0);
   });
 
-  it("getGorevlerByProjeId returns matching gorevler", () => {
-    useDataStore.getState().addGorev({
+  it("getAksiyonlarByHedefId returns matching aksiyonlar", () => {
+    useDataStore.getState().addAksiyon({
       projeId: "p1",
-      name: "Gorev A",
+      name: "Aksiyon A",
+      owner: "Worker",
       progress: 0,
       status: "Not Started",
       startDate: "2024-01-01",
       endDate: "2024-03-31",
     });
-    useDataStore.getState().addGorev({
+    useDataStore.getState().addAksiyon({
       projeId: "p2",
-      name: "Gorev B",
+      name: "Aksiyon B",
+      owner: "Worker",
       progress: 50,
       status: "On Track",
       startDate: "2024-01-01",
       endDate: "2024-03-31",
     });
 
-    const result = useDataStore.getState().getGorevlerByProjeId("p1");
+    const result = useDataStore.getState().getAksiyonlarByHedefId("p1");
     expect(result).toHaveLength(1);
-    expect(result[0].name).toBe("Gorev A");
+    expect(result[0].name).toBe("Aksiyon A");
   });
 });

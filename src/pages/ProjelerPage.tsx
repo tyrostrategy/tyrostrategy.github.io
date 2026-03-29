@@ -309,96 +309,104 @@ export default function ProjelerPage() {
           onValueChange={(v) => { setSearch(v); setPage(1); }}
         />
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={view === "list" ? <LayoutList size={14} /> : <Kanban size={14} />} endContent={<ChevronDown size={14} />}>
-                <span className="hidden sm:inline">{t("common.view")}</span>
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              selectionMode="single"
-              selectedKeys={new Set([view])}
-              onSelectionChange={(keys) => setView(Array.from(keys)[0] as ViewTab)}
-            >
-              <DropdownItem key="list" startContent={<LayoutList size={14} />}>{t("common.list")}</DropdownItem>
-              <DropdownItem key="kanban" startContent={<Kanban size={14} />}>{t("common.kanban")}</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={<CircleDot size={14} />} endContent={<ChevronDown size={14} />}>
-                <span className="hidden sm:inline">{t("common.status")}</span>
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              selectionMode="single"
-              selectedKeys={new Set([statusFilter])}
-              onSelectionChange={(keys) => { const v = Array.from(keys)[0] as string; setStatusFilter(v); setPage(1); }}
-            >
-              <DropdownItem key="all">{t("common.all")}</DropdownItem>
-              <DropdownItem key="On Track">{t("status.onTrack")}</DropdownItem>
-              <DropdownItem key="Achieved">{t("status.achieved")}</DropdownItem>
-              <DropdownItem key="Behind">{t("status.behind")}</DropdownItem>
-              <DropdownItem key="At Risk">{t("status.atRisk")}</DropdownItem>
-              <DropdownItem key="Not Started">{t("status.notStarted")}</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          {allTags.length > 0 && (() => {
-            const activeColor = tagFilter !== "all" ? getTagColor(tagFilter) : undefined;
-            return (
+          <div className="hidden sm:block">
             <Dropdown>
               <DropdownTrigger>
-                <Button size="sm" variant="flat" startContent={<Tag size={14} />} endContent={<ChevronDown size={14} />}
-                  style={activeColor ? { backgroundColor: `${activeColor}18`, color: activeColor, borderColor: `${activeColor}40` } : undefined}
-                  className={activeColor ? "border" : ""}
-                >
-                  <span className="hidden sm:inline">{tagFilter === "all" ? t("forms.objective.tags", "Etiketler") : tagFilter}</span>
+                <Button size="sm" variant="flat" startContent={view === "list" ? <LayoutList size={14} /> : <Kanban size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("common.view")}
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 disallowEmptySelection
                 selectionMode="single"
-                selectedKeys={new Set([tagFilter])}
-                onSelectionChange={(keys) => { const v = Array.from(keys)[0] as string; setTagFilter(v); setPage(1); }}
-                className="max-h-[300px] overflow-y-auto"
+                selectedKeys={new Set([view])}
+                onSelectionChange={(keys) => setView(Array.from(keys)[0] as ViewTab)}
               >
-                {[
-                  <DropdownItem key="all">{t("common.all")}</DropdownItem>,
-                  ...allTags.map((tag) => (
-                    <DropdownItem key={tag}>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: getTagColor(tag) }} />
-                        <span>{tag}</span>
-                      </div>
-                    </DropdownItem>
-                  )),
-                ]}
+                <DropdownItem key="list" startContent={<LayoutList size={14} />}>{t("common.list")}</DropdownItem>
+                <DropdownItem key="kanban" startContent={<Kanban size={14} />}>{t("common.kanban")}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
+          </div>
+          <div className="hidden sm:block">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={<CircleDot size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("common.status")}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                selectionMode="single"
+                selectedKeys={new Set([statusFilter])}
+                onSelectionChange={(keys) => { const v = Array.from(keys)[0] as string; setStatusFilter(v); setPage(1); }}
+              >
+                <DropdownItem key="all">{t("common.all")}</DropdownItem>
+                <DropdownItem key="On Track">{t("status.onTrack")}</DropdownItem>
+                <DropdownItem key="Achieved">{t("status.achieved")}</DropdownItem>
+                <DropdownItem key="Behind">{t("status.behind")}</DropdownItem>
+                <DropdownItem key="At Risk">{t("status.atRisk")}</DropdownItem>
+                <DropdownItem key="Not Started">{t("status.notStarted")}</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+          {allTags.length > 0 && (() => {
+            const activeColor = tagFilter !== "all" ? getTagColor(tagFilter) : undefined;
+            return (
+            <div className="hidden sm:block">
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button size="sm" variant="flat" startContent={<Tag size={14} />} endContent={<ChevronDown size={14} />}
+                    style={activeColor ? { backgroundColor: `${activeColor}18`, color: activeColor, borderColor: `${activeColor}40` } : undefined}
+                    className={activeColor ? "border" : ""}
+                  >
+                    {tagFilter === "all" ? t("forms.objective.tags", "Etiketler") : tagFilter}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  disallowEmptySelection
+                  selectionMode="single"
+                  selectedKeys={new Set([tagFilter])}
+                  onSelectionChange={(keys) => { const v = Array.from(keys)[0] as string; setTagFilter(v); setPage(1); }}
+                  className="max-h-[300px] overflow-y-auto"
+                >
+                  {[
+                    <DropdownItem key="all">{t("common.all")}</DropdownItem>,
+                    ...allTags.map((tag) => (
+                      <DropdownItem key={tag}>
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: getTagColor(tag) }} />
+                          <span>{tag}</span>
+                        </div>
+                      </DropdownItem>
+                    )),
+                  ]}
+                </DropdownMenu>
+              </Dropdown>
+            </div>
             );
           })()}
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={<Columns3 size={14} />} endContent={<ChevronDown size={14} />}>
-                <span className="hidden sm:inline">{t("common.columns")}</span>
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              closeOnSelect={false}
-              selectionMode="multiple"
-              selectedKeys={visibleColumns}
-              onSelectionChange={(keys) => setVisibleColumns(keys as unknown as Set<string>)}
-            >
-              {columns.map((col) => (
-                <DropdownItem key={col.uid} className="capitalize">
-                  {col.name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+          <div className="hidden sm:block">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={<Columns3 size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("common.columns")}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                closeOnSelect={false}
+                selectionMode="multiple"
+                selectedKeys={visibleColumns}
+                onSelectionChange={(keys) => setVisibleColumns(keys as unknown as Set<string>)}
+              >
+                {columns.map((col) => (
+                  <DropdownItem key={col.uid} className="capitalize">
+                    {col.name}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </div>
           {canCreateProje && <CreateButton onPress={openCreate} />}
         </div>
       </div>
@@ -444,7 +452,7 @@ export default function ProjelerPage() {
         {/* Desktop table */}
         <div className="hidden sm:block">
         <Table
-          aria-label="Hedefler tablosu"
+          aria-label={t("table.objectivesTable")}
           isHeaderSticky
           topContent={topContent}
           topContentPlacement="outside"

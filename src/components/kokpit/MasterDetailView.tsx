@@ -36,6 +36,7 @@ const STATUS_BAR: Record<EntityStatus, string> = {
 
 // ===== QUICK PROGRESS STEPS =====
 const PROGRESS_STEPS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const PROGRESS_STEPS_MOBILE = [0, 15, 25, 50, 75, 100];
 
 const STATUS_HEX: Record<string, string> = {
   "On Track": "#10b981",
@@ -162,30 +163,39 @@ function QuickProgressButtons({
   onChange: (val: number) => void;
   statusColor?: string;
 }) {
+  const renderBtn = (step: number) => {
+    const isExact = current === step || (step === 100 && current >= 100);
+    const isPassed = current > step;
+    return (
+      <button
+        key={step}
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onChange(step); }}
+        className={`relative min-w-[30px] h-[22px] px-1 rounded-md text-[11px] font-bold tabular-nums cursor-pointer transition-all ${
+          isExact
+            ? "text-white shadow-sm scale-110"
+            : isPassed
+              ? "text-white/70"
+              : "bg-tyro-bg text-tyro-text-muted hover:bg-tyro-border/20"
+        }`}
+        style={isExact || isPassed ? { backgroundColor: isExact ? statusColor : `${statusColor}60` } : undefined}
+      >
+        {step}%
+      </button>
+    );
+  };
+
   return (
-    <div className="flex items-center gap-[3px]">
-      {PROGRESS_STEPS.map((step) => {
-        const isExact = current === step || (step === 100 && current >= 100);
-        const isPassed = current > step;
-        return (
-          <button
-            key={step}
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onChange(step); }}
-            className={`relative min-w-[28px] h-[22px] rounded-md text-[11px] font-bold tabular-nums cursor-pointer transition-all ${
-              isExact
-                ? "text-white shadow-sm scale-110"
-                : isPassed
-                  ? "text-white/70"
-                  : "bg-tyro-bg text-tyro-text-muted hover:bg-tyro-border/20"
-            }`}
-            style={isExact || isPassed ? { backgroundColor: isExact ? statusColor : `${statusColor}60` } : undefined}
-          >
-            {step}%
-          </button>
-        );
-      })}
-    </div>
+    <>
+      {/* Mobile: 5 steps */}
+      <div className="flex sm:hidden items-center gap-[3px]">
+        {PROGRESS_STEPS_MOBILE.map(renderBtn)}
+      </div>
+      {/* Desktop: 11 steps */}
+      <div className="hidden sm:flex items-center gap-[3px] flex-wrap">
+        {PROGRESS_STEPS.map(renderBtn)}
+      </div>
+    </>
   );
 }
 
@@ -264,8 +274,8 @@ function DetailPanel({
     toast.success(t("kokpit.actionUpdated"), {
       message: aksName,
       details: [
-        { label: "İlerleme", value: `%${progress}` },
-        { label: "Durum", value: statusLabel },
+        { label: t("common.progress"), value: `%${progress}` },
+        { label: t("common.status"), value: statusLabel },
       ],
     });
   };
@@ -276,69 +286,96 @@ function DetailPanel({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="flex flex-col gap-3 h-full px-5 py-4 overflow-hidden"
+      className="flex flex-col gap-3 h-full px-3 sm:px-5 py-3 sm:py-4 overflow-hidden"
     >
-      {/* === HERO SECTION — sol: bilgi, sağ: circular progress === */}
+      {/* === HERO SECTION === */}
       {(() => {
         const p = proje.progress;
         const stColor = STATUS_HEX[proje.status] ?? "#94a3b8";
         const r = 32; const c = 2 * Math.PI * r;
         const dash = (p / 100) * c;
         return (
-      <div className="flex items-start gap-4">
-        {/* Sol: proje bilgileri */}
-        <div className="flex-1 min-w-0">
-          <h2 className="text-[20px] font-bold text-tyro-text-primary leading-snug">
-            {proje.name}
-          </h2>
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-[12px] text-tyro-text-muted tabular-nums">{proje.id}</span>
-            {proje.description && (
-              <>
-                <span className="text-tyro-text-muted">·</span>
-                <p className="text-[12px] text-tyro-text-muted leading-relaxed truncate">{proje.description}</p>
-              </>
-            )}
-          </div>
-          <div className="flex items-center flex-wrap gap-2 mt-1.5">
-            <StatusBadge status={proje.status} />
-            {proje.tags && proje.tags.length > 0 && (
-              <>
-                <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
-                {proje.tags.map((tag) => (
+          <>
+            {/* ── MOBILE layout: title full-width + progress bar ── */}
+            <div className="sm:hidden flex flex-col gap-2">
+              {/* Title + ID */}
+              <div>
+                <h2 className="text-[15px] font-bold text-tyro-text-primary leading-snug">
+                  {proje.name}
+                </h2>
+                <p className="text-[11px] text-tyro-text-muted mt-0.5">
+                  {proje.id}{proje.description ? ` · ${proje.description}` : ""}
+                </p>
+              </div>
+              {/* Status + tags */}
+              <div className="flex items-center flex-wrap gap-1.5">
+                <StatusBadge status={proje.status} />
+                {proje.tags && proje.tags.length > 0 && proje.tags.map((tag) => (
                   <TagChip key={tag} name={tag} size="sm" />
                 ))}
-              </>
-            )}
-          </div>
-        </div>
-        {/* Sağ: circular progress */}
-        <div className="flex flex-col items-center shrink-0">
-          <div className="relative" style={{ width: 80, height: 80 }}>
-            <svg width={80} height={80} viewBox="0 0 80 80" className="-rotate-90">
-              <circle cx={40} cy={40} r={r} fill="none" stroke="#e2e8f0" strokeWidth={5} opacity={0.3} />
-              <circle cx={40} cy={40} r={r} fill="none" stroke={stColor} strokeWidth={5} strokeLinecap="round"
-                strokeDasharray={`${dash} ${c - dash}`} strokeDashoffset={0}
-                style={{ transition: "all 0.8s ease", filter: `drop-shadow(0 0 4px ${stColor}40)` }} />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[16px] font-extrabold tabular-nums text-tyro-text-primary">%{p}</span>
+              </div>
+              {/* Horizontal progress bar */}
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-2 rounded-full overflow-hidden bg-tyro-border/20">
+                  <div className="h-full rounded-full" style={{ width: `${p}%`, backgroundColor: stColor, transition: "width 0.8s ease" }} />
+                </div>
+                <span className="text-[12px] font-extrabold tabular-nums" style={{ color: stColor }}>%{p}</span>
+                <span className="text-[11px] text-tyro-text-muted tabular-nums">{completedCount}/{totalCount}</span>
+              </div>
             </div>
-          </div>
-          <span className="text-[13px] font-bold text-tyro-text-muted mt-1 tabular-nums">{completedCount}/{totalCount}</span>
-        </div>
-      </div>
+
+            {/* ── DESKTOP layout: title left + circular progress right ── */}
+            <div className="hidden sm:flex items-start gap-4">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-[20px] font-bold text-tyro-text-primary leading-snug">
+                  {proje.name}
+                </h2>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[12px] text-tyro-text-muted tabular-nums">{proje.id}</span>
+                  {proje.description && (
+                    <>
+                      <span className="text-tyro-text-muted">·</span>
+                      <p className="text-[12px] text-tyro-text-muted leading-relaxed truncate">{proje.description}</p>
+                    </>
+                  )}
+                </div>
+                <div className="flex items-center flex-wrap gap-2 mt-1.5">
+                  <StatusBadge status={proje.status} />
+                  {proje.tags && proje.tags.length > 0 && (
+                    <>
+                      <span className="w-px h-4 bg-tyro-border/40 rounded-full" />
+                      {proje.tags.map((tag) => <TagChip key={tag} name={tag} size="sm" />)}
+                    </>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col items-center shrink-0">
+                <div className="relative w-[80px] h-[80px]">
+                  <svg width="100%" height="100%" viewBox="0 0 80 80" className="-rotate-90">
+                    <circle cx={40} cy={40} r={r} fill="none" stroke="#e2e8f0" strokeWidth={5} opacity={0.3} />
+                    <circle cx={40} cy={40} r={r} fill="none" stroke={stColor} strokeWidth={5} strokeLinecap="round"
+                      strokeDasharray={`${dash} ${c - dash}`} strokeDashoffset={0}
+                      style={{ transition: "all 0.8s ease", filter: `drop-shadow(0 0 4px ${stColor}40)` }} />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[16px] font-extrabold tabular-nums text-tyro-text-primary">%{p}</span>
+                  </div>
+                </div>
+                <span className="text-[13px] font-bold text-tyro-text-muted mt-1 tabular-nums">{completedCount}/{totalCount}</span>
+              </div>
+            </div>
+          </>
         );
       })()}
 
       {/* === INFO GRID — 4 column expandable === */}
       <div className="rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/30 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         {/* Always visible: 4 dates */}
-        <div className="grid grid-cols-4 divide-x divide-tyro-border/40">
+        <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-tyro-border/40">
           <InfoCell icon={<Calendar size={12} />} label={t("common.startDate")} value={formatDate(proje.startDate)} />
           <InfoCell icon={<Calendar size={12} />} label={t("common.endDate")} value={formatDate(proje.endDate)} />
-          <InfoCell icon={<Clock size={12} />} label="Kontrol" value={proje.reviewDate ? formatDate(proje.reviewDate) : "—"} />
-          <InfoCell icon={<Calendar size={12} />} label="Oluşturulma" value={proje.createdAt ? formatDate(proje.createdAt) : "—"} />
+          <InfoCell icon={<Clock size={12} />} label={t("kokpit.control")} value={proje.reviewDate ? formatDate(proje.reviewDate) : "—"} className="border-t sm:border-t-0 border-tyro-border/40" />
+          <InfoCell icon={<Calendar size={12} />} label={t("common.createdAt")} value={proje.createdAt ? formatDate(proje.createdAt) : "—"} className="border-t sm:border-t-0 border-tyro-border/40" />
         </div>
         {/* Expandable rows */}
         <AnimatePresence>
@@ -351,16 +388,16 @@ function DetailPanel({
               className="overflow-hidden"
             >
               {/* Row 2: kaynak, departman, sahip, katılımcılar */}
-              <div className="border-t border-tyro-border/15 grid grid-cols-4 divide-x divide-tyro-border/40">
+              <div className="border-t border-tyro-border/15 grid grid-cols-2 sm:grid-cols-4 divide-x divide-tyro-border/40">
                 <InfoCell icon={<Globe size={12} />} label={t("common.source")} value={proje.source} />
-                <InfoCell icon={<Building2 size={12} />} label="Departman" value={proje.department} />
-                <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={proje.owner} />
-                <InfoCell label="Katılımcılar" value={proje.participants?.join(", ") || "—"} />
+                <InfoCell icon={<Building2 size={12} />} label={t("common.department")} value={proje.department} />
+                <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={proje.owner} className="border-t sm:border-t-0 border-tyro-border/40" />
+                <InfoCell label={t("common.participants")} value={proje.participants?.join(", ") || "—"} className="border-t sm:border-t-0 border-tyro-border/40" />
               </div>
               {/* Row 3: Ana proje (sadece varsa) — tek satır birleşik */}
               {parentHedef && (
                 <div className="border-t border-tyro-border/15 px-3 py-2.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">Ana Proje</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-1">{t("kokpit.parentProject")}</span>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[11px] text-tyro-text-muted tabular-nums">{parentHedef.id}</span>
                     <span className="text-[11px] font-medium text-tyro-text-primary truncate flex-1">{parentHedef.name}</span>
@@ -377,7 +414,7 @@ function DetailPanel({
           onClick={() => setInfoExpanded((v) => !v)}
           className="w-full flex items-center justify-center gap-1.5 py-1.5 border-t border-tyro-border/15 text-tyro-text-muted hover:text-tyro-gold hover:bg-tyro-gold/5 transition-colors cursor-pointer"
         >
-          <span className="text-[11px] font-semibold">{infoExpanded ? "Daha az" : "Detaylar"}</span>
+          <span className="text-[11px] font-semibold">{infoExpanded ? t("common.showLess") : t("kokpit.details")}</span>
           <ChevronDown size={13} className={`transition-transform duration-200 ${infoExpanded ? "rotate-180" : ""}`} />
         </button>
       </div>
@@ -419,14 +456,14 @@ function DetailPanel({
 }
 
 // Small info cell
-function InfoCell({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function InfoCell({ icon, label, value, className }: { icon?: React.ReactNode; label: string; value: string; className?: string }) {
   return (
-    <div className="px-3 py-2.5">
+    <div className={`px-2 py-2 sm:px-3 sm:py-2.5 ${className ?? ""}`}>
       <div className="flex items-center gap-1 mb-0.5">
         <span className="text-tyro-text-muted">{icon}</span>
-        <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted">{label}</span>
+        <span className="text-[9px] sm:text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted">{label}</span>
       </div>
-      <p className="text-[12px] font-medium text-tyro-text-primary truncate">{value || "-"}</p>
+      <p className="text-[11px] sm:text-[12px] font-medium text-tyro-text-primary truncate">{value || "-"}</p>
     </div>
   );
 }
@@ -471,7 +508,7 @@ function AksiyonRow({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
-                className="w-6 h-6 rounded-lg flex items-center justify-center text-tyro-text-muted hover:text-tyro-navy hover:bg-tyro-navy/5 cursor-pointer opacity-0 group-hover/row:opacity-100 transition-all shrink-0"
+                className="w-6 h-6 rounded-lg flex items-center justify-center text-tyro-text-muted hover:text-tyro-navy hover:bg-tyro-navy/5 cursor-pointer sm:opacity-0 sm:group-hover/row:opacity-100 transition-all shrink-0"
               >
                 <Pencil size={12} />
               </button>
@@ -492,17 +529,19 @@ function AksiyonRow({
         const p = aksiyon.progress;
         const statusColor = STATUS_HEX[aksiyon.status] ?? "#94a3b8";
         return (
-          <div className="flex items-center gap-3 ml-7">
-            {canEdit && <QuickProgressButtons current={p} onChange={onQuickProgress} statusColor={statusColor} />}
-            <div className="flex-1 h-2 rounded-full bg-tyro-border/15 overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{ width: `${p}%`, backgroundColor: statusColor, transition: "width 500ms ease" }}
-              />
+          <div className="flex flex-col gap-1.5 ml-7">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-2 rounded-full bg-tyro-border/15 overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${p}%`, backgroundColor: statusColor, transition: "width 500ms ease" }}
+                />
+              </div>
+              <span className="text-[11px] font-bold tabular-nums shrink-0" style={{ color: statusColor }}>
+                %{p}
+              </span>
             </div>
-            <span className="text-[11px] font-bold tabular-nums shrink-0" style={{ color: statusColor }}>
-              %{p}
-            </span>
+            {canEdit && <QuickProgressButtons current={p} onChange={onQuickProgress} statusColor={statusColor} />}
           </div>
         );
       })()}
@@ -798,7 +837,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
                       </div>
                       <div className="text-left min-w-0">
                         <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">Kontrol Tarihi</p>
-                        <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Tarihi güncelle</p>
+                        <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">{t("kokpit.updateReviewDate")}</p>
                       </div>
                     </button>
                   </PopoverTrigger>
@@ -843,8 +882,8 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
                     <Pencil size={15} className="text-white" />
                   </div>
                   <div className="text-left min-w-0">
-                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">Düzenle</p>
-                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Proje bilgilerini düzenle</p>
+                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">{t("common.edit")}</p>
+                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">{t("kokpit.editProjectInfo")}</p>
                   </div>
                 </button>
                 <div className="h-px bg-tyro-border/15 mx-4" />
@@ -871,8 +910,8 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
                     <Trash2 size={15} className="text-white" />
                   </div>
                   <div className="text-left min-w-0">
-                    <p className="text-[13px] font-semibold text-red-600 leading-tight">Sil</p>
-                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Hedefi kalıcı olarak sil</p>
+                    <p className="text-[13px] font-semibold text-red-600 leading-tight">{t("common.delete")}</p>
+                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">{t("kokpit.deleteProjectPermanently")}</p>
                   </div>
                 </button>
               </motion.div>
@@ -888,7 +927,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
           <MoreVertical size={18} />
-          <span className="hidden lg:inline text-[12px] font-semibold">Düzenle</span>
+          <span className="hidden lg:inline text-[12px] font-semibold">{t("common.edit")}</span>
         </motion.button>
       </div>
       )}
@@ -923,8 +962,8 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
                     <Crosshair size={15} className="text-white" />
                   </div>
                   <div className="text-left min-w-0">
-                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">Proje Sihirbazı</p>
-                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Adım adım proje oluştur</p>
+                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">{t("kokpit.projectWizard")}</p>
+                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">{t("kokpit.projectWizardDesc")}</p>
                   </div>
                 </button>
                 <div className="h-px bg-tyro-border/15 mx-4" />
@@ -937,8 +976,8 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
                     <CircleCheckBig size={15} className="text-white" />
                   </div>
                   <div className="text-left min-w-0">
-                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">Yeni Aksiyon</p>
-                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">Hedefe aksiyon ekle</p>
+                    <p className="text-[13px] font-semibold text-tyro-text-primary leading-tight">{t("kokpit.newAction")}</p>
+                    <p className="text-[11px] text-tyro-text-muted leading-tight mt-0.5">{t("kokpit.newActionDesc")}</p>
                   </div>
                 </button>
               </motion.div>
@@ -965,7 +1004,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
       <SlidingPanel
         isOpen={aksiyonPanelOpen}
         onClose={() => setAksiyonPanelOpen(false)}
-        title="Yeni Aksiyon Oluştur"
+        title={t("kokpit.createNewAction")}
         hideHeader
       >
         {selectedProje && (
@@ -981,7 +1020,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
       <SlidingPanel
         isOpen={projePanelOpen}
         onClose={() => setHedefPanelOpen(false)}
-        title="Proje Kartını Düzenle"
+        title={t("kokpit.editProjectCard")}
         hideHeader
       >
         {selectedProje && (
@@ -997,7 +1036,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
       <SlidingPanel
         isOpen={!!viewingAksiyon}
         onClose={() => setViewingAksiyon(null)}
-        title="Aksiyon Detayı"
+        title={t("kokpit.actionDetail")}
         hideHeader
       >
         {viewingAksiyon && (
@@ -1021,7 +1060,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
       <SlidingPanel
         isOpen={!!editingAksiyon}
         onClose={() => setEditingAksiyon(null)}
-        title="Aksiyonu Düzenle"
+        title={t("kokpit.editActionTitle")}
         hideHeader
       >
         {editingAksiyon && (

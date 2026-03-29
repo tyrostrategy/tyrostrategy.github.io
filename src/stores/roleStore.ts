@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type { UserRole, RolePermissions } from "@/types";
 import { isSupabaseMode } from "@/hooks/useSupabaseData";
+import { toast } from "@/stores/toastStore";
+import i18n from "@/lib/i18n";
 
 // ===== Varsayılan Rol Yetkileri =====
 
@@ -112,7 +114,10 @@ export const useRoleStore = create<RoleStore>((set, get) => ({
       if (isSupabaseMode) {
         import("@/lib/data/supabaseAdapter").then((m) =>
           m.supabaseAdapter.upsertRolePermissions(role, perms as unknown as Record<string, unknown>)
-        ).catch(() => {});
+        ).catch((err) => {
+          console.error("[Supabase] upsertRolePermissions failed:", err);
+          toast.error(i18n.t("toast.syncFailed"));
+        });
       }
       return { permissions: next };
     });
@@ -133,7 +138,7 @@ if (isSupabaseMode) {
         const updates: Record<string, RolePermissions> = {};
         for (const row of rows) {
           if (row.role in current) {
-            updates[row.role] = { ...(current as any)[row.role], ...row.permissions } as RolePermissions;
+            updates[row.role] = { ...current[row.role as UserRole], ...row.permissions } as RolePermissions;
           }
         }
         if (Object.keys(updates).length > 0) {
@@ -142,5 +147,8 @@ if (isSupabaseMode) {
         }
       }
     })
-  ).catch((err) => console.error("[Supabase] fetchRolePermissions failed:", err));
+  ).catch((err) => {
+    console.error("[Supabase] fetchRolePermissions failed:", err);
+    toast.error(i18n.t("toast.permissionsLoadFailed"));
+  });
 }

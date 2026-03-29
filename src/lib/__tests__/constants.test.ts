@@ -54,9 +54,9 @@ describe("getStatusLabel", () => {
 });
 
 describe("getStatusOptions", () => {
-  it("returns array of 5 status options", () => {
+  it("returns array of 7 status options", () => {
     const options = getStatusOptions(t);
-    expect(options).toHaveLength(5);
+    expect(options).toHaveLength(7);
   });
 
   it("each option has key and label properties", () => {

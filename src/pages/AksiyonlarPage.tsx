@@ -296,28 +296,31 @@ export default function AksiyonlarPage() {
           onValueChange={(v) => { setSearch(v); setPage(1); }}
         />
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={view === "list" ? <LayoutList size={14} /> : <Kanban size={14} />} endContent={<ChevronDown size={14} />}>
-                <span className="hidden sm:inline">{t("common.view")}</span>
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              selectionMode="single"
-              selectedKeys={new Set([view])}
-              onSelectionChange={(keys) => setView(Array.from(keys)[0] as ViewTab)}
-            >
-              <DropdownItem key="list" startContent={<LayoutList size={14} />}>{t("common.list")}</DropdownItem>
-              <DropdownItem key="kanban" startContent={<Kanban size={14} />}>{t("common.kanban")}</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={<CircleDot size={14} />} endContent={<ChevronDown size={14} />}>
-                <span className="hidden sm:inline">{t("common.status")}</span>
-              </Button>
-            </DropdownTrigger>
+          <div className="hidden sm:block">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={view === "list" ? <LayoutList size={14} /> : <Kanban size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("common.view")}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                selectionMode="single"
+                selectedKeys={new Set([view])}
+                onSelectionChange={(keys) => setView(Array.from(keys)[0] as ViewTab)}
+              >
+                <DropdownItem key="list" startContent={<LayoutList size={14} />}>{t("common.list")}</DropdownItem>
+                <DropdownItem key="kanban" startContent={<Kanban size={14} />}>{t("common.kanban")}</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+          <div className="hidden sm:block">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={<CircleDot size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("common.status")}
+                </Button>
+              </DropdownTrigger>
             <DropdownMenu
               disallowEmptySelection
               selectionMode="single"
@@ -331,27 +334,30 @@ export default function AksiyonlarPage() {
               <DropdownItem key="At Risk">{t("status.atRisk")}</DropdownItem>
               <DropdownItem key="Not Started">{t("status.notStarted")}</DropdownItem>
             </DropdownMenu>
-          </Dropdown>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={<Columns3 size={14} />} endContent={<ChevronDown size={14} />}>
-                <span className="hidden sm:inline">{t("common.columns")}</span>
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              closeOnSelect={false}
-              selectionMode="multiple"
-              selectedKeys={visibleColumns}
-              onSelectionChange={(keys) => setVisibleColumns(keys as unknown as Set<string>)}
-            >
-              {columns.map((col) => (
-                <DropdownItem key={col.uid} className="capitalize">
-                  {col.name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+            </Dropdown>
+          </div>
+          <div className="hidden sm:block">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={<Columns3 size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("common.columns")}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                closeOnSelect={false}
+                selectionMode="multiple"
+                selectedKeys={visibleColumns}
+                onSelectionChange={(keys) => setVisibleColumns(keys as unknown as Set<string>)}
+              >
+                {columns.map((col) => (
+                  <DropdownItem key={col.uid} className="capitalize">
+                    {col.name}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </div>
           {canCreateAksiyon && <CreateButton onPress={openCreate} />}
         </div>
       </div>
@@ -401,7 +407,7 @@ export default function AksiyonlarPage() {
         {/* Desktop table */}
         <div className="hidden sm:block">
         <Table
-          aria-label="Aksiyonlar tablosu"
+          aria-label={t("table.actionsTable")}
           isHeaderSticky
           topContent={topContent}
           topContentPlacement="outside"

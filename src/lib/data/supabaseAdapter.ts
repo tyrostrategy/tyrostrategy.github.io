@@ -126,6 +126,27 @@ function dbToTag(row: DbTag): TagDefinition {
   return { id: row.id, name: row.name, color: row.color };
 }
 
+interface DbUser {
+  id: string;
+  email: string;
+  display_name: string;
+  department: string | null;
+  role: string;
+  locale: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DbAppSetting {
+  key: string;
+  value: unknown;
+}
+
+interface DbRolePermission {
+  role: string;
+  permissions: Record<string, unknown>;
+}
+
 // ===== ID Generation =====
 function generateId(prefix: "P" | "A", existingIds: string[]): string {
   const yy = String(new Date().getFullYear()).slice(-2);
@@ -308,7 +329,7 @@ export const supabaseAdapter: DataService = {
     if (!supabase) return [];
     const { data, error } = await supabase.from("users").select("*").order("display_name");
     if (error) { console.error("[Supabase] fetchUsers:", error); return []; }
-    return (data || []).map((row: any) => ({
+    return (data || []).map((row: DbUser) => ({
       id: row.id,
       email: row.email,
       displayName: row.display_name,
@@ -357,7 +378,7 @@ export const supabaseAdapter: DataService = {
     if (!supabase) return [];
     const { data, error } = await supabase.from("app_settings").select("key, value");
     if (error) { console.error("[Supabase] fetchAppSettings:", error); return []; }
-    return (data || []).map((row: any) => ({ key: row.key, value: row.value }));
+    return (data || []).map((row: DbAppSetting) => ({ key: row.key, value: row.value }));
   },
 
   async upsertAppSetting(key: string, value: unknown): Promise<void> {
@@ -372,7 +393,7 @@ export const supabaseAdapter: DataService = {
     if (!supabase) return [];
     const { data, error } = await supabase.from("role_permissions").select("role, permissions");
     if (error) { console.error("[Supabase] fetchRolePermissions:", error); return []; }
-    return (data || []).map((row: any) => ({ role: row.role, permissions: row.permissions }));
+    return (data || []).map((row: DbRolePermission) => ({ role: row.role, permissions: row.permissions }));
   },
 
   async upsertRolePermissions(role: string, permissions: Record<string, unknown>): Promise<void> {

@@ -9,6 +9,8 @@ import {
   TrendingDown, TrendingUp, Trophy, BarChart3, CircleAlert, Target,
   Bookmark, Save,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import i18n from "@/lib/i18n";
 import { useDataStore } from "@/stores/dataStore";
 import { useUIStore } from "@/stores/uiStore";
 import { sidebarThemes } from "@/config/sidebarThemes";
@@ -16,16 +18,6 @@ import { TyroLogo } from "@/components/ui/TyroLogo";
 import type { Proje, Aksiyon, EntityStatus, Source } from "@/types";
 
 // ===== Status helpers =====
-const STATUS_TR: Record<EntityStatus, string> = {
-  "On Track": "Yolunda",
-  "At Risk": "Risk Altında",
-  "Behind": "Gecikmeli",
-  "Achieved": "Tamamlandı",
-  "Not Started": "Başlanmadı",
-  "On Hold": "Askıda",
-  "Cancelled": "İptal",
-};
-
 const STATUS_COLOR: Record<EntityStatus, string> = {
   "On Track": "#10b981",
   "At Risk": "#f59e0b",
@@ -46,31 +38,7 @@ const STATUS_DOT: Record<EntityStatus, typeof Check> = {
   "Cancelled": Ban,
 };
 
-const SOURCES: { id: Source | "all"; label: string; color: string }[] = [
-  { id: "all", label: "Tüm Kaynaklar", color: "" },
-  { id: "Türkiye", label: "Türkiye", color: "#c8922a" },
-  { id: "International", label: "International", color: "#10b981" },
-  { id: "Kurumsal", label: "Kurumsal", color: "#3b82f6" },
-];
-
-const REPORT_SECTIONS = [
-  { id: "cover", label: "Kapak Sayfası", defaultOn: true },
-  { id: "summary", label: "Genel Özet", defaultOn: true },
-  { id: "statusPie", label: "Durum Dağılımı (Pasta)", defaultOn: false },
-  { id: "progressChart", label: "İlerleme Dağılımı", defaultOn: true },
-  { id: "deptTable", label: "Departman Tablosu", defaultOn: true },
-  { id: "attention", label: "Dikkat Gerektiren", defaultOn: true },
-  { id: "details", label: "Proje Detayları", defaultOn: true },
-  { id: "actions", label: "Aksiyon Adımları", defaultOn: true },
-];
-
-const DATE_PRESETS = [
-  { id: "all", label: "Tümü" },
-  { id: "thisMonth", label: "Bu Ay" },
-  { id: "thisQuarter", label: "Bu Çeyrek" },
-  { id: "thisYear", label: "Bu Yıl" },
-  { id: "custom", label: "Özel Aralık" },
-];
+// SOURCES, REPORT_SECTIONS, DATE_PRESETS, STATUS_TR moved inside component for i18n
 
 
 function progressColor(p: number): string {
@@ -90,6 +58,46 @@ function calcProjeProgress(h: Proje, aksiyonlar: Aksiyon[]): number {
 
 // ===== Component =====
 export default function RaporSihirbazi() {
+  const { t } = useTranslation();
+
+  const STATUS_TR: Record<EntityStatus, string> = {
+    "On Track": t("dashboard.statusOnTrack"),
+    "At Risk": t("dashboard.statusAtRisk"),
+    "Behind": t("dashboard.statusBehind"),
+    "Achieved": t("dashboard.statusAchieved"),
+    "Not Started": t("dashboard.statusNotStarted"),
+    "On Hold": t("dashboard.statusOnHold"),
+    "Cancelled": t("dashboard.statusCancelled"),
+  };
+
+  const SOURCES: { id: Source | "all"; label: string; color: string }[] = [
+    { id: "all", label: t("dashboard.allSources"), color: "" },
+    { id: "Türkiye", label: "Türkiye", color: "#c8922a" },
+    { id: "International", label: "International", color: "#10b981" },
+    { id: "Kurumsal", label: "Kurumsal", color: "#3b82f6" },
+  ];
+
+  const REPORT_SECTIONS = [
+    { id: "cover", label: t("dashboard.coverPage"), defaultOn: true },
+    { id: "summary", label: t("dashboard.generalSummary"), defaultOn: true },
+    { id: "statusPie", label: t("dashboard.statusPieChart"), defaultOn: false },
+    { id: "progressChart", label: t("dashboard.progressDistribution"), defaultOn: true },
+    { id: "deptTable", label: t("dashboard.departmentTable"), defaultOn: true },
+    { id: "attention", label: t("dashboard.attentionRequired"), defaultOn: true },
+    { id: "details", label: t("dashboard.projectDetails"), defaultOn: true },
+    { id: "actions", label: t("dashboard.actionSteps"), defaultOn: true },
+  ];
+
+  const DATE_PRESETS = [
+    { id: "all", label: t("dashboard.allPeriod") },
+    { id: "thisMonth", label: t("dashboard.thisMonth") },
+    { id: "thisQuarter", label: t("dashboard.thisQuarter") },
+    { id: "thisYear", label: t("dashboard.thisYear") },
+    { id: "custom", label: t("dashboard.customRange") },
+  ];
+
+  const dateLocale = i18n.language === "en" ? "en-US" : "tr-TR";
+
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const sidebarThemeId = useUIStore((s) => s.sidebarTheme);
@@ -253,7 +261,7 @@ export default function RaporSihirbazi() {
   const deptBreakdown = useMemo(() => {
     const m: Record<string, { total: number; active: number; achieved: number; behind: number; avgProg: number }> = {};
     reportProjeler.forEach((h) => {
-      const d = h.department || "Diğer";
+      const d = h.department || t("dashboard.other");
       if (!m[d]) m[d] = { total: 0, active: 0, achieved: 0, behind: 0, avgProg: 0 };
       m[d].total++;
       m[d].avgProg += calcProjeProgress(h, aksiyonlar);
@@ -291,10 +299,10 @@ export default function RaporSihirbazi() {
   );
 
   // Title based on filters
-  const reportTitle = "Stratejik Proje Durum Raporu";
-  const reportSubtitle = sourceFilter === "all" ? "Tüm Kaynaklar" : sourceFilter;
+  const reportTitle = t("dashboard.strategicProjectReport");
+  const reportSubtitle = sourceFilter === "all" ? t("dashboard.allSources") : sourceFilter;
 
-  const today = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
+  const today = new Date().toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" });
   const sourceConf = SOURCES.find((s) => s.id === sourceFilter)!;
 
   const toggleStatus = (s: EntityStatus) => {
@@ -424,7 +432,7 @@ export default function RaporSihirbazi() {
     }
 
     const html = `<!DOCTYPE html>
-<html lang="tr">
+<html lang="${i18n.language}">
 <head>
 <meta charset="utf-8">
 <title>${reportTitle}</title>
@@ -452,23 +460,23 @@ ${clone.outerHTML}
     const { saveAs } = await import("file-saver");
     const wb = new ExcelJS.Workbook();
     // Sheet 1: Summary
-    const ws1 = wb.addWorksheet("Özet");
-    ws1.addRow(["Stratejik Proje Durum Raporu", sourceFilter === "all" ? "Tüm Kaynaklar" : sourceFilter]);
-    ws1.addRow([`Tarih: ${today}`, `${reportProjeler.length} proje`, `${reportAksiyonlar.length} aksiyon`]);
+    const ws1 = wb.addWorksheet(t("dashboard.summarySheet"));
+    ws1.addRow([t("dashboard.strategicProjectReport"), sourceFilter === "all" ? t("dashboard.allSources") : sourceFilter]);
+    ws1.addRow([`${t("dashboard.date")}: ${today}`, t("dashboard.projectsCount", { count: reportProjeler.length }), t("dashboard.actionsCount", { count: reportAksiyonlar.length })]);
     ws1.addRow([]);
-    ws1.addRow(["Durum", "Sayı"]);
+    ws1.addRow([t("dashboard.statusLabel"), t("dashboard.countLabel")]);
     (Object.keys(STATUS_TR) as EntityStatus[]).forEach((s) => {
       ws1.addRow([STATUS_TR[s], statusSummary[s] || 0]);
     });
-    // Sheet 2: Projeler
-    const ws2 = wb.addWorksheet("Projeler");
-    ws2.addRow(["Proje", "Açıklama", "Lider", "Departman", "Kaynak", "Durum", "İlerleme %", "Başlangıç", "Bitiş"]);
+    // Sheet 2: Projects
+    const ws2 = wb.addWorksheet(t("dashboard.projectsSheet"));
+    ws2.addRow([t("dashboard.projectName"), t("dashboard.descriptionCol"), t("dashboard.leaderCol"), t("dashboard.departmentCol"), t("dashboard.sourceCol"), t("dashboard.statusLabel"), t("dashboard.progressPercent"), t("dashboard.startDateCol"), t("dashboard.endDateCol")]);
     reportProjeler.forEach((h) => {
       ws2.addRow([h.name, h.description || "", h.owner, h.department, h.source, STATUS_TR[h.status], calcProjeProgress(h, aksiyonlar), h.startDate, h.endDate]);
     });
-    // Sheet 3: Aksiyonlar
-    const ws3 = wb.addWorksheet("Aksiyonlar");
-    ws3.addRow(["Aksiyon", "Proje", "Sorumlu", "Durum", "İlerleme %", "Başlangıç", "Bitiş"]);
+    // Sheet 3: Actions
+    const ws3 = wb.addWorksheet(t("dashboard.actionsSheet"));
+    ws3.addRow([t("dashboard.actionName"), t("dashboard.projectName"), t("dashboard.responsibleCol"), t("dashboard.statusLabel"), t("dashboard.progressPercent"), t("dashboard.startDateCol"), t("dashboard.endDateCol")]);
     reportAksiyonlar.forEach((a) => {
       const h = reportProjeler.find((hh) => hh.id === a.projeId);
       ws3.addRow([a.name, h?.name || "", a.owner, STATUS_TR[a.status], a.progress, a.startDate, a.endDate]);
@@ -482,22 +490,22 @@ ${clone.outerHTML}
     const { saveAs } = await import("file-saver");
     const children: (typeof Paragraph.prototype)[] = [];
     children.push(new Paragraph({ text: reportTitle, heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER }));
-    children.push(new Paragraph({ text: `${today} · ${reportProjeler.length} proje · ${reportAksiyonlar.length} aksiyon`, alignment: AlignmentType.CENTER }));
+    children.push(new Paragraph({ text: `${today} · ${t("dashboard.projectsCount", { count: reportProjeler.length })} · ${t("dashboard.actionsCount", { count: reportAksiyonlar.length })}`, alignment: AlignmentType.CENTER }));
     children.push(new Paragraph({ text: "" }));
     // Summary
-    children.push(new Paragraph({ text: "Genel Özet", heading: HeadingLevel.HEADING_1 }));
+    children.push(new Paragraph({ text: t("dashboard.generalSummaryHeading"), heading: HeadingLevel.HEADING_1 }));
     (Object.keys(STATUS_TR) as EntityStatus[]).forEach((s) => {
       if (statusSummary[s]) children.push(new Paragraph({ children: [new TextRun({ text: `${STATUS_TR[s]}: `, bold: true }), new TextRun(`${statusSummary[s]}`)] }));
     });
-    children.push(new Paragraph({ text: `Ortalama İlerleme: %${avgProgress}` }));
+    children.push(new Paragraph({ text: `${t("dashboard.averageProgressLabel")}: %${avgProgress}` }));
     children.push(new Paragraph({ text: "" }));
-    // Proje details
-    children.push(new Paragraph({ text: "Proje Detayları", heading: HeadingLevel.HEADING_1 }));
+    // Project details
+    children.push(new Paragraph({ text: t("dashboard.projectDetailsHeading"), heading: HeadingLevel.HEADING_1 }));
     reportProjeler.forEach((h) => {
       const p = calcProjeProgress(h, aksiyonlar);
       children.push(new Paragraph({ text: h.name, heading: HeadingLevel.HEADING_2 }));
       if (h.description) children.push(new Paragraph({ text: h.description }));
-      children.push(new Paragraph({ children: [new TextRun({ text: `Lider: ${h.owner} · ${h.source} · ${h.department} · %${p} · ${STATUS_TR[h.status]}` })] }));
+      children.push(new Paragraph({ children: [new TextRun({ text: `${t("dashboard.leaderCol")}: ${h.owner} · ${h.source} · ${h.department} · %${p} · ${STATUS_TR[h.status]}` })] }));
       children.push(new Paragraph({ text: "" }));
     });
     const doc = new Document({ sections: [{ children }] });
@@ -512,14 +520,14 @@ ${clone.outerHTML}
     // Cover slide
     const s1 = pptx.addSlide();
     s1.addText(reportTitle, { x: 0.5, y: 1.5, w: 9, h: 1.2, fontSize: 28, bold: true, color: "1e3a5f", align: "center" });
-    s1.addText(`${today} · ${reportProjeler.length} proje · ${reportAksiyonlar.length} aksiyon`, { x: 0.5, y: 2.8, w: 9, fontSize: 14, color: "64748b", align: "center" });
+    s1.addText(`${today} · ${t("dashboard.projectsCount", { count: reportProjeler.length })} · ${t("dashboard.actionsCount", { count: reportAksiyonlar.length })}`, { x: 0.5, y: 2.8, w: 9, fontSize: 14, color: "64748b", align: "center" });
     s1.addText("TYRO Strategy · Powered by TTECH", { x: 0.5, y: 4.5, w: 9, fontSize: 10, color: "94a3b8", align: "center" });
     // Summary slide
     const s2 = pptx.addSlide();
-    s2.addText("Genel Özet", { x: 0.5, y: 0.3, w: 9, fontSize: 22, bold: true, color: "1e3a5f" });
+    s2.addText(t("dashboard.generalSummaryHeading"), { x: 0.5, y: 0.3, w: 9, fontSize: 22, bold: true, color: "1e3a5f" });
     const summaryData = (Object.keys(STATUS_TR) as EntityStatus[]).filter((s) => statusSummary[s]).map((s) => `${STATUS_TR[s]}: ${statusSummary[s]}`).join("  ·  ");
     s2.addText(summaryData, { x: 0.5, y: 1.2, w: 9, fontSize: 14, color: "334155" });
-    s2.addText(`Ortalama İlerleme: %${avgProgress}`, { x: 0.5, y: 2, w: 9, fontSize: 16, bold: true, color: "1e3a5f" });
+    s2.addText(`${t("dashboard.averageProgressLabel")}: %${avgProgress}`, { x: 0.5, y: 2, w: 9, fontSize: 16, bold: true, color: "1e3a5f" });
     // Per-proje slides
     reportProjeler.slice(0, 20).forEach((h) => {
       const p = calcProjeProgress(h, aksiyonlar);
@@ -556,7 +564,7 @@ ${clone.outerHTML}
                 <div className="w-7 h-7 rounded-lg bg-tyro-navy/10 flex items-center justify-center">
                   <SlidersHorizontal size={14} className="text-tyro-navy" />
                 </div>
-                <h2 className="text-[13px] font-bold text-tyro-text-primary">Gelişmiş Filtre</h2>
+                <h2 className="text-[13px] font-bold text-tyro-text-primary">{t("dashboard.advancedFilter")}</h2>
               </div>
               <button onClick={() => setFilterOpen(false)} className="w-7 h-7 rounded-md flex items-center justify-center text-tyro-text-muted hover:bg-tyro-bg cursor-pointer">
                 <X size={16} />
@@ -567,7 +575,7 @@ ${clone.outerHTML}
               {/* Rapor Şablonları */}
               {templates.length > 0 && (
                 <div>
-                  <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">Rapor Şablonu</label>
+                  <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">{t("dashboard.reportTemplate")}</label>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => { setActiveTemplateId(null); }}
@@ -576,7 +584,7 @@ ${clone.outerHTML}
                       }`}
                       style={!activeTemplateId ? { backgroundColor: accentColor } : undefined}
                     >
-                      Özel
+                      {t("dashboard.custom")}
                     </button>
                     {templates.map((tmpl) => (
                       <div key={tmpl.id} className="relative group">
@@ -605,7 +613,7 @@ ${clone.outerHTML}
               <div>
                 <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">
                   <CalendarRange size={12} className="inline mr-1 -mt-0.5" />
-                  Tarih Aralığı
+                  {t("dashboard.dateRange")}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {DATE_PRESETS.map((dp) => (
@@ -634,7 +642,7 @@ ${clone.outerHTML}
 
               {/* Kaynak */}
               <div>
-                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">Kaynak</label>
+                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">{t("dashboard.source")}</label>
                 <div className="flex flex-wrap gap-2">
                   {SOURCES.map((src) => (
                     <button
@@ -655,7 +663,7 @@ ${clone.outerHTML}
 
               {/* Durum */}
               <div>
-                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">Durum</label>
+                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">{t("dashboard.status")}</label>
                 <div className="flex flex-wrap gap-2">
                   {(Object.keys(STATUS_TR) as EntityStatus[]).map((s) => (
                     <button
@@ -675,20 +683,20 @@ ${clone.outerHTML}
                 </div>
                 {statusFilters.size > 0 && (
                   <button onClick={() => setStatusFilters(new Set())} className="text-[10px] text-tyro-text-muted hover:text-tyro-text-secondary mt-1 cursor-pointer">
-                    Tüm durumları göster
+                    {t("dashboard.showAllStatuses")}
                   </button>
                 )}
               </div>
 
               {/* Departman */}
               <div>
-                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">Departman</label>
+                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">{t("dashboard.department")}</label>
                 <select
                   value={deptFilter}
                   onChange={(e) => setDeptFilter(e.target.value)}
                   className="w-full text-[12px] px-3 py-2 rounded-lg border border-tyro-border bg-tyro-bg text-tyro-text-primary"
                 >
-                  <option value="all">Tüm Departmanlar</option>
+                  <option value="all">{t("dashboard.allDepartments")}</option>
                   {allDepartments.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
@@ -696,10 +704,10 @@ ${clone.outerHTML}
               {/* Proje Seçimi */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[11px] font-bold text-tyro-text-secondary uppercase tracking-wider">Projeler ({filteredProjeler.length})</label>
+                  <label className="text-[11px] font-bold text-tyro-text-secondary uppercase tracking-wider">{t("dashboard.projects")} ({filteredProjeler.length})</label>
                   <div className="flex gap-2">
-                    <button onClick={() => setSelectedProjeIds(null)} className="text-[10px] text-tyro-gold font-semibold hover:underline cursor-pointer">Tümünü Seç</button>
-                    <button onClick={() => setSelectedProjeIds(new Set())} className="text-[10px] text-tyro-text-muted hover:underline cursor-pointer">Temizle</button>
+                    <button onClick={() => setSelectedProjeIds(null)} className="text-[10px] text-tyro-gold font-semibold hover:underline cursor-pointer">{t("dashboard.selectAll")}</button>
+                    <button onClick={() => setSelectedProjeIds(new Set())} className="text-[10px] text-tyro-text-muted hover:underline cursor-pointer">{t("common.clear")}</button>
                   </div>
                 </div>
                 <div className="max-h-[165px] overflow-y-auto rounded-lg border border-tyro-border/30 divide-y divide-tyro-border/10">
@@ -724,7 +732,7 @@ ${clone.outerHTML}
 
               {/* Bölümler */}
               <div>
-                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">Rapor Bölümleri</label>
+                <label className="block text-[11px] font-bold text-tyro-text-secondary mb-2 uppercase tracking-wider">{t("dashboard.reportSections")}</label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {REPORT_SECTIONS.map((s) => (
                     <button
@@ -753,7 +761,7 @@ ${clone.outerHTML}
                       className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-tyro-text-secondary border border-tyro-border/50 hover:bg-tyro-bg cursor-pointer transition-colors flex items-center gap-1.5"
                     >
                       <Bookmark size={12} />
-                      Şablon Kaydet
+                      {t("dashboard.saveTemplate")}
                     </button>
                     {activeTemplateId && (
                       <button
@@ -761,7 +769,7 @@ ${clone.outerHTML}
                         className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-tyro-gold border border-tyro-gold/30 hover:bg-tyro-gold/5 cursor-pointer transition-colors flex items-center gap-1.5"
                       >
                         <Save size={12} />
-                        Şablonu Güncelle
+                        {t("dashboard.updateTemplate")}
                       </button>
                     )}
                   </>
@@ -772,7 +780,7 @@ ${clone.outerHTML}
                       value={templateName}
                       onChange={(e) => setTemplateName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && saveNewTemplate()}
-                      placeholder="Şablon adı..."
+                      placeholder={t("dashboard.templateNamePlaceholder")}
                       className="h-8 px-3 rounded-lg text-[12px] border border-tyro-border bg-tyro-bg text-tyro-text-primary w-40 focus:outline-none focus:ring-2 focus:ring-tyro-gold/30"
                       autoFocus
                     />
@@ -781,13 +789,13 @@ ${clone.outerHTML}
                       className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white cursor-pointer"
                       style={{ backgroundColor: accentColor }}
                     >
-                      Kaydet
+                      {t("common.save")}
                     </button>
                     <button
                       onClick={() => { setShowSaveTemplate(false); setTemplateName(""); }}
                       className="px-2 py-1.5 rounded-lg text-[11px] text-tyro-text-muted hover:bg-tyro-bg cursor-pointer"
                     >
-                      İptal
+                      {t("common.cancel")}
                     </button>
                   </div>
                 )}
@@ -799,14 +807,14 @@ ${clone.outerHTML}
                   onClick={() => setFilterOpen(false)}
                   className="px-4 py-2 rounded-lg text-[12px] font-semibold text-tyro-text-secondary hover:bg-tyro-bg cursor-pointer transition-colors"
                 >
-                  Kapat
+                  {t("dashboard.close")}
                 </button>
                 <button
                   onClick={() => { setFilterOpen(false); setReportGenerated(true); }}
                   className="px-5 py-2 rounded-lg text-white text-[12px] font-semibold cursor-pointer transition-all hover:brightness-110"
                   style={{ backgroundColor: theme.accentColor }}
                 >
-                  Raporu Çalıştır
+                  {t("dashboard.runReport")}
                 </button>
               </div>
             </div>
@@ -868,19 +876,18 @@ ${clone.outerHTML}
             </div>
 
             <h2 className="text-[22px] font-extrabold text-white tracking-tight mb-2">
-              Yönetim Raporu Sihirbazı
+              {t("dashboard.reportWizardTitle")}
             </h2>
-            <p className="text-[13px] text-white/60 leading-relaxed mb-8">
-              Stratejik proje ve aksiyonlarınızın executive düzeyinde bir özetini oluşturun.
-              Filtrelerinizi ayarlayıp raporu çalıştırın, PDF olarak dışa aktarın.
+            <p className="text-[13px] text-white/60 leading-relaxed mb-8 whitespace-pre-line">
+              {t("dashboard.reportWizardDesc")}
             </p>
 
             {/* Stats preview */}
             <div className="flex items-center justify-center gap-6 mb-8">
               {[
-                { label: "Proje", value: projeler.length, color: preset.accent },
-                { label: "Aksiyon", value: aksiyonlar.length, color: "#10b981" },
-                { label: "Departman", value: allDepartments.length, color: "#60a5fa" },
+                { label: t("dashboard.project"), value: projeler.length, color: preset.accent },
+                { label: t("dashboard.action"), value: aksiyonlar.length, color: "#10b981" },
+                { label: t("common.department"), value: allDepartments.length, color: "#60a5fa" },
               ].map((s) => (
                 <div key={s.label} className="text-center">
                   <p className="text-[24px] font-extrabold tabular-nums" style={{ color: s.color }}>{s.value}</p>
@@ -896,7 +903,7 @@ ${clone.outerHTML}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/20 text-[13px] font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-all cursor-pointer backdrop-blur-sm"
               >
                 <SlidersHorizontal size={15} />
-                Gelişmiş Filtre
+                {t("dashboard.advancedFilter")}
               </button>
               <button
                 onClick={handleGenerate}
@@ -904,7 +911,7 @@ ${clone.outerHTML}
                 style={{ backgroundColor: preset.accent, boxShadow: `0 8px 24px ${preset.accent}40` }}
               >
                 <Play size={15} />
-                Raporu Çalıştır
+                {t("dashboard.runReport")}
               </button>
             </div>
           </div>
@@ -921,7 +928,7 @@ ${clone.outerHTML}
       <div className="flex items-center justify-between mb-5 print:hidden">
         <div className="flex items-center gap-2">
           <span className="text-[12px] font-semibold text-tyro-text-secondary">
-            {reportProjeler.length} proje · {reportAksiyonlar.length} aksiyon
+            {t("dashboard.projectsCount", { count: reportProjeler.length })} · {t("dashboard.actionsCount", { count: reportAksiyonlar.length })}
           </span>
           {sourceFilter !== "all" && (
             <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: `${sourceConf.color}15`, color: sourceConf.color }}>
@@ -930,7 +937,7 @@ ${clone.outerHTML}
           )}
           {statusFilters.size > 0 && (
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-tyro-bg text-tyro-text-secondary font-medium">
-              {statusFilters.size} durum filtresi
+              {t("dashboard.statusFilterCountLabel", { count: statusFilters.size })}
             </span>
           )}
         </div>
@@ -940,7 +947,7 @@ ${clone.outerHTML}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-tyro-border text-[12px] font-semibold text-tyro-text-secondary hover:bg-tyro-bg transition-colors cursor-pointer"
           >
             <SlidersHorizontal size={14} />
-            Filtre
+            {t("dashboard.filterBtn")}
           </button>
           <button
             onClick={handleGenerate}
@@ -948,7 +955,7 @@ ${clone.outerHTML}
             style={{ backgroundColor: theme.accentColor }}
           >
             <Play size={14} />
-            Yenile
+            {t("dashboard.refresh")}
           </button>
           <div className="relative">
             <button
@@ -957,7 +964,7 @@ ${clone.outerHTML}
               style={{ backgroundColor: theme.brandStrategy ?? theme.accentColor }}
             >
               <Download size={14} />
-              Dışa Aktar
+              {t("dashboard.export")}
               <ChevronDown size={12} className={`transition-transform ${exportOpen ? "rotate-180" : ""}`} />
             </button>
             <AnimatePresence>
@@ -971,9 +978,9 @@ ${clone.outerHTML}
                     className="absolute top-full right-0 mt-1 z-40 w-[200px] bg-white dark:bg-tyro-surface rounded-xl border border-tyro-border/30 shadow-xl overflow-hidden"
                   >
                     {[
-                      { label: "Yazdır / PDF", icon: Printer, desc: "Tarayıcı yazdırma", handler: handlePrint, color: "#64748b" },
-                      { label: "Excel (.xlsx)", icon: FileSpreadsheet, desc: "Veri tablosu", handler: handleExportExcel, color: "#10b981" },
-                      { label: "HTML", icon: FileCode, desc: "Web sayfası", handler: handleExportHTML, color: "#8b5cf6" },
+                      { label: t("dashboard.printPdf"), icon: Printer, desc: t("dashboard.browserPrint"), handler: handlePrint, color: "#64748b" },
+                      { label: t("dashboard.excelXlsx"), icon: FileSpreadsheet, desc: t("dashboard.dataTable"), handler: handleExportExcel, color: "#10b981" },
+                      { label: t("dashboard.htmlExport"), icon: FileCode, desc: t("dashboard.webPage"), handler: handleExportHTML, color: "#8b5cf6" },
                     ].map((item) => (
                       <button
                         key={item.label}
@@ -1020,32 +1027,32 @@ ${clone.outerHTML}
                       </svg>
                       <div>
                         <p className="text-[15px] font-extrabold tracking-tight"><span className="text-white/90">tyro</span><span className="text-tyro-gold">strategy</span></p>
-                        <p className="text-[9px] text-white/40">Stratejik Proje Yönetim Platformu</p>
+                        <p className="text-[9px] text-white/40">{t("dashboard.strategicPlatform")}</p>
                       </div>
                     </div>
                     <p className="text-[8px] text-white/20 mt-1 ml-[42px]">Powered by TTECH Business Solutions</p>
                   </div>
-                  <p className="text-[9px] text-white/30 uppercase tracking-wider mt-1">Gizli · Kurumsal Kullanım</p>
+                  <p className="text-[9px] text-white/30 uppercase tracking-wider mt-1">{t("dashboard.confidentialCorporate")}</p>
                 </div>
 
                 {/* Center — Title + Stats */}
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <p className="text-[11px] font-bold text-tyro-gold uppercase tracking-[0.25em] mb-4">{companyName.toUpperCase()} YÖNETİM RAPORU</p>
+                  <p className="text-[11px] font-bold text-tyro-gold uppercase tracking-[0.25em] mb-4">{companyName.toUpperCase()} {t("dashboard.managementReport")}</p>
                   <h1 className="text-[28px] font-extrabold text-white tracking-tight leading-tight">{reportTitle}</h1>
                   <p className="text-[15px] text-white/60 mt-1">{reportSubtitle}</p>
                   <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light mx-auto mt-4 mb-4" />
                   <p className="text-[13px] text-white/70">{today}</p>
                   {effectiveDateRange && (
                     <p className="text-[11px] text-white/40 mt-1">
-                      Dönem: {new Date(effectiveDateRange.from).toLocaleDateString("tr-TR")} — {new Date(effectiveDateRange.to).toLocaleDateString("tr-TR")}
+                      {t("dashboard.period")}: {new Date(effectiveDateRange.from).toLocaleDateString(dateLocale)} — {new Date(effectiveDateRange.to).toLocaleDateString(dateLocale)}
                     </p>
                   )}
                   <div className="flex items-center justify-center gap-8 mt-8">
                     {[
-                      { label: "Proje", value: reportProjeler.length },
-                      { label: "Aksiyon", value: reportAksiyonlar.length },
-                      { label: "Departman", value: allDepartments.length },
-                      { label: "Ort. İlerleme", value: `%${avgProgress}` },
+                      { label: t("dashboard.project"), value: reportProjeler.length },
+                      { label: t("dashboard.action"), value: reportAksiyonlar.length },
+                      { label: t("common.department"), value: allDepartments.length },
+                      { label: t("dashboard.avgProgressShort"), value: `%${avgProgress}` },
                     ].map((s) => (
                       <div key={s.label} className="text-center">
                         <p className="text-[22px] font-extrabold text-white tabular-nums">{s.value}</p>
@@ -1071,7 +1078,7 @@ ${clone.outerHTML}
                   </h1>
                   <p className="text-[13px] text-tyro-text-secondary">{reportSubtitle}</p>
                   <p className="text-[12px] text-tyro-text-secondary mt-1.5">
-                    {today} · {reportProjeler.length} proje · {reportAksiyonlar.length} aksiyon
+                    {today} · {t("dashboard.projectsCount", { count: reportProjeler.length })} · {t("dashboard.actionsCount", { count: reportAksiyonlar.length })}
                   </p>
                 </div>
                 <div className="text-right hidden sm:block">
@@ -1087,14 +1094,14 @@ ${clone.outerHTML}
           {sections.summary && (() => {
             // Sort status cards by value desc
             const statusCards = [
-              { label: "Toplam", value: reportProjeler.length, color: "var(--tyro-navy, #1e3a5f)" },
-              { label: "Yolunda", value: statusSummary["On Track"] || 0, color: "#10b981" },
-              { label: "Risk Altında", value: statusSummary["At Risk"] || 0, color: "#f59e0b" },
-              { label: "Gecikmeli", value: statusSummary["Behind"] || 0, color: "#ef4444" },
-              { label: "Tamamlandı", value: statusSummary["Achieved"] || 0, color: "#059669" },
-              { label: "Başlanmadı", value: statusSummary["Not Started"] || 0, color: "#94a3b8" },
-              { label: "Askıda", value: statusSummary["On Hold"] || 0, color: "#8b5cf6" },
-              { label: "İptal", value: statusSummary["Cancelled"] || 0, color: "#6b7280" },
+              { label: t("dashboard.total"), value: reportProjeler.length, color: "var(--tyro-navy, #1e3a5f)" },
+              { label: STATUS_TR["On Track"], value: statusSummary["On Track"] || 0, color: "#10b981" },
+              { label: STATUS_TR["At Risk"], value: statusSummary["At Risk"] || 0, color: "#f59e0b" },
+              { label: STATUS_TR["Behind"], value: statusSummary["Behind"] || 0, color: "#ef4444" },
+              { label: STATUS_TR["Achieved"], value: statusSummary["Achieved"] || 0, color: "#059669" },
+              { label: STATUS_TR["Not Started"], value: statusSummary["Not Started"] || 0, color: "#94a3b8" },
+              { label: STATUS_TR["On Hold"], value: statusSummary["On Hold"] || 0, color: "#8b5cf6" },
+              { label: STATUS_TR["Cancelled"], value: statusSummary["Cancelled"] || 0, color: "#6b7280" },
             ].sort((a, b) => b.value - a.value);
 
             // Generate AI-like executive insights
@@ -1106,14 +1113,14 @@ ${clone.outerHTML}
             const bestDeptName = deptBreakdown.find(([, d]) => d === bestDept)?.[0] || "";
 
             const insights: { Icon: typeof Check; color: string; text: string; type: "success" | "warning" | "info" }[] = [];
-            if (avgProgress >= 70) insights.push({ Icon: TrendingUp, color: "#10b981", text: `Genel ilerleme %${avgProgress} ile proje doğrultusunda ilerliyor.`, type: "success" });
-            else if (avgProgress >= 40) insights.push({ Icon: CircleAlert, color: "#f59e0b", text: `Genel ilerleme %${avgProgress} seviyesinde — ivme kazanılması gerekiyor.`, type: "warning" });
-            else insights.push({ Icon: CircleAlert, color: "#ef4444", text: `Genel ilerleme %${avgProgress} ile kritik seviyede düşük. Acil aksiyon gerekli.`, type: "warning" });
+            if (avgProgress >= 70) insights.push({ Icon: TrendingUp, color: "#10b981", text: t("dashboard.insightOnTrack", { progress: avgProgress }), type: "success" });
+            else if (avgProgress >= 40) insights.push({ Icon: CircleAlert, color: "#f59e0b", text: t("dashboard.insightNeedsMomentum", { progress: avgProgress }), type: "warning" });
+            else insights.push({ Icon: CircleAlert, color: "#ef4444", text: t("dashboard.insightCritical", { progress: avgProgress }), type: "warning" });
 
-            if (riskCount > 0) insights.push({ Icon: AlertTriangle, color: "#f59e0b", text: `${riskCount} proje risk altında veya gecikmeli durumda — dikkat gerektiriyor.`, type: "warning" });
-            if (completionRate > 0) insights.push({ Icon: BarChart3, color: "#3b82f6", text: `Proje tamamlanma oranı %${completionRate}. ${statusSummary["Achieved"] || 0} proje başarıyla tamamlanmış.`, type: "info" });
-            if (worstDept && worstDept.avgProg < avgProgress) insights.push({ Icon: TrendingDown, color: "#ef4444", text: `${worstDeptName} departmanı %${worstDept.avgProg} ortalama ilerleme ile en düşük performansı sergiliyor.`, type: "warning" });
-            if (bestDept && bestDept.avgProg > avgProgress) insights.push({ Icon: Trophy, color: "#c8922a", text: `${bestDeptName} departmanı %${bestDept.avgProg} ile en yüksek performansı gösteriyor.`, type: "success" });
+            if (riskCount > 0) insights.push({ Icon: AlertTriangle, color: "#f59e0b", text: t("dashboard.insightAtRisk", { count: riskCount }), type: "warning" });
+            if (completionRate > 0) insights.push({ Icon: BarChart3, color: "#3b82f6", text: t("dashboard.insightCompletionRate", { rate: completionRate, count: statusSummary["Achieved"] || 0 }), type: "info" });
+            if (worstDept && worstDept.avgProg < avgProgress) insights.push({ Icon: TrendingDown, color: "#ef4444", text: t("dashboard.insightWorstDept", { dept: worstDeptName, progress: worstDept.avgProg }), type: "warning" });
+            if (bestDept && bestDept.avgProg > avgProgress) insights.push({ Icon: Trophy, color: "#c8922a", text: t("dashboard.insightBestDept", { dept: bestDeptName, progress: bestDept.avgProg }), type: "success" });
 
             // Circular progress SVG
             const circR = 60;
@@ -1121,10 +1128,10 @@ ${clone.outerHTML}
             const circOffset = circC * (1 - avgProgress / 100);
 
             return (
-              <Section num={1} title="Yönetici Özeti">
+              <Section num={1} title={t("dashboard.executiveSummary")}>
                 {/* AI Insights */}
                 <div className="glass-card rounded-xl p-4 mb-4">
-                  <p className="text-[11px] font-bold text-tyro-text-muted uppercase tracking-wider mb-2">Yapay Zeka İçgörüleri</p>
+                  <p className="text-[11px] font-bold text-tyro-text-muted uppercase tracking-wider mb-2">{t("dashboard.aiInsights")}</p>
                   <div className="space-y-2">
                     {insights.map((ins, i) => (
                       <div key={i} className="flex items-center gap-2">
@@ -1159,7 +1166,7 @@ ${clone.outerHTML}
                 <div className="grid grid-cols-2 gap-4">
                   {/* Circular Progress */}
                   <div className="glass-card rounded-xl p-5 flex flex-col items-center justify-center">
-                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">Ortalama İlerleme</p>
+                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">{t("dashboard.averageProgress")}</p>
                     <svg width="150" height="150" viewBox="0 0 150 150">
                       <circle cx="75" cy="75" r={circR} fill="none" stroke="#e2e8f0" strokeWidth="10" />
                       <circle
@@ -1170,20 +1177,20 @@ ${clone.outerHTML}
                         transform="rotate(-90 75 75)"
                       />
                       <text x="75" y="70" textAnchor="middle" className="text-[28px] font-extrabold" fill={progressColor(avgProgress)}>%{avgProgress}</text>
-                      <text x="75" y="90" textAnchor="middle" className="text-[11px]" fill="#64748b">tamamlanma</text>
+                      <text x="75" y="90" textAnchor="middle" className="text-[11px]" fill="#64748b">{t("dashboard.completion")}</text>
                     </svg>
                   </div>
 
                   {/* Progress Distribution */}
                   <div className="glass-card rounded-xl p-5">
-                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">İlerleme Dağılımı</p>
+                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">{t("dashboard.progressDistribution")}</p>
                     <div className="space-y-2.5">
                       {[
-                        { label: "Tamamlandı", count: progressDist.full, color: "#059669" },
-                        { label: "İlerlemiş (75%+)", count: progressDist.high, color: "#10b981" },
-                        { label: "Orta (50-74%)", count: progressDist.mid, color: "#3b82f6" },
-                        { label: "Düşük (1-49%)", count: progressDist.low, color: "#f59e0b" },
-                        { label: "Başlamadı", count: progressDist.zero, color: "#94a3b8" },
+                        { label: t("dashboard.completedLabel"), count: progressDist.full, color: "#059669" },
+                        { label: t("dashboard.progressAdvanced"), count: progressDist.high, color: "#10b981" },
+                        { label: t("dashboard.progressMedium"), count: progressDist.mid, color: "#3b82f6" },
+                        { label: t("dashboard.progressLow"), count: progressDist.low, color: "#f59e0b" },
+                        { label: t("dashboard.notStartedLabel"), count: progressDist.zero, color: "#94a3b8" },
                       ].map((row) => {
                         const pct = reportProjeler.length > 0 ? Math.round((row.count / reportProjeler.length) * 100) : 0;
                         return (
@@ -1225,7 +1232,7 @@ ${clone.outerHTML}
             });
 
             return (
-              <Section num={2} title="Durum Dağılımı">
+              <Section num={2} title={t("dashboard.statusDistributionTitle")}>
                 <div className="glass-card rounded-xl p-5">
                   <div className="flex items-center gap-8">
                     {/* SVG Pie */}
@@ -1235,7 +1242,7 @@ ${clone.outerHTML}
                       ))}
                       <circle cx="100" cy="100" r="45" fill="white" />
                       <text x="100" y="96" textAnchor="middle" className="text-[22px] font-extrabold" fill="#0f172a">{total}</text>
-                      <text x="100" y="112" textAnchor="middle" className="text-[9px]" fill="#64748b">proje</text>
+                      <text x="100" y="112" textAnchor="middle" className="text-[9px]" fill="#64748b">{t("dashboard.project")}</text>
                     </svg>
                     {/* Legend */}
                     <div className="flex-1 grid grid-cols-2 gap-x-6 gap-y-2">
@@ -1258,17 +1265,17 @@ ${clone.outerHTML}
 
           {/* 3. DEPARTMAN TABLOSU */}
           {sections.deptTable && deptBreakdown.length > 0 && (
-            <Section num={3} title="Departman Bazlı Durum">
+            <Section num={3} title={t("dashboard.departmentStatus")}>
               <div className="glass-card rounded-xl overflow-hidden">
                 <table className="w-full text-[12px]">
                   <thead>
                     <tr className="border-b border-tyro-border/20">
-                      <th className="text-left px-4 py-3 font-semibold text-tyro-text-secondary">Departman</th>
-                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">Toplam</th>
-                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">Aktif</th>
-                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">Tamamlanan</th>
-                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">Geciken</th>
-                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">Ort. İlerleme</th>
+                      <th className="text-left px-4 py-3 font-semibold text-tyro-text-secondary">{t("common.department")}</th>
+                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">{t("dashboard.total")}</th>
+                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">{t("dashboard.active")}</th>
+                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">{t("dashboard.completedLabel")}</th>
+                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">{t("dashboard.delayed")}</th>
+                      <th className="text-center px-3 py-3 font-semibold text-tyro-text-secondary">{t("dashboard.avgProgressShort")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1292,13 +1299,13 @@ ${clone.outerHTML}
 
           {/* 4. DİKKAT GEREKTİREN */}
           {sections.attention && attentionItems.length > 0 && (
-            <Section num={4} title="Dikkat Gerektiren Projeler" titleColor="#ef4444">
+            <Section num={4} title={t("dashboard.attentionProjectsHeading")} titleColor="#ef4444">
               <div className="space-y-2">
                 {attentionItems.map((h) => (
                   <div key={h.id} className="glass-card rounded-xl px-4 py-3 flex items-center justify-between" style={{ borderLeft: `3px solid ${STATUS_COLOR[h.status]}` }}>
                     <div className="min-w-0 flex-1">
                       <p className="text-[12px] font-semibold text-tyro-text-primary truncate">{h.name}</p>
-                      <p className="text-[12px] text-tyro-text-secondary mt-0.5">{h.department} · {h.owner} · Bitiş: {new Date(h.endDate).toLocaleDateString("tr-TR")}</p>
+                      <p className="text-[12px] text-tyro-text-secondary mt-0.5">{h.department} · {h.owner} · {t("dashboard.endDateLabel")}: {new Date(h.endDate).toLocaleDateString(dateLocale)}</p>
                     </div>
                     <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 ml-3" style={{ backgroundColor: `${STATUS_COLOR[h.status]}12`, color: STATUS_COLOR[h.status] }}>
                       {STATUS_TR[h.status]}
@@ -1311,7 +1318,7 @@ ${clone.outerHTML}
 
           {/* 5. PROJE DETAYLARI — sorted by progress desc */}
           {sections.details && (
-            <Section num={5} title="Proje Detayları">
+            <Section num={5} title={t("dashboard.projectDetails")}>
               <div className="space-y-3">
                 {[...reportProjeler].sort((a, b) => calcProjeProgress(b, aksiyonlar) - calcProjeProgress(a, aksiyonlar)).map((h) => {
                   const ha = aksiyonlar.filter((a) => a.projeId === h.id);
@@ -1328,7 +1335,7 @@ ${clone.outerHTML}
                             <p className="text-[12px] text-tyro-text-secondary mt-1 line-clamp-2">{h.description}</p>
                           )}
                           <p className="text-[12px] text-tyro-text-secondary mt-1.5">
-                            {new Date(h.startDate).toLocaleDateString("tr-TR")} → {new Date(h.endDate).toLocaleDateString("tr-TR")}
+                            {new Date(h.startDate).toLocaleDateString(dateLocale)} → {new Date(h.endDate).toLocaleDateString(dateLocale)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -1345,7 +1352,7 @@ ${clone.outerHTML}
                       {/* Meta row: Leader, Source, Dept, Tags, Actions */}
                       <div className="px-4 py-2 border-t border-tyro-border/8 text-[12px] space-y-1">
                         <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
-                          <span className="text-tyro-text-secondary"><span className="font-semibold text-tyro-text-primary">{h.owner}</span> · Lider</span>
+                          <span className="text-tyro-text-secondary"><span className="font-semibold text-tyro-text-primary">{h.owner}</span> · {t("common.leader")}</span>
                           <span className="text-tyro-border">|</span>
                           <span className="text-tyro-text-secondary">{h.source}</span>
                           <span className="text-tyro-border">·</span>
@@ -1358,11 +1365,11 @@ ${clone.outerHTML}
                               ))}
                             </>
                           )}
-                          <span className="ml-auto text-tyro-text-secondary font-medium">{ha.length} aksiyon</span>
+                          <span className="ml-auto text-tyro-text-secondary font-medium">{ha.length} {t("dashboard.action")}</span>
                         </div>
                         {h.participants && h.participants.length > 0 && (
                           <div className="text-tyro-text-secondary">
-                            <span className="font-medium">Katılımcılar:</span> {h.participants.join(", ")}
+                            <span className="font-medium">{t("common.participants")}:</span> {h.participants.join(", ")}
                           </div>
                         )}
                       </div>
@@ -1378,7 +1385,7 @@ ${clone.outerHTML}
                             })}
                             className="w-full flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold uppercase text-tyro-text-muted tracking-wider hover:bg-slate-50/50 cursor-pointer border-t border-tyro-border/10 print:hidden"
                           >
-                            Aksiyonlar ({ha.length})
+                            {t("kokpit.actionsCount", { count: ha.length })}
                             {isExp ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                           </button>
                           <AnimatePresence>
@@ -1400,7 +1407,7 @@ ${clone.outerHTML}
                                           <div className="min-w-0">
                                             <p className="text-[12px] font-semibold text-tyro-text-primary truncate">{a.name}</p>
                                             <p className="text-[11px] text-tyro-text-secondary">
-                                              {a.owner} · {new Date(a.startDate).toLocaleDateString("tr-TR")} → {new Date(a.endDate).toLocaleDateString("tr-TR")}
+                                              {a.owner} · {new Date(a.startDate).toLocaleDateString(dateLocale)} → {new Date(a.endDate).toLocaleDateString(dateLocale)}
                                             </p>
                                           </div>
                                         </div>
@@ -1419,7 +1426,7 @@ ${clone.outerHTML}
                           </AnimatePresence>
                           {/* Print — show actions unless hidden */}
                           <div className={`hidden ${hideActionsInExport ? "" : "print:block"} px-4 pb-3 space-y-0.5`}>
-                            <p className="text-[11px] font-bold uppercase text-tyro-text-muted tracking-wider mb-1">Aksiyonlar ({ha.length})</p>
+                            <p className="text-[11px] font-bold uppercase text-tyro-text-muted tracking-wider mb-1">{t("dashboard.actionsLabel")} ({ha.length})</p>
                             {ha.map((a) => {
                               const AIcon = STATUS_DOT[a.status];
                               return (
@@ -1447,7 +1454,7 @@ ${clone.outerHTML}
 
           {/* Footer */}
           <footer className="flex items-center justify-between text-[11px] text-tyro-text-muted mt-10 pt-4 border-t border-tyro-border/10">
-            <span>TYRO Strategy · Otomatik oluşturuldu</span>
+            <span>TYRO Strategy · {t("dashboard.autoGenerated")}</span>
             <span>© {new Date().getFullYear()} TTECH Business Solutions</span>
           </footer>
         </div>

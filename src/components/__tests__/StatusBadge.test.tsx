@@ -5,7 +5,7 @@ import type { EntityStatus } from "@/types";
 
 // Mock i18n — t returns the key
 vi.mock("react-i18next", () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: "tr" } }),
 }));
 
 describe("StatusBadge", () => {
@@ -58,7 +58,7 @@ describe("StatusBadge", () => {
     const { container } = render(<StatusBadge status="Not Started" />);
     const outerSpan = container.querySelector("span.bg-slate-100");
     expect(outerSpan).toBeInTheDocument();
-    expect(outerSpan).toHaveClass("text-slate-500");
+    expect(outerSpan).toHaveClass("text-tyro-text-muted");
     const dot = container.querySelector("span.bg-slate-400");
     expect(dot).toBeInTheDocument();
   });

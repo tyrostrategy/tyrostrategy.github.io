@@ -46,21 +46,23 @@ function nameToEmail(name: string): string {
   return `${clean(parts[0])}@tiryaki.com.tr`;
 }
 
-const columns = [
-  { uid: "name", name: "Ad Soyad" },
-  { uid: "role", name: "Yetki Rolü" },
-  { uid: "status", name: "Durum" },
-  { uid: "email", name: "E-posta" },
-  { uid: "department", name: "Departman" },
-  { uid: "locale", name: "Dil" },
-  { uid: "projeCount", name: "Projeler" },
-  { uid: "actions", name: "İşlemler" },
-];
+const COLUMN_UIDS = ["name", "role", "status", "email", "department", "locale", "projeCount", "actions"] as const;
 
 const INITIAL_VISIBLE = new Set(["name", "role", "status", "email", "department", "locale", "projeCount", "actions"]);
 
 export default function KullanicilarPage() {
   const { t } = useTranslation();
+
+  const columns = useMemo(() => [
+    { uid: "name", name: t("users.fullName") },
+    { uid: "role", name: t("users.authRole") },
+    { uid: "status", name: t("users.status") },
+    { uid: "email", name: t("users.email") },
+    { uid: "department", name: t("users.department") },
+    { uid: "locale", name: t("users.language") },
+    { uid: "projeCount", name: t("users.projects") },
+    { uid: "actions", name: t("users.actions") },
+  ], [t]);
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const addUser = useDataStore((s) => s.addUser);
@@ -231,7 +233,7 @@ export default function KullanicilarPage() {
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full shrink-0 ${user.active ? "bg-emerald-500" : "bg-rose-500"}`} />
             <span className="text-[13px] text-tyro-text-primary">
-              {user.active ? "Etkin" : "Devre Dışı"}</span>
+              {user.active ? t("users.active") : t("users.disabled")}</span>
           </div>
         );
       case "email":
@@ -239,29 +241,29 @@ export default function KullanicilarPage() {
       case "department":
         return <span className="text-[13px] text-tyro-text-secondary">{user.department}</span>;
       case "locale":
-        return <span className="text-[13px] text-tyro-text-secondary">{user.locale === "en" ? "English" : "Türkçe"}</span>;
+        return <span className="text-[13px] text-tyro-text-secondary">{user.locale === "en" ? t("profile.english") : t("profile.turkish")}</span>;
       case "projeCount":
         return <span className="text-[13px] font-bold" style={{ color: sidebarTheme.accentColor }}>{user.projeCount}</span>;
       case "actions":
         return (
           <div className="relative flex items-center gap-2 justify-center">
-            <Tooltip content="Detay" size="sm">
+            <Tooltip content={t("common.detail")} size="sm">
               <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); openUserDetail(user); }}>
                 <Eye size={16} />
               </button>
             </Tooltip>
-            <Tooltip content="Düzenle" size="sm">
+            <Tooltip content={t("common.edit")} size="sm">
               <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }}>
                 <Pencil size={16} />
               </button>
             </Tooltip>
-            <Tooltip content="Sil" color="danger" size="sm">
+            <Tooltip content={t("common.delete")} color="danger" size="sm">
               <button className="text-lg text-danger cursor-pointer active:opacity-50" onClick={(e) => {
                 e.stopPropagation();
-                setConfirmMessage(`"${user.name}" kullanıcısını silmek istediğinize emin misiniz?`);
+                setConfirmMessage(t("users.confirmDeleteUser", { name: user.name }));
                 setConfirmAction(() => () => {
                   deleteUserDb(user.id);
-                  toast.success("Kullanıcı silindi", { message: user.name });
+                  toast.success(t("users.userDeleted"), { message: user.name });
                 });
                 setConfirmOpen(true);
               }}>
@@ -282,8 +284,8 @@ export default function KullanicilarPage() {
         <Input
           isClearable
           classNames={{ base: "w-full sm:max-w-[44%]", inputWrapper: "border-1" }}
-          aria-label="Kullanıcı ara"
-          placeholder="İsim ile ara..."
+          aria-label={t("users.searchUser")}
+          placeholder={t("users.searchByName")}
           size="sm"
           startContent={<Search size={16} className="text-tyro-text-muted" />}
           value={search}
@@ -292,70 +294,74 @@ export default function KullanicilarPage() {
           onValueChange={(v) => { setSearch(v); setPage(1); }}
         />
         <div className="flex gap-3 overflow-x-auto pb-1 sm:pb-0">
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={<CircleDot size={14} />} endContent={<ChevronDown size={14} />}>
-                Durum
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              selectionMode="single"
-              selectedKeys={new Set([statusFilter])}
-              onSelectionChange={(keys) => { const v = Array.from(keys)[0] as string; setStatusFilter(v); setPage(1); }}
-            >
-              <DropdownItem key="all">Tümü</DropdownItem>
-              <DropdownItem key="true">Etkin</DropdownItem>
-              <DropdownItem key="false">Devre Dışı</DropdownItem>
-            </DropdownMenu>
-          </Dropdown>
-          <Dropdown>
-            <DropdownTrigger>
-              <Button size="sm" variant="flat" startContent={<Columns3 size={14} />} endContent={<ChevronDown size={14} />}>
-                Kolonlar
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              disallowEmptySelection
-              closeOnSelect={false}
-              selectionMode="multiple"
-              selectedKeys={visibleColumns}
-              onSelectionChange={(keys) => setVisibleColumns(keys as unknown as Set<string>)}
-            >
-              {columns.map((col) => (
-                <DropdownItem key={col.uid} className="capitalize">
-                  {col.name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+          <div className="hidden sm:block">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={<CircleDot size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("users.status")}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                selectionMode="single"
+                selectedKeys={new Set([statusFilter])}
+                onSelectionChange={(keys) => { const v = Array.from(keys)[0] as string; setStatusFilter(v); setPage(1); }}
+              >
+                <DropdownItem key="all">{t("users.all")}</DropdownItem>
+                <DropdownItem key="true">{t("users.active")}</DropdownItem>
+                <DropdownItem key="false">{t("users.disabled")}</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+          <div className="hidden sm:block">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button size="sm" variant="flat" startContent={<Columns3 size={14} />} endContent={<ChevronDown size={14} />}>
+                  {t("users.columns")}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                closeOnSelect={false}
+                selectionMode="multiple"
+                selectedKeys={visibleColumns}
+                onSelectionChange={(keys) => setVisibleColumns(keys as unknown as Set<string>)}
+              >
+                {columns.map((col) => (
+                  <DropdownItem key={col.uid} className="capitalize">
+                    {col.name}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </div>
           <CreateButton onPress={() => setShowNewForm(true)} />
         </div>
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-tyro-text-muted text-xs">Toplam {filtered.length} kullanıcı</span>
+          <span className="text-tyro-text-muted text-xs">{t("users.totalUsers", { count: filtered.length })}</span>
           {selectedKeys.size > 0 && (
             <>
               <span className="text-xs font-semibold" style={{ color: sidebarTheme.accentColor }}>
-                {selectedKeys.size} kayıt seçildi
+                {t("users.selectedRecords", { count: selectedKeys.size })}
               </span>
               <button
                 onClick={() => {
-                  setConfirmMessage(`${selectedKeys.size} kullanıcıyı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`);
+                  setConfirmMessage(t("users.confirmDeleteMultiple", { count: selectedKeys.size }));
                   setConfirmAction(() => () => setSelectedKeys(new Set()));
                   setConfirmOpen(true);
                 }}
                 className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors cursor-pointer"
               >
                 <Trash2 size={12} />
-                Sil
+                {t("common.delete")}
               </button>
             </>
           )}
         </div>
         <label className="flex items-center gap-1 text-tyro-text-muted text-xs">
-          Sayfa başına:
+          {t("users.perPage")}
           <select
             className="bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-tyro-navy/30 rounded text-tyro-text-muted text-xs cursor-pointer"
             value={rowsPerPage}
@@ -399,7 +405,7 @@ export default function KullanicilarPage() {
       {/* Mobile card view */}
       <div className="block sm:hidden divide-y divide-tyro-border/30">
         {paginatedItems.length === 0 ? (
-          <div className="px-4 py-12 text-center text-sm text-tyro-text-muted">Kullanıcı bulunamadı.</div>
+          <div className="px-4 py-12 text-center text-sm text-tyro-text-muted">{t("users.noUsersFound")}</div>
         ) : (
           paginatedItems.map((user) => (
             <div key={user.id} onClick={() => openUserDetail(user)} className="px-4 py-3.5 active:bg-default-100 transition-colors cursor-pointer">
@@ -418,8 +424,8 @@ export default function KullanicilarPage() {
                 <span>{user.role}</span>
               </div>
               <div className="flex items-center gap-2 pt-2 border-t border-tyro-border/20" onClick={(e) => e.stopPropagation()}>
-                <button aria-label="Düzenle" onClick={() => { setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
-                  <Pencil size={14} /> Düzenle
+                <button aria-label={t("common.edit")} onClick={() => { setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
+                  <Pencil size={14} /> {t("common.edit")}
                 </button>
               </div>
             </div>
@@ -430,7 +436,7 @@ export default function KullanicilarPage() {
       {/* Desktop table view */}
       <div className="hidden sm:block">
         <Table
-          aria-label="Kullanıcılar tablosu"
+          aria-label={t("users.usersTable")}
           isHeaderSticky
           sortDescriptor={sortDescriptor}
           onSortChange={(d) => setSortDescriptor(d as typeof sortDescriptor)}
@@ -460,7 +466,7 @@ export default function KullanicilarPage() {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody items={paginatedItems} emptyContent="Kullanıcı bulunamadı.">
+          <TableBody items={paginatedItems} emptyContent={t("users.noUsersFound")}>
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
@@ -475,35 +481,35 @@ export default function KullanicilarPage() {
       <SlidingPanel
         isOpen={showNewForm}
         onClose={() => setShowNewForm(false)}
-        title="Yeni Kullanıcı"
+        title={t("users.newUser")}
         icon={<Users size={18} />}
         maxWidth={480}
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Ad Soyad<span className="text-tyro-danger ml-0.5">*</span></label>
-            <Input value={newName} onValueChange={setNewName} variant="bordered" size="sm" placeholder="Kullanıcı adını girin" classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
+            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.fullName")}<span className="text-tyro-danger ml-0.5">*</span></label>
+            <Input value={newName} onValueChange={setNewName} variant="bordered" size="sm" placeholder={t("users.enterName")} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
           </div>
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">E-posta<span className="text-tyro-danger ml-0.5">*</span></label>
-            <Input value={newEmail} onValueChange={setNewEmail} variant="bordered" size="sm" placeholder="ornek@tiryaki.com.tr" startContent={<Mail size={14} className="text-tyro-text-muted" />} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
+            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.email")}<span className="text-tyro-danger ml-0.5">*</span></label>
+            <Input value={newEmail} onValueChange={setNewEmail} variant="bordered" size="sm" placeholder={t("users.emailPlaceholder")} startContent={<Mail size={14} className="text-tyro-text-muted" />} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
           </div>
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Departman</label>
-            <Input value={newDept} onValueChange={setNewDept} variant="bordered" size="sm" placeholder="Departman" startContent={<Building2 size={14} className="text-tyro-text-muted" />} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
+            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.department")}</label>
+            <Input value={newDept} onValueChange={setNewDept} variant="bordered" size="sm" placeholder={t("users.department")} startContent={<Building2 size={14} className="text-tyro-text-muted" />} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
           </div>
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Yetki Rolü</label>
-            <Select selectedKeys={[newRole]} onSelectionChange={(keys) => setNewRole(Array.from(keys)[0] as YetkiRol)} variant="bordered" size="sm" placeholder="Rol seçiniz" classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}>
-              <SelectItem key="Admin">Admin</SelectItem>
-              <SelectItem key="Proje Lideri">Proje Lideri</SelectItem>
-              <SelectItem key="Kullanıcı">Kullanıcı</SelectItem>
+            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.authRole")}</label>
+            <Select selectedKeys={[newRole]} onSelectionChange={(keys) => setNewRole(Array.from(keys)[0] as YetkiRol)} variant="bordered" size="sm" placeholder={t("users.selectRole")} classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}>
+              <SelectItem key="Admin">{t("roles.admin")}</SelectItem>
+              <SelectItem key="Proje Lideri">{t("roles.projectLeader")}</SelectItem>
+              <SelectItem key="Kullanıcı">{t("users.user")}</SelectItem>
             </Select>
           </div>
           <div>
-            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Dil</label>
+            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.language")}</label>
             <Select selectedKeys={[newLocale]} onSelectionChange={(keys) => setNewLocale(Array.from(keys)[0] as "tr" | "en")} variant="bordered" size="sm" classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}>
-              <SelectItem key="tr">Türkçe</SelectItem>
+              <SelectItem key="tr">{t("profile.turkish")}</SelectItem>
               <SelectItem key="en">English</SelectItem>
             </Select>
           </div>
@@ -512,21 +518,21 @@ export default function KullanicilarPage() {
               isDisabled={!newName.trim() || !newEmail.trim()}
               onPress={() => {
                 addUser({ displayName: newName.trim(), email: newEmail.trim(), department: newDept.trim(), role: newRole, locale: newLocale });
-                toast.success("Kullanıcı oluşturuldu", {
+                toast.success(t("users.userCreated"), {
                   message: newName.trim(),
                   details: [
-                    { label: "E-posta", value: newEmail.trim() },
-                    { label: "Rol", value: newRole },
-                    { label: "Departman", value: newDept.trim() || "—" },
+                    { label: t("users.email"), value: newEmail.trim() },
+                    { label: t("users.authRole"), value: newRole },
+                    { label: t("users.department"), value: newDept.trim() || "—" },
                   ],
                 });
                 setNewName(""); setNewEmail(""); setNewDept(""); setNewRole("Kullanıcı"); setNewLocale("tr");
                 setShowNewForm(false);
               }}>
-              Kaydet
+              {t("common.save")}
             </Button>
             <Button variant="flat" size="sm" className="rounded-button" onPress={() => setShowNewForm(false)}>
-              İptal
+              {t("common.cancel")}
             </Button>
           </div>
         </div>
@@ -536,9 +542,9 @@ export default function KullanicilarPage() {
       <SlidingPanel
         isOpen={selectedUser !== null}
         onClose={() => setSelectedUser(null)}
-        title={isEditing ? "Kullanıcı Düzenle" : "Kullanıcı Detayı"}
+        title={isEditing ? t("users.editUser") : t("users.userDetail")}
         icon={<Users size={18} />}
-        maxWidth={520}
+        maxWidth={640}
       >
         {selectedUser && (
           <div className="space-y-6">
@@ -567,13 +573,13 @@ export default function KullanicilarPage() {
                   })()}
                   <div className="flex items-center gap-1.5">
                     <span className={`w-2 h-2 rounded-full ${selectedUser.active ? "bg-emerald-500" : "bg-rose-500"}`} />
-                    <span className="text-[12px] text-tyro-text-primary">{selectedUser.active ? "Etkin" : "Devre Dışı"}</span>
+                    <span className="text-[12px] text-tyro-text-primary">{selectedUser.active ? t("users.active") : t("users.disabled")}</span>
                   </div>
                 </div>
               </div>
               {!isEditing && (
                 <Button size="sm" variant="bordered" startContent={<Pencil size={14} />} onPress={() => setIsEditing(true)} className="rounded-button">
-                  Düzenle
+                  {t("common.edit")}
                 </Button>
               )}
             </div>
@@ -583,17 +589,17 @@ export default function KullanicilarPage() {
               <div className="bg-tyro-bg rounded-lg p-3 text-center">
                 <Briefcase size={14} className="mx-auto mb-1" style={{ color: sidebarTheme.accentColor }} />
                 <div className="text-lg font-bold" style={{ color: sidebarTheme.accentColor }}>{selectedUser.projeCount}</div>
-                <div className="text-[11px] text-tyro-text-muted">Proje</div>
+                <div className="text-[11px] text-tyro-text-muted">{t("users.project")}</div>
               </div>
               <div className="bg-tyro-bg rounded-lg p-3 text-center">
                 <ListChecks size={14} className="mx-auto mb-1 text-tyro-text-secondary" />
                 <div className="text-lg font-bold text-tyro-text-primary">{selectedUser.aksiyonCount}</div>
-                <div className="text-[11px] text-tyro-text-muted">Aksiyon</div>
+                <div className="text-[11px] text-tyro-text-muted">{t("users.action")}</div>
               </div>
               <div className="bg-tyro-bg rounded-lg p-3 text-center">
                 <Shield size={14} className="mx-auto mb-1 text-emerald-500" />
                 <div className="text-lg font-bold text-emerald-500">{selectedUser.achievedCount}</div>
-                <div className="text-[11px] text-tyro-text-muted">Tamamlanan</div>
+                <div className="text-[11px] text-tyro-text-muted">{t("users.completed")}</div>
               </div>
             </div>
 
@@ -602,37 +608,37 @@ export default function KullanicilarPage() {
             {isEditing ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Ad Soyad<span className="text-tyro-danger ml-0.5">*</span></label>
-                  <Input value={editName} onValueChange={setEditName} variant="bordered" size="sm" placeholder="Kullanıcı adını girin" />
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.fullName")}<span className="text-tyro-danger ml-0.5">*</span></label>
+                  <Input value={editName} onValueChange={setEditName} variant="bordered" size="sm" placeholder={t("users.enterName")} />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">E-posta<span className="text-tyro-danger ml-0.5">*</span></label>
-                  <Input value={editEmail} onValueChange={setEditEmail} variant="bordered" size="sm" startContent={<Mail size={14} className="text-tyro-text-muted" />} placeholder="ornek@tiryaki.com.tr" />
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.email")}<span className="text-tyro-danger ml-0.5">*</span></label>
+                  <Input value={editEmail} onValueChange={setEditEmail} variant="bordered" size="sm" startContent={<Mail size={14} className="text-tyro-text-muted" />} placeholder={t("users.emailPlaceholder")} />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Departman</label>
-                  <Input value={editDept} onValueChange={setEditDept} variant="bordered" size="sm" startContent={<Building2 size={14} className="text-tyro-text-muted" />} placeholder="Departman" />
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.department")}</label>
+                  <Input value={editDept} onValueChange={setEditDept} variant="bordered" size="sm" startContent={<Building2 size={14} className="text-tyro-text-muted" />} placeholder={t("users.department")} />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Yetki Rolü</label>
-                  <Select selectedKeys={[editRole]} onSelectionChange={(keys) => setEditRole(Array.from(keys)[0] as YetkiRol)} variant="bordered" size="sm" placeholder="Rol seçiniz">
-                    <SelectItem key="Admin">Admin</SelectItem>
-                    <SelectItem key="Proje Lideri">Proje Lideri</SelectItem>
-                    <SelectItem key="Kullanıcı">Kullanıcı</SelectItem>
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.authRole")}</label>
+                  <Select selectedKeys={[editRole]} onSelectionChange={(keys) => setEditRole(Array.from(keys)[0] as YetkiRol)} variant="bordered" size="sm" placeholder={t("users.selectRole")}>
+                    <SelectItem key="Admin">{t("roles.admin")}</SelectItem>
+                    <SelectItem key="Proje Lideri">{t("roles.projectLeader")}</SelectItem>
+                    <SelectItem key="Kullanıcı">{t("users.user")}</SelectItem>
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Dil</label>
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.language")}</label>
                   <Select selectedKeys={[editLocale]} onSelectionChange={(keys) => setEditLocale(Array.from(keys)[0] as "tr" | "en")} variant="bordered" size="sm" classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}>
-                    <SelectItem key="tr">Türkçe</SelectItem>
+                    <SelectItem key="tr">{t("profile.turkish")}</SelectItem>
                     <SelectItem key="en">English</SelectItem>
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">Durum</label>
-                  <Select selectedKeys={[editActive ? "true" : "false"]} onSelectionChange={(keys) => setEditActive(Array.from(keys)[0] === "true")} variant="bordered" size="sm" placeholder="Durum seçiniz">
-                    <SelectItem key="true">Etkin</SelectItem>
-                    <SelectItem key="false">Devre Dışı</SelectItem>
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.status")}</label>
+                  <Select selectedKeys={[editActive ? "true" : "false"]} onSelectionChange={(keys) => setEditActive(Array.from(keys)[0] === "true")} variant="bordered" size="sm" placeholder={t("users.selectStatus")}>
+                    <SelectItem key="true">{t("users.active")}</SelectItem>
+                    <SelectItem key="false">{t("users.disabled")}</SelectItem>
                   </Select>
                 </div>
                 <div className="flex items-center gap-3 pt-3">
@@ -641,34 +647,34 @@ export default function KullanicilarPage() {
                     onPress={() => {
                       if (selectedUser) {
                         const changes: { label: string; value: string }[] = [];
-                        if (editName.trim() !== selectedUser.name) changes.push({ label: "Ad", value: editName.trim() });
-                        if (editEmail.trim() !== selectedUser.email) changes.push({ label: "E-posta", value: editEmail.trim() });
-                        if (editDept.trim() !== selectedUser.department) changes.push({ label: "Departman", value: editDept.trim() });
-                        if (editRole !== selectedUser.role) changes.push({ label: "Rol", value: editRole });
-                        if (editLocale !== selectedUser.locale) changes.push({ label: "Dil", value: editLocale === "en" ? "English" : "Türkçe" });
+                        if (editName.trim() !== selectedUser.name) changes.push({ label: t("users.fullName"), value: editName.trim() });
+                        if (editEmail.trim() !== selectedUser.email) changes.push({ label: t("users.email"), value: editEmail.trim() });
+                        if (editDept.trim() !== selectedUser.department) changes.push({ label: t("users.department"), value: editDept.trim() });
+                        if (editRole !== selectedUser.role) changes.push({ label: t("users.authRole"), value: editRole });
+                        if (editLocale !== selectedUser.locale) changes.push({ label: t("users.language"), value: editLocale === "en" ? t("profile.english") : t("profile.turkish") });
                         updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), department: editDept.trim(), role: editRole, locale: editLocale });
-                        toast.success("Kullanıcı güncellendi", {
+                        toast.success(t("users.userUpdated"), {
                           message: editName.trim(),
-                          details: changes.length > 0 ? changes : [{ label: "Durum", value: "Değişiklik kaydedildi" }],
+                          details: changes.length > 0 ? changes : [{ label: t("users.status"), value: t("users.changeSaved") }],
                         });
                       }
                       setIsEditing(false);
                       setSelectedUser(null);
                     }}>
-                    Kaydet
+                    {t("common.save")}
                   </Button>
                   <Button variant="flat" size="sm" className="rounded-button" onPress={() => setIsEditing(false)}>
-                    İptal
+                    {t("common.cancel")}
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="space-y-3">
-                <DetailRow icon={<Mail size={14} />} label="E-posta" value={selectedUser.email} />
-                <DetailRow icon={<Building2 size={14} />} label="Departman" value={selectedUser.department} />
+                <DetailRow icon={<Mail size={14} />} label={t("users.email")} value={selectedUser.email} />
+                <DetailRow icon={<Building2 size={14} />} label={t("users.department")} value={selectedUser.department} />
                 <DetailRow
                   icon={selectedUser.role === "Admin" ? <Crown size={14} /> : selectedUser.role === "Proje Lideri" ? <Star size={14} /> : <UserIcon size={14} />}
-                  label="Yetki Rolü"
+                  label={t("users.authRole")}
                   value={selectedUser.role}
                 />
               </div>

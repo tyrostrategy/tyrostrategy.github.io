@@ -9,13 +9,18 @@ import {
 } from "@/lib/data/mock-adapter";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import { supabaseAdapter } from "@/lib/data/supabaseAdapter";
+import { toast } from "@/stores/toastStore";
+import i18n from "@/lib/i18n";
 
 const isSupabaseMode = import.meta.env.VITE_DATA_PROVIDER === "supabase";
 
-/** Fire-and-forget Supabase sync — doesn't block UI */
+/** Fire-and-forget Supabase sync — doesn't block UI, shows toast on failure */
 function syncToSupabase(fn: () => Promise<unknown>) {
   if (!isSupabaseMode) return;
-  fn().catch((err) => console.error("[Supabase Sync]", err));
+  fn().catch((err) => {
+    console.error("[Supabase Sync]", err);
+    toast.error(i18n.t("toast.syncFailed"));
+  });
 }
 
 interface DataState {
@@ -88,7 +93,7 @@ function generateSystematicId(
   return `${yearPrefix}${nextSerial}`;
 }
 
-const CURRENT_USER = "Cenk Şayli";
+function getCurrentUser() { return localStorage.getItem("tyro-mock-user") || "Demo User"; }
 function now(): string {
   return new Date().toISOString();
 }
@@ -172,7 +177,7 @@ export const useDataStore = create<DataState>()(
       addProje: (h) =>
         set((s) => {
           const id = generateSystematicId("P", h.startDate, s.projeler.map((x) => x.id));
-          const newProje = { ...h, id, createdBy: h.createdBy ?? CURRENT_USER, createdAt: h.createdAt ?? now() };
+          const newProje = { ...h, id, createdBy: h.createdBy ?? getCurrentUser(), createdAt: h.createdAt ?? now() };
           syncToSupabase(() => supabaseAdapter.createProje({ ...newProje }));
           return { projeler: [...s.projeler, newProje] };
         }),
@@ -203,7 +208,7 @@ export const useDataStore = create<DataState>()(
       addAksiyon: (a) =>
         set((s) => {
           const id = generateSystematicId("A", a.startDate, s.aksiyonlar.map((x) => x.id));
-          const newAksiyon: Aksiyon = { ...a, id, createdBy: a.createdBy ?? CURRENT_USER, createdAt: a.createdAt ?? now() };
+          const newAksiyon: Aksiyon = { ...a, id, createdBy: a.createdBy ?? getCurrentUser(), createdAt: a.createdAt ?? now() };
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
           const projeler = recalcProjeProgress(s.projeler, aksiyonlar, newAksiyon.projeId);
           syncToSupabase(() => supabaseAdapter.createAksiyon({ ...newAksiyon }));

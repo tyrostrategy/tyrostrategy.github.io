@@ -3,8 +3,18 @@ import { useTranslation } from "react-i18next";
 import { Target, User, Calendar, Users, MapPin, FolderTree } from "lucide-react";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
+import type { WizardFormData } from "../ProjeAksiyonWizard";
+
+interface AksiyonEntry {
+  name: string;
+  description?: string;
+  owner?: string;
+  startDate: string;
+  endDate: string;
+}
+
 interface Props {
-  control: Control<any>;
+  control: Control<WizardFormData>;
 }
 
 function formatDate(d: string): string {
@@ -86,7 +96,7 @@ export default function StepReview({ control }: Props) {
           </span>
         </div>
         <div className="divide-y divide-tyro-border">
-          {data.aksiyonlar?.map((a: any, i: number) => (
+          {data.aksiyonlar?.map((a: AksiyonEntry, i: number) => (
             <div key={i} className="px-4 py-3 flex items-start gap-3">
               <div className="w-6 h-6 rounded-full bg-tyro-navy/10 flex items-center justify-center text-[11px] font-bold text-tyro-navy shrink-0 mt-0.5">
                 {i + 1}

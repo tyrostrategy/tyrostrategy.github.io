@@ -57,56 +57,56 @@ export default function BentoKPI() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
           <TrendingUp size={18} className="text-tyro-navy" />
-          <h3 className="text-[14px] font-bold text-tyro-text-primary">Proje Özeti</h3>
+          <h3 className="text-[14px] font-bold text-tyro-text-primary">{t("workspace.projectSummary")}</h3>
         </div>
         <button
           type="button"
           onClick={() => navigate("/stratejik-kokpit")}
           className="text-[12px] font-semibold text-tyro-navy hover:underline cursor-pointer"
         >
-          Tümünü Gör &rsaquo;
+          {t("common.viewAll")} &rsaquo;
         </button>
       </div>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-12 gap-3">
-        {/* Left section (9 col) */}
-        <div className="col-span-9 flex flex-col gap-3">
-          {/* Row 1: 3 summary KPI cards — no icon backgrounds, unique icons */}
-          <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+        {/* Left section */}
+        <div className="sm:col-span-9 flex flex-col gap-3">
+          {/* Row 1: 3 summary KPI cards */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {/* Projelerim */}
             <div
               onClick={() => navigate("/stratejik-kokpit")}
-              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-tyro-navy/20 transition-all"
+              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-3 sm:p-4 cursor-pointer hover:shadow-md hover:border-tyro-navy/20 transition-all"
             >
               <FolderKanban size={18} className="text-tyro-navy mb-2" />
-              <span className="text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{ws.myProjeler.length}</span>
-              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">Projelerim <span className="text-tyro-text-muted">/ {ws.totalProjeler}</span></span>
+              <span className="text-[20px] sm:text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{ws.myProjeler.length}</span>
+              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">{t("workspace.myProjects")} <span className="text-tyro-text-muted">/ {ws.totalProjeler}</span></span>
             </div>
 
             {/* Tamamlanan */}
             <div
               onClick={() => navigate("/stratejik-kokpit?status=Achieved")}
-              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-emerald-300/40 transition-all"
+              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-3 sm:p-4 cursor-pointer hover:shadow-md hover:border-emerald-300/40 transition-all"
             >
               <Trophy size={18} className="text-emerald-500 mb-2" />
-              <span className="text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{ws.achievedProjeler}</span>
-              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">Tamamlanan Proje</span>
+              <span className="text-[20px] sm:text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{ws.achievedProjeler}</span>
+              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">{t("workspace.completedProjects")}</span>
             </div>
 
             {/* Kontrol Edilmesi Gereken */}
             <div
               onClick={() => navigate("/stratejik-kokpit?reviewOverdue=true")}
-              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-4 cursor-pointer hover:shadow-md hover:border-amber-300/40 transition-all"
+              className="rounded-2xl border border-tyro-border/30 bg-white/50 dark:bg-white/5 p-3 sm:p-4 cursor-pointer hover:shadow-md hover:border-amber-300/40 transition-all"
             >
               <ShieldAlert size={18} className="text-amber-500 mb-2" />
-              <span className="text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{overdueCount}</span>
-              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">Kontrol Bekleyen</span>
+              <span className="text-[20px] sm:text-[28px] font-extrabold text-tyro-text-primary tabular-nums leading-none block">{overdueCount}</span>
+              <span className="text-[11px] font-medium text-tyro-text-secondary mt-1 block">{t("workspace.awaitingReview")}</span>
             </div>
           </div>
 
           {/* Row 2: 6 status cards (Achieved excluded) — premium mini cards */}
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             {statusCounts.filter((s) => s.status !== "Achieved").map((s) => (
               <div
                 key={s.status}
@@ -128,8 +128,8 @@ export default function BentoKPI() {
           </div>
         </div>
 
-        {/* Right: Premium Circular Progress (3 col) */}
-        <div className="col-span-3 flex items-center justify-center">
+        {/* Right: Premium Circular Progress */}
+        <div className="hidden sm:col-span-3 sm:flex items-center justify-center">
           <div className="relative" style={{ width: 130, height: 130 }}>
             {/* Subtle glow */}
             <div className="absolute inset-2 rounded-full" style={{ background: `radial-gradient(circle, ${progColor}10 0%, transparent 70%)` }} />
@@ -153,7 +153,7 @@ export default function BentoKPI() {
                 %{avgProgress}
               </span>
               <span className="text-[11px] font-medium text-tyro-text-secondary mt-1">
-                Ort. İlerleme
+                {t("workspace.avgProgressLabel")}
               </span>
             </div>
           </div>

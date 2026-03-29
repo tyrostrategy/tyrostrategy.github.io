@@ -106,42 +106,42 @@ export default function DashboardPage() {
 
   const kpiCards = [
     {
-      label: "Proje Tamamlanma",
+      label: t("dashboard.projectCompletion"),
       value: hedefTamamlanan.length,
       target: projeler.length,
       icon: "Target",
       color: "var(--tyro-navy)",
       progress: projeProgress,
-      contextText: `${hedefTamamlanan.length}/${projeler.length} proje`,
+      contextText: t("dashboard.projectCount", { completed: hedefTamamlanan.length, total: projeler.length }),
       onClick: () => navigate("/stratejik-kokpit?status=Achieved"),
     },
     {
-      label: "Aktif Projeler",
+      label: t("dashboard.activeProjects"),
       value: aktivProjeler.length,
       icon: "Target",
       color: "var(--tyro-gold)",
       trend: onTrackCount,
-      trendLabel: "yolunda",
-      contextText: `${projeler.length} toplam proje`,
+      trendLabel: t("dashboard.onTrackTrend"),
+      contextText: t("dashboard.totalProjects", { count: projeler.length }),
       onClick: () => navigate("/stratejik-kokpit?status=On Track,At Risk,Behind,On Hold"),
     },
     {
-      label: "Gecikmeli / Riskli",
+      label: t("dashboard.delayedRisky"),
       value: gecikenProjeler.length,
       icon: "AlertTriangle",
       color: "var(--tyro-danger)",
       trend: behindCount,
-      trendLabel: `gecikmeli, ${atRiskCount} risk altında`,
-      contextText: `${projeler.length} toplam projeden`,
+      trendLabel: t("dashboard.behindTrend", { atRisk: atRiskCount }),
+      contextText: t("dashboard.totalProjectsOf", { count: projeler.length }),
       onClick: () => navigate("/stratejik-kokpit?status=Behind,At Risk"),
     },
     {
-      label: "Ortalama İlerleme",
+      label: t("dashboard.avgProgress"),
       value: avgProgress,
       icon: "BarChart3",
       color: "var(--tyro-info)",
       progress: avgProgress,
-      contextText: `${projeler.length} proje ortalaması`,
+      contextText: t("dashboard.projectAverage", { count: projeler.length }),
       onClick: () => navigate("/stratejik-kokpit"),
     },
   ];
@@ -151,12 +151,17 @@ export default function DashboardPage() {
   };
 
   // ===== Tab render helper =====
-  const renderTabs = () => (
-    <div className="flex items-center gap-1 text-[12px] print:hidden">
-      {[
-        { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-        { id: "rapor", label: "Rapor Sihirbazı", icon: FileText },
-      ].map((tab) => {
+  const accentColor = sidebarTheme.accentColor ?? "#c8922a";
+
+  const tabItems = [
+    { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+    { id: "rapor", label: t("dashboard.reportWizard"), icon: FileText },
+  ];
+
+  // Desktop tabs — original style
+  const renderDesktopTabs = () => (
+    <div className="hidden sm:flex items-center gap-1 text-[12px] print:hidden">
+      {tabItems.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
         return (
@@ -178,14 +183,50 @@ export default function DashboardPage() {
     </div>
   );
 
+  // Mobile tabs — Liquid Glass style
+  const renderMobileTabs = () => (
+    <div className="sm:hidden flex items-center bg-white/40 dark:bg-tyro-surface/30 backdrop-blur-[24px] backdrop-saturate-[1.6] rounded-xl border border-white/40 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.5)] p-1 print:hidden">
+      {tabItems.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = activeTab === tab.id;
+        return (
+          <button
+            key={tab.id}
+            onClick={() => switchTab(tab.id)}
+            className="relative flex items-center gap-1.5 px-3 h-8 rounded-lg text-[12px] font-semibold cursor-pointer flex-1 justify-center transition-colors whitespace-nowrap"
+            style={{ color: isActive ? accentColor : "var(--tyro-text-muted)" }}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="dashboard-tab-pill"
+                className="absolute inset-0 rounded-lg"
+                style={{
+                  background: `radial-gradient(ellipse at 50% 30%, ${accentColor}18, ${accentColor}08 70%, transparent 100%)`,
+                  boxShadow: `0 1px 8px ${accentColor}15, inset 0 1px 2px rgba(255,255,255,0.6)`,
+                  border: `1px solid ${accentColor}12`,
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              />
+            )}
+            <span className="relative z-10 flex items-center gap-1.5">
+              <Icon size={14} />
+              {tab.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
   // ===== Rapor Sihirbazı tab =====
   if (activeTab === "rapor") {
     return (
       <div>
         <div className="flex items-center justify-between mb-5 print:hidden">
-          {renderTabs()}
+          {renderMobileTabs()}
+          {renderDesktopTabs()}
         </div>
-        <Suspense fallback={<div className="flex items-center justify-center py-20 text-tyro-text-muted">Yükleniyor...</div>}>
+        <Suspense fallback={<div className="flex items-center justify-center py-20 text-tyro-text-muted">{t("dashboard.loading")}</div>}>
           <RaporSihirbazi />
         </Suspense>
       </div>
@@ -196,31 +237,42 @@ export default function DashboardPage() {
     <motion.div className="space-y-5" variants={stagger} initial="hidden" animate="show">
       {/* Page Header — Tabs + Greeting + Summary */}
       <motion.div variants={fadeUp} className="space-y-3 sm:space-y-0">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div className="min-w-0">
-            {renderTabs()}
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={openCommandPalette}
-            className="inline-flex items-center gap-2 h-10 flex-1 sm:flex-none px-3 rounded-button border border-tyro-border bg-tyro-surface text-tyro-text-secondary hover:border-tyro-navy/20 transition-colors cursor-pointer"
-          >
-            <Search size={16} />
-            <span className="text-[13px] text-tyro-text-muted">{t("common.search")}</span>
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-md bg-tyro-bg border border-tyro-border text-[11px] font-mono text-tyro-text-muted ml-auto sm:ml-2">
-              ⌘K
-            </kbd>
-          </button>
+        {/* Mobile: tabs + filter icon inline */}
+        <div className="flex items-center justify-between gap-2 sm:hidden">
+          <div className="min-w-0 flex-1">{renderMobileTabs()}</div>
           <button
             type="button"
             onClick={() => setFilterOpen(true)}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-button border border-tyro-border bg-tyro-surface text-tyro-text-secondary hover:border-tyro-navy/20 hover:text-tyro-navy transition-colors cursor-pointer"
+            className="h-9 w-9 rounded-lg border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-navy/5 transition-colors shrink-0"
+            aria-label={t("common.filter")}
           >
-            <SlidersHorizontal size={16} />
-            <span className="text-[13px] font-semibold">{t("common.filter")}</span>
+            <SlidersHorizontal size={15} className="text-tyro-text-secondary" />
           </button>
+        </div>
+
+        {/* Desktop: tabs + search + filter */}
+        <div className="hidden sm:flex items-start justify-between gap-3">
+          <div className="min-w-0">{renderDesktopTabs()}</div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={openCommandPalette}
+              className="inline-flex items-center gap-2 h-10 px-3 rounded-button border border-tyro-border bg-tyro-surface text-tyro-text-secondary hover:border-tyro-navy/20 transition-colors cursor-pointer"
+            >
+              <Search size={16} />
+              <span className="text-[13px] text-tyro-text-muted">{t("common.search")}</span>
+              <kbd className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-tyro-bg border border-tyro-border text-[11px] font-mono text-tyro-text-muted ml-2">
+                ⌘K
+              </kbd>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterOpen(true)}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-button border border-tyro-border bg-tyro-surface text-tyro-text-secondary hover:border-tyro-navy/20 hover:text-tyro-navy transition-colors cursor-pointer"
+            >
+              <SlidersHorizontal size={16} />
+              <span className="text-[13px] font-semibold">{t("common.filter")}</span>
+            </button>
           </div>
         </div>
       </motion.div>
@@ -289,6 +341,7 @@ interface ActiveBentoCardProps {
 }
 
 function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
   const trendIsPositive = kpi.trend !== undefined && kpi.trend >= 0;
@@ -348,14 +401,14 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
               animate={{ maxHeight: 200, opacity: 1 }}
               exit={{ maxHeight: 0, opacity: 0 }}
               transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="overflow-hidden"
+              className="overflow-hidden hidden sm:block"
             >
               <div className="mt-4 pt-3 border-t border-tyro-border">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-tyro-text-muted mb-2">
-                  Tamamlanan Hedefler
+                  {t("dashboard.completedGoals")}
                 </p>
                 {completedHedefler.length === 0 ? (
-                  <p className="text-xs text-tyro-text-muted">Henüz tamamlanan proje yok</p>
+                  <p className="text-xs text-tyro-text-muted">{t("dashboard.noCompletedProjects")}</p>
                 ) : (
                   <ul className="space-y-1">
                     {completedHedefler.slice(0, 3).map((h) => (
@@ -374,7 +427,7 @@ function ActiveBentoCard({ kpi, completedHedefler }: ActiveBentoCardProps) {
                   className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-tyro-navy/[0.07] text-xs font-semibold text-tyro-navy hover:bg-tyro-navy/[0.14] transition-colors cursor-pointer"
                   onClick={(e) => { e.stopPropagation(); navigate("/projeler"); }}
                 >
-                  Tüm hedefleri gör
+                  {t("dashboard.viewAllGoals")}
                   <ArrowRight size={12} />
                 </button>
               </div>
@@ -397,21 +450,26 @@ const STATUS_COLORS: Record<string, string> = {
   "On Hold": "#8b5cf6",
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  "On Track": "Yolunda",
-  "At Risk": "Risk Altında",
-  "Behind": "Gecikmeli",
-  "Achieved": "Tamamlandı",
-  "Not Started": "Başlanmadı",
-  "Cancelled": "İptal",
-  "On Hold": "Askıda",
-};
+function useStatusLabels(): Record<string, string> {
+  const { t } = useTranslation();
+  return {
+    "On Track": t("dashboard.statusOnTrack"),
+    "At Risk": t("dashboard.statusAtRisk"),
+    "Behind": t("dashboard.statusBehind"),
+    "Achieved": t("dashboard.statusAchieved"),
+    "Not Started": t("dashboard.statusNotStarted"),
+    "Cancelled": t("dashboard.statusCancelled"),
+    "On Hold": t("dashboard.statusOnHold"),
+  };
+}
 
 function DepartmentDistribution({ projeler }: { projeler: { department: string; status: string }[] }) {
+  const { t } = useTranslation();
+  const STATUS_LABELS = useStatusLabels();
   const grouped = useMemo(() => {
     const m = new Map<string, Record<string, number>>();
     for (const p of projeler) {
-      const dept = p.department || "Diğer";
+      const dept = p.department || t("dashboard.other");
       if (!m.has(dept)) m.set(dept, {});
       const d = m.get(dept)!;
       d[p.status] = (d[p.status] || 0) + 1;
@@ -423,14 +481,14 @@ function DepartmentDistribution({ projeler }: { projeler: { department: string; 
 
   return (
     <GlassCard className="p-5 flex-1 flex flex-col">
-      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">Departman Bazlı Proje Dağılımı</h3>
-      <p className="text-[11px] text-tyro-text-secondary mb-4">Departmanlara göre proje statüleri</p>
+      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">{t("dashboard.deptDistribution")}</h3>
+      <p className="text-[11px] text-tyro-text-secondary mb-4">{t("dashboard.deptDistributionDesc")}</p>
       <div className="flex-1 space-y-3 overflow-y-auto">
         {grouped.map(({ dept, statuses, total }) => (
           <div key={dept}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-[12px] font-semibold text-tyro-text-primary">{dept}</span>
-              <span className="text-[11px] text-tyro-text-muted">{total} proje</span>
+              <span className="text-[11px] text-tyro-text-muted">{t("dashboard.projectCountLabel", { count: total })}</span>
             </div>
             <div className="flex h-2.5 rounded-full overflow-hidden bg-tyro-bg">
               {Object.entries(statuses).map(([status, count]) => (
@@ -463,10 +521,12 @@ function DepartmentDistribution({ projeler }: { projeler: { department: string; 
 
 // ===== Proje Lideri Bazlı Dağılım =====
 function LeaderDistribution({ projeler }: { projeler: { owner: string; status: string }[] }) {
+  const { t } = useTranslation();
+  const STATUS_LABELS = useStatusLabels();
   const grouped = useMemo(() => {
     const m = new Map<string, Record<string, number>>();
     for (const p of projeler) {
-      const owner = p.owner || "Belirtilmemiş";
+      const owner = p.owner || t("dashboard.notSpecified");
       if (!m.has(owner)) m.set(owner, {});
       const d = m.get(owner)!;
       d[p.status] = (d[p.status] || 0) + 1;
@@ -479,14 +539,14 @@ function LeaderDistribution({ projeler }: { projeler: { owner: string; status: s
 
   return (
     <GlassCard className="p-5 flex-1 flex flex-col">
-      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">Proje Lideri Bazlı Dağılım</h3>
-      <p className="text-[11px] text-tyro-text-secondary mb-4">Proje liderlerine göre proje statüleri</p>
+      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">{t("dashboard.leaderDistribution")}</h3>
+      <p className="text-[11px] text-tyro-text-secondary mb-4">{t("dashboard.leaderDistributionDesc")}</p>
       <div className="flex-1 space-y-3 overflow-y-auto">
         {grouped.map(({ owner, statuses, total }) => (
           <div key={owner}>
             <div className="flex items-center justify-between mb-1">
               <span className="text-[12px] font-semibold text-tyro-text-primary truncate max-w-[200px]">{owner}</span>
-              <span className="text-[11px] text-tyro-text-muted shrink-0">{total} proje</span>
+              <span className="text-[11px] text-tyro-text-muted shrink-0">{t("dashboard.projectCountLabel", { count: total })}</span>
             </div>
             <div className="flex h-2.5 rounded-full overflow-hidden bg-tyro-bg">
               {Object.entries(statuses).map(([status, count]) => (

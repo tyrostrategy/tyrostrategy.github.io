@@ -72,7 +72,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
     defaultValues: {
       name: aksiyon?.name ?? "",
       description: aksiyon?.description ?? "",
-      owner: aksiyon?.owner ?? proje?.owner ?? CURRENT_USER,
+      owner: aksiyon?.owner ?? proje?.owner ?? (localStorage.getItem("tyro-mock-user") || "Demo User"),
       projeId: aksiyon?.projeId ?? defaultProjeId ?? "",
       progress: aksiyon?.progress ?? 0,
       status: aksiyon?.status ?? "Not Started",
@@ -131,14 +131,14 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
     const parentProje = proje ?? projeler.find((p) => p.id === data.projeId);
     if (parentProje) {
       if (data.startDate && parentProje.startDate && data.startDate < parentProje.startDate) {
-        toast.error("Tarih Aralığı Hatası", {
+        toast.error(t("toast.dateRangeError"), {
           message: `Aksiyon başlangıç tarihi (${formatDate(data.startDate)}) projenin başlangıç tarihinden (${formatDate(parentProje.startDate)}) önce olamaz.`,
           field: parentProje.name,
         });
         return;
       }
       if (data.endDate && parentProje.endDate && data.endDate > parentProje.endDate) {
-        toast.error("Tarih Aralığı Hatası", {
+        toast.error(t("toast.dateRangeError"), {
           message: `Aksiyon bitiş tarihi (${formatDate(data.endDate)}) projenin bitiş tarihinden (${formatDate(parentProje.endDate)}) sonra olamaz.`,
           field: parentProje.name,
         });
@@ -151,16 +151,16 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
       if (aksiyon) {
         // Detect changed fields for structured toast
         const details: { label: string; value: string }[] = [];
-        if (data.name !== aksiyon.name) details.push({ label: "Ad", value: data.name });
-        if (data.progress !== aksiyon.progress) details.push({ label: "İlerleme", value: `%${data.progress}` });
-        if (data.status !== aksiyon.status) details.push({ label: "Durum", value: data.status });
-        if (data.owner !== aksiyon.owner) details.push({ label: "Sahip", value: data.owner });
-        if (data.startDate !== aksiyon.startDate) details.push({ label: "Başlangıç", value: data.startDate });
-        if (data.endDate !== aksiyon.endDate) details.push({ label: "Bitiş", value: data.endDate });
+        if (data.name !== aksiyon.name) details.push({ label: t("common.name"), value: data.name });
+        if (data.progress !== aksiyon.progress) details.push({ label: t("common.progress"), value: `%${data.progress}` });
+        if (data.status !== aksiyon.status) details.push({ label: t("common.status"), value: data.status });
+        if (data.owner !== aksiyon.owner) details.push({ label: t("common.owner"), value: data.owner });
+        if (data.startDate !== aksiyon.startDate) details.push({ label: t("common.startDate"), value: data.startDate });
+        if (data.endDate !== aksiyon.endDate) details.push({ label: t("common.endDate"), value: data.endDate });
         updateAksiyon(aksiyon.id, data);
         toast.success(t("toast.actionUpdated"), {
           message: data.name,
-          details: details.length > 0 ? details : [{ label: "Durum", value: "Değişiklik kaydedildi" }],
+          details: details.length > 0 ? details : [{ label: t("common.status"), value: t("toast.changeSaved") }],
         });
       } else {
         addAksiyon(data);
@@ -199,7 +199,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
           }} />
           <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: sidebarTheme.accentColor ?? "#c8922a" }} />
           <div className="relative z-10 flex items-center justify-between">
-            <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>Yeni Aksiyon Oluştur</span>
+            <span className="text-[13px] font-bold uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>{t("forms.action.createTitle")}</span>
             {onClose && (
               <button type="button" onClick={onClose}
                 className="w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer backdrop-blur-md hover:scale-[1.05] active:scale-[0.95]"
@@ -234,7 +234,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
                   </button>
                 )}
                 <span className="text-[13px] font-bold tabular-nums" style={{ color: isDark ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.6)" }}>{aksiyon.id}</span>
-                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>Aksiyon Düzenleme</span>
+                <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: isDark ? "rgba(255,255,255,0.5)" : "rgba(30,41,59,0.4)" }}>{t("forms.action.editTitle")}</span>
               </div>
               {onClose && (
                 <button type="button" onClick={onClose}
@@ -272,7 +272,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
           }} />
           <button type="button" onClick={() => setProjeCardOpen(!projeCardOpen)}
             className="relative z-10 w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-white/5 transition-colors">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">Bağlı Proje: <span className="text-white tabular-nums">{proje.id}</span></span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-white/80">{t("kokpit.linkedProject")}: <span className="text-white tabular-nums">{proje.id}</span></span>
             <ChevronDown size={14} className={`text-white/80 transition-transform duration-200 ${projeCardOpen ? "rotate-180" : ""}`} />
           </button>
           {projeCardOpen && (
@@ -291,10 +291,9 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
 
       {/* Scrollable form body */}
       <div className={`form-scroll-wrapper flex-1 min-h-0 ${scrollState.top ? "has-scroll-top" : ""} ${scrollState.bottom ? "has-scroll-bottom" : ""}`}>
-        <span className="form-scroll-chevron text-[10px] text-tyro-text-muted flex items-center gap-1">↓ Diğer alanlar</span>
         <div ref={scrollRef} className="form-scroll-body h-full px-0.5 py-1 space-y-3" onScroll={updateScroll}>
 
-      <FormSection title="Aksiyon Bilgileri">
+      <FormSection title={t("forms.action.sectionTitle")}>
         <Controller
           name="name"
           control={control}
@@ -326,7 +325,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
               </label>
               <Textarea
                 {...field}
-                placeholder={t("forms.action.descriptionPlaceholder", "Aksiyon açıklaması giriniz (isteğe bağlı)")}
+                placeholder={t("forms.action.descriptionPlaceholder")}
                 variant="bordered"
                 size="sm"
                 minRows={2}
@@ -443,7 +442,7 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
               </Select>
             ) : (
               <p className="text-[11px] text-tyro-text-muted italic px-1">
-                {watchProgress === 0 ? "İlerleme %0 olduğunda durum otomatik belirlenir" : "İlerleme %100 olduğunda durum otomatik belirlenir"}
+                {watchProgress === 0 ? t("forms.action.statusAutoZero") : t("forms.action.statusAutoFull")}
               </p>
             )}
           </div>
@@ -521,18 +520,30 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
 
       {/* Sticky footer */}
       <div className="shrink-0 pt-3 pb-1 border-t border-tyro-border/20 bg-tyro-surface/80 backdrop-blur-sm">
-        <Button
-          type="submit"
-          isLoading={isLoading}
-          startContent={<Check size={14} />}
-          className="w-full rounded-button font-semibold relative overflow-hidden group text-white"
-          style={{ backgroundColor: accentColor }}
-        >
-        <span className="relative z-10">{aksiyon ? t("common.save") : t("common.create")}</span>
-        <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
-          <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
-        </span>
-        </Button>
+        <div className="flex gap-2">
+          {onClose && (
+            <Button
+              type="button"
+              variant="bordered"
+              onPress={onClose}
+              className="flex-1 rounded-button font-semibold border-tyro-border"
+            >
+              {t("common.cancel")}
+            </Button>
+          )}
+          <Button
+            type="submit"
+            isLoading={isLoading}
+            startContent={<Check size={14} />}
+            className={`${onClose ? "flex-1" : "w-full"} rounded-button font-semibold relative overflow-hidden group text-white`}
+            style={{ backgroundColor: accentColor }}
+          >
+            <span className="relative z-10">{aksiyon ? t("common.save") : t("common.create")}</span>
+            <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden pointer-events-none">
+              <span className="absolute top-0 -left-full h-full w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:left-[150%] transition-all duration-700 ease-out" />
+            </span>
+          </Button>
+        </div>
       </div>
     </form>
   );

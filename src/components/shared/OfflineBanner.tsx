@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export default function OfflineBanner() {
+  const { t } = useTranslation();
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function OfflineBanner() {
           className="fixed top-0 left-0 right-0 z-[90] flex items-center justify-center gap-2 py-2 bg-tyro-warning text-white text-sm font-medium shadow-lg"
         >
           <WifiOff size={16} />
-          <span>Internet bağlantınız kesildi. Bazı özellikler çalışmayabilir.</span>
+          <span>{t("common.offlineMessage")}</span>
         </motion.div>
       )}
     </AnimatePresence>

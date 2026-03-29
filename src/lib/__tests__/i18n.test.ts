@@ -53,7 +53,7 @@ describe("i18n setup", () => {
 
     it("role keys exist in English", () => {
       expect(i18n.t("roles.admin", { lng: "en" })).toBe("Admin");
-      expect(i18n.t("roles.projectLeader", { lng: "en" })).toBe("Objective Leader");
+      expect(i18n.t("roles.projectLeader", { lng: "en" })).toBe("Project Leader");
       expect(i18n.t("roles.user", { lng: "en" })).toBe("User");
     });
 

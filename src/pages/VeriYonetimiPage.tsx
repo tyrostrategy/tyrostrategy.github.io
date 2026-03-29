@@ -61,7 +61,7 @@ export default function VeriYonetimiPage() {
   const tables: DataTable[] = [
     {
       id: "projeler",
-      label: "Projeler",
+      label: t("dataManagement.projects"),
       icon: Target,
       color: "#1e3a5f",
       getCount: () => projeler.length,
@@ -72,11 +72,11 @@ export default function VeriYonetimiPage() {
         store.projeler.forEach((h) => store.deleteProje(h.id));
         (data as Proje[]).forEach((h) => store.addProje(h));
       },
-      description: "Stratejik proje kayıtları",
+      description: t("dataManagement.projectsDesc"),
     },
     {
       id: "aksiyonlar",
-      label: "Aksiyonlar",
+      label: t("dataManagement.actions"),
       icon: CircleCheckBig,
       color: "#3b82f6",
       getCount: () => aksiyonlar.length,
@@ -86,11 +86,11 @@ export default function VeriYonetimiPage() {
         store.aksiyonlar.forEach((a) => store.deleteAksiyon(a.id));
         (data as Aksiyon[]).forEach((a) => store.addAksiyon(a));
       },
-      description: "Hedeflere bağlı aksiyon maddeleri",
+      description: t("dataManagement.actionsDesc"),
     },
     {
       id: "etiketler",
-      label: "Etiket Tanımları",
+      label: t("dataManagement.tagDefinitions"),
       icon: Tag,
       color: "#D4A017",
       getCount: () => tagDefinitions.length,
@@ -101,21 +101,21 @@ export default function VeriYonetimiPage() {
         store.tagDefinitions.forEach((t) => store.deleteTag(t.id));
         (data as TagDefinition[]).forEach((t) => store.addTag(t.name, t.color));
       },
-      description: "Parametrik etiket tanımları ve renkleri",
+      description: t("dataManagement.tagDefinitionsDesc"),
     },
     {
       id: "roller",
-      label: "Rol Yetkileri",
+      label: t("dataManagement.rolePermissions"),
       icon: Shield,
       color: "#8b5cf6",
       getCount: () => Object.keys(rolePermissions ?? {}).length,
       getData: () => Object.entries(rolePermissions ?? {}).map(([role, perms]) => ({ role, ...(perms as Record<string, unknown>) })),
       setData: () => { /* Role store doesn't have bulk import yet */ },
-      description: "Kullanıcı rolleri ve sayfa/işlem yetkileri",
+      description: t("dataManagement.rolePermissionsDesc"),
     },
     {
       id: "ayarlar",
-      label: "UI Ayarları",
+      label: t("dataManagement.uiSettings"),
       icon: Settings,
       color: "#64748b",
       getCount: () => 1,
@@ -129,7 +129,7 @@ export default function VeriYonetimiPage() {
         }];
       },
       setData: () => { /* UI store set individually */ },
-      description: "Dil, tema, kullanıcı tercihleri",
+      description: t("dataManagement.uiSettingsDesc"),
     },
   ];
 
@@ -165,7 +165,7 @@ export default function VeriYonetimiPage() {
         : tables.filter((t) => selectedTables.has(t.id));
 
       if (toExport.length === 0) {
-        addLog({ type: "export", table: "-", format: exportFormat, status: "warning", message: "Dışa aktarılacak tablo seçilmedi." });
+        addLog({ type: "export", table: "-", format: exportFormat, status: "warning", message: t("dataManagement.noTableSelected") });
         setProcessing(false);
         return;
       }
@@ -179,7 +179,7 @@ export default function VeriYonetimiPage() {
         totalRecords += data.length;
       });
 
-      const tableName = toExport.length === 1 ? toExport[0].label : "Tüm Veriler";
+      const tableName = toExport.length === 1 ? toExport[0].label : t("dataManagement.allData");
       const fileName = `tyrostrategy_${toExport.length === 1 ? toExport[0].id : "tum_veriler"}_${new Date().toISOString().slice(0, 10)}`;
 
       if (exportFormat === "json") {
@@ -208,7 +208,7 @@ export default function VeriYonetimiPage() {
         table: tableName,
         format: exportFormat.toUpperCase(),
         status: "success",
-        message: `${totalRecords} kayıt başarıyla dışa aktarıldı.`,
+        message: t("dataManagement.exportSuccess", { count: totalRecords }),
         recordCount: totalRecords,
       });
     } catch (err) {
@@ -217,7 +217,7 @@ export default function VeriYonetimiPage() {
         table: "-",
         format: exportFormat.toUpperCase(),
         status: "error",
-        message: `Dışa aktarma hatası: ${(err as Error).message}`,
+        message: t("dataManagement.exportError", { message: (err as Error).message }),
       });
     }
     setProcessing(false);
@@ -241,7 +241,7 @@ export default function VeriYonetimiPage() {
         const parsed = JSON.parse(text);
         // Handle both { tableId: [...] } and [...] formats
         data = Array.isArray(parsed) ? parsed : (parsed[tableId] ?? Object.values(parsed)[0] ?? []);
-        if (!Array.isArray(data)) throw new Error("Geçersiz JSON formatı — dizi (array) bekleniyor.");
+        if (!Array.isArray(data)) throw new Error(t("dataManagement.invalidJsonFormat"));
       } else if (file.name.endsWith(".csv")) {
         const text = await file.text();
         data = csvToArray(text);
@@ -251,7 +251,7 @@ export default function VeriYonetimiPage() {
         const sheetName = wb.SheetNames.find((n) => n.toLowerCase() === tableId) ?? wb.SheetNames[0];
         data = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
       } else {
-        throw new Error("Desteklenmeyen dosya formatı. JSON, CSV veya XLSX kullanın.");
+        throw new Error(t("dataManagement.unsupportedFormat"));
       }
 
       if (data.length === 0) {
@@ -260,7 +260,7 @@ export default function VeriYonetimiPage() {
           table: table.label,
           format: file.name.split(".").pop()?.toUpperCase() ?? "?",
           status: "warning",
-          message: "Dosyada içe aktarılacak kayıt bulunamadı.",
+          message: t("dataManagement.importNoRecords"),
           recordCount: 0,
         });
         setProcessing(false);
@@ -279,7 +279,7 @@ export default function VeriYonetimiPage() {
         const r = row as Record<string, unknown>;
         required.forEach((field) => {
           if (!r[field] && r[field] !== 0) {
-            errors.push(`Satır ${i + 1}: "${field}" alanı zorunlu.`);
+            errors.push(t("dataManagement.requiredField", { row: i + 1, field }));
           }
         });
       });
@@ -290,7 +290,7 @@ export default function VeriYonetimiPage() {
           table: table.label,
           format: file.name.split(".").pop()?.toUpperCase() ?? "?",
           status: "error",
-          message: `${errors.length} doğrulama hatası bulundu. İçe aktarma iptal edildi.`,
+          message: t("dataManagement.importValidationError", { count: errors.length }),
           recordCount: 0,
           errors: errors.slice(0, 10),
         });
@@ -307,8 +307,8 @@ export default function VeriYonetimiPage() {
         format: file.name.split(".").pop()?.toUpperCase() ?? "?",
         status: errors.length > 0 ? "warning" : "success",
         message: errors.length > 0
-          ? `${data.length} kayıt aktarıldı, ${errors.length} uyarı.`
-          : `${data.length} kayıt başarıyla içe aktarıldı.`,
+          ? t("dataManagement.importSuccessWithWarnings", { count: data.length, warnings: errors.length })
+          : t("dataManagement.importSuccess", { count: data.length }),
         recordCount: data.length,
         errors: errors.length > 0 ? errors : undefined,
       });
@@ -318,7 +318,7 @@ export default function VeriYonetimiPage() {
         table: table.label,
         format: file.name.split(".").pop()?.toUpperCase() ?? "?",
         status: "error",
-        message: `İçe aktarma hatası: ${(err as Error).message}`,
+        message: t("dataManagement.importError", { message: (err as Error).message }),
       });
     }
     setProcessing(false);
@@ -405,23 +405,23 @@ export default function VeriYonetimiPage() {
       <div>
         <h1 className="text-[20px] font-extrabold text-tyro-text-primary flex items-center gap-2.5">
           <Database size={22} className="text-tyro-navy" />
-          Veri Yönetimi
+          {t("dataManagement.title")}
         </h1>
         <p className="text-[12px] text-tyro-text-secondary mt-1">
-          Uygulama verilerini dışa/içe aktarın, yedekleyin ve yönetin.
+          {t("dataManagement.subtitle")}
         </p>
       </div>
 
       {/* Data Tables Grid */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[13px] font-bold text-tyro-text-primary">Veri Tabloları</h2>
+          <h2 className="text-[13px] font-bold text-tyro-text-primary">{t("dataManagement.dataTables")}</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={selectAll}
               className="text-[11px] font-semibold text-tyro-navy hover:underline cursor-pointer"
             >
-              {selectedTables.size === tables.length ? "Tümünü Kaldır" : "Tümünü Seç"}
+              {selectedTables.size === tables.length ? t("dataManagement.deselectAll") : t("dataManagement.selectAll")}
             </button>
 
             {/* Format selector */}
@@ -472,7 +472,7 @@ export default function VeriYonetimiPage() {
               startContent={!processing && <Download size={14} />}
               onPress={() => handleExport()}
             >
-              Seçilenleri Dışa Aktar
+              {t("dataManagement.exportSelected")}
             </Button>
           </div>
         </div>
@@ -509,7 +509,7 @@ export default function VeriYonetimiPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-[22px] font-extrabold tabular-nums text-tyro-text-primary">{table.getCount()}</span>
                   <div className="flex items-center gap-1.5">
-                    <Tooltip content="Dışa Aktar" placement="top">
+                    <Tooltip content={t("dataManagement.export")} placement="top">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleExport(table.id); }}
                         className="w-8 h-8 rounded-lg flex items-center justify-center text-tyro-text-muted hover:text-tyro-navy hover:bg-tyro-navy/5 transition-colors cursor-pointer"
@@ -517,7 +517,7 @@ export default function VeriYonetimiPage() {
                         <Download size={15} />
                       </button>
                     </Tooltip>
-                    <Tooltip content="İçe Aktar" placement="top">
+                    <Tooltip content={t("dataManagement.import")} placement="top">
                       <button
                         onClick={(e) => { e.stopPropagation(); triggerImport(table.id); }}
                         className="w-8 h-8 rounded-lg flex items-center justify-center text-tyro-text-muted hover:text-emerald-600 hover:bg-emerald-500/5 transition-colors cursor-pointer"
@@ -547,7 +547,7 @@ export default function VeriYonetimiPage() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[13px] font-bold text-tyro-text-primary flex items-center gap-2">
             <Clock size={15} className="text-tyro-text-muted" />
-            İşlem Geçmişi
+            {t("dataManagement.operationHistory")}
           </h2>
           {logs.length > 0 && (
             <button
@@ -555,7 +555,7 @@ export default function VeriYonetimiPage() {
               className="text-[11px] font-semibold text-tyro-text-muted hover:text-red-500 cursor-pointer flex items-center gap-1"
             >
               <Trash2 size={12} />
-              Temizle
+              {t("dataManagement.clear")}
             </button>
           )}
         </div>
@@ -563,8 +563,8 @@ export default function VeriYonetimiPage() {
         {logs.length === 0 ? (
           <GlassCard className="p-8 text-center">
             <RefreshCw size={28} className="text-tyro-text-muted/30 mx-auto mb-3" />
-            <p className="text-[13px] font-semibold text-tyro-text-secondary">Henüz işlem yapılmadı</p>
-            <p className="text-[11px] text-tyro-text-muted mt-1">Dışa veya içe aktarma yaptığınızda işlem geçmişi burada görünür.</p>
+            <p className="text-[13px] font-semibold text-tyro-text-secondary">{t("dataManagement.noHistory")}</p>
+            <p className="text-[11px] text-tyro-text-muted mt-1">{t("dataManagement.noHistoryDesc")}</p>
           </GlassCard>
         ) : (
           <div className="space-y-2">
@@ -597,12 +597,12 @@ export default function VeriYonetimiPage() {
                             log.type === "import" ? "bg-emerald-500/10 text-emerald-600" :
                             "bg-red-500/10 text-red-600"
                           }`}>
-                            {log.type === "export" ? "DIŞA AKTAR" : log.type === "import" ? "İÇE AKTAR" : "SIFIRLA"}
+                            {log.type === "export" ? t("dataManagement.exportLabel") : log.type === "import" ? t("dataManagement.importLabel") : t("dataManagement.resetLabel")}
                           </span>
                           <span className="text-[10px] font-semibold text-tyro-text-muted bg-tyro-bg px-1.5 py-0.5 rounded">{log.format}</span>
                           <span className="text-[10px] text-tyro-text-muted">{log.table}</span>
                           {log.recordCount !== undefined && (
-                            <span className="text-[10px] font-bold text-tyro-text-secondary">{log.recordCount} kayıt</span>
+                            <span className="text-[10px] font-bold text-tyro-text-secondary">{log.recordCount} {t("dataManagement.record")}</span>
                           )}
                         </div>
                         <p className="text-[12px] text-tyro-text-primary">{log.message}</p>

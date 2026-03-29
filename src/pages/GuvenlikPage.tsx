@@ -43,9 +43,9 @@ export default function GuvenlikPage() {
   };
 
   const CRUD_LABELS: Record<keyof CrudPermission, string> = {
-    create: t("security.create"),
-    edit: t("security.edit"),
-    delete: t("security.delete"),
+    create: t("common.create"),
+    edit: t("common.edit"),
+    delete: t("common.delete"),
   };
 
   const ENTITY_LABELS: Record<string, string> = {
@@ -223,7 +223,7 @@ export default function GuvenlikPage() {
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between py-2 sm:py-1 px-2 rounded-lg hover:bg-tyro-bg/50 transition-colors min-h-[44px] sm:min-h-0">
-                    <Tooltip content="Kullanıcı sadece kendine ait kayıtları düzenleyebilir">
+                    <Tooltip content={t("security.editOwnRecords")}>
                       <span className="text-[12px] text-tyro-text-primary cursor-help">
                         {t("security.editOwnRecordsOnly")}
                       </span>
@@ -236,7 +236,7 @@ export default function GuvenlikPage() {
                     />
                   </div>
                   <div className="flex items-center justify-between py-2 sm:py-1 px-2 rounded-lg hover:bg-tyro-bg/50 transition-colors min-h-[44px] sm:min-h-0">
-                    <Tooltip content="Kullanıcı sadece kendine ait verileri görebilir">
+                    <Tooltip content={t("security.viewOwnData")}>
                       <span className="text-[12px] text-tyro-text-primary cursor-help">
                         {t("security.viewOwnDataOnly")}
                       </span>

@@ -18,8 +18,9 @@ vi.mock("@/lib/i18n", () => ({
 
 vi.mock("@/lib/data/mock-adapter", () => ({
   getInitialProjeler: () => [],
-  getInitialProjeler: () => [],
-  getInitialGorevler: () => [],
+  getInitialAksiyonlar: () => [],
+  getInitialData: () => ({ projeler: [], aksiyonlar: [] }),
+  getInitialTagDefinitions: () => [],
 }));
 
 // Mock react-router-dom

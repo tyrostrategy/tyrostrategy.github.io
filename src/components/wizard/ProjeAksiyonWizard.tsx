@@ -112,13 +112,13 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
     getValues,
     formState: { errors },
   } = useForm<WizardFormData>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema),
     defaultValues: {
       name: "",
       description: "",
       source: "Türkiye",
       department: "",
-      owner: CURRENT_USER,
+      owner: localStorage.getItem("tyro-mock-user") || "Demo User",
       participants: [],
       parentObjectiveId: "",
       startDate: "",
@@ -163,7 +163,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
   const goSkip = useCallback(() => {
     // Aksiyonlar adımını atlarken boş/eksik aksiyonları temizle
     const current = getValues("aksiyonlar") ?? [];
-    const valid = current.filter((a: any) => a.name?.trim() && a.owner?.trim());
+    const valid = current.filter((a) => a.name?.trim() && a.owner?.trim());
     setValue("aksiyonlar", valid);
     setDirection(1);
     setCurrentStep((s) => Math.min(s + 1, steps.length - 1));

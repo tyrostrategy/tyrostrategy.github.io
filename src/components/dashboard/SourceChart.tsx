@@ -22,16 +22,29 @@ const STATUS_COLORS: Record<string, string> = {
   "İptal": "#6b7280",
 };
 
-function CustomTooltip({ active, payload, label }: any) {
+interface TooltipPayloadEntry {
+  dataKey: string;
+  value: number;
+  fill?: string;
+  color?: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string;
+}
+
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload?.length) return null;
-  const total = payload.reduce((s: number, p: any) => s + (p.value || 0), 0);
+  const total = payload.reduce((s: number, p: TooltipPayloadEntry) => s + (p.value || 0), 0);
   return (
     <div className="bg-white/95 dark:bg-tyro-surface/95 backdrop-blur-xl border border-tyro-border/30 rounded-xl shadow-[0_8px_32px_rgba(30,58,95,0.15)] p-3 min-w-[160px]">
       <p className="text-[12px] font-bold text-tyro-text-primary mb-2 pb-1.5 border-b border-tyro-border/20">
         {label} <span className="text-tyro-text-muted font-normal">· {total} proje</span>
       </p>
       <div className="space-y-1.5">
-        {payload.filter((p: any) => p.value > 0).map((p: any) => (
+        {payload.filter((p: TooltipPayloadEntry) => p.value > 0).map((p: TooltipPayloadEntry) => (
           <div key={p.dataKey} className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.fill || p.color }} />

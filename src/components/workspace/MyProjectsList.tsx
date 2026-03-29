@@ -86,6 +86,7 @@ function ProgressCard({ item, onClick, showParent }: {
   onClick: () => void;
   showParent?: boolean;
 }) {
+  const { t } = useTranslation();
   const pColor = progressColor(item.progress);
   return (
     <motion.div
@@ -128,7 +129,7 @@ function ProgressCard({ item, onClick, showParent }: {
             <span className="text-[11px] text-tyro-text-muted">{formatDate(item.endDate)}</span>
           )}
           {item.aksiyonCount !== undefined && (
-            <span className="text-[11px] text-tyro-text-muted">{item.aksiyonCount} aks.</span>
+            <span className="text-[11px] text-tyro-text-muted">{t("workspace.actionsShort", { count: item.aksiyonCount })}</span>
           )}
         </div>
       </div>
@@ -332,7 +333,7 @@ export default function MyProjectsList() {
               {visibleItems.map((item) => (
                 <ProgressCard
                   key={item.id}
-                  item={item as any}
+                  item={item}
                   onClick={() => {
                     const proje = projeler.find((p) => p.id === item.id);
                     if (proje) setSelectedProje(proje);
@@ -368,7 +369,7 @@ export default function MyProjectsList() {
       <SlidingPanel
         isOpen={!!selectedProje}
         onClose={() => setSelectedProje(null)}
-        title="Proje Detayı"
+        title={t("workspace.projectDetail")}
         icon={<Eye size={16} className="text-tyro-navy" />}
       >
         {selectedProje && (

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, RotateCcw } from "lucide-react";
 import { Button, Select, SelectItem } from "@heroui/react";
+import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import type { Proje, Aksiyon, EntityStatus, AdvancedFilters } from "@/types";
@@ -15,20 +16,26 @@ interface Props {
   onApply: (filters: AdvancedFilters | null) => void;
 }
 
-const STATUS_OPTIONS: { key: EntityStatus; label: string; hex: string }[] = [
-  { key: "On Track", label: "Yolunda", hex: "#10b981" },
-  { key: "At Risk", label: "Risk Altında", hex: "#f59e0b" },
-  { key: "Behind", label: "Gecikmeli", hex: "#ef4444" },
-  { key: "Achieved", label: "Tamamlandı", hex: "#3b82f6" },
-  { key: "Not Started", label: "Başlanmadı", hex: "#94a3b8" },
-  { key: "On Hold", label: "Askıda", hex: "#8b5cf6" },
-  { key: "Cancelled", label: "İptal", hex: "#6b7280" },
-];
-
 export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyonlar, filters, onApply }: Props) {
+  const { t } = useTranslation();
   const tagDefinitions = useDataStore((s) => s.tagDefinitions);
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
+
+  // Memoize repeated inline styles to avoid object re-creation per render
+  const accentBgStyle = useMemo(() => ({ backgroundColor: accentColor }), [accentColor]);
+  const accentRangeStyle = useMemo(() => ({ accentColor }), [accentColor]);
+  const sectionLabelStyle = useMemo(() => ({ color: `${accentColor}99` }), [accentColor]);
+
+  const STATUS_OPTIONS: { key: EntityStatus; label: string; hex: string }[] = [
+    { key: "On Track", label: t("statuses.onTrack"), hex: "#10b981" },
+    { key: "At Risk", label: t("statuses.atRisk"), hex: "#f59e0b" },
+    { key: "Behind", label: t("statuses.behind"), hex: "#ef4444" },
+    { key: "Achieved", label: t("statuses.achieved"), hex: "#3b82f6" },
+    { key: "Not Started", label: t("statuses.notStarted"), hex: "#94a3b8" },
+    { key: "On Hold", label: t("statuses.onHold"), hex: "#8b5cf6" },
+    { key: "Cancelled", label: t("statuses.cancelled"), hex: "#6b7280" },
+  ];
 
   // Derive dynamic options from data
   const departments = useMemo(() => [...new Set(projeler.map((p) => p.department).filter(Boolean))].sort(), [projeler]);
@@ -146,16 +153,16 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
             onClick={onClose}
           />
           <motion.div
-            className="fixed top-0 right-0 z-[70] w-[400px] h-screen bg-tyro-surface shadow-tyro-lg border-l border-tyro-border rounded-l-2xl overflow-hidden flex flex-col"
-            initial={{ x: 400 }} animate={{ x: 0 }} exit={{ x: 400 }}
+            className="fixed top-0 right-0 z-[70] w-full sm:w-[400px] h-screen bg-tyro-surface shadow-tyro-lg border-l border-tyro-border sm:rounded-l-2xl overflow-hidden flex flex-col"
+            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-tyro-border">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-tyro-border">
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-tyro-text-primary">Gelişmiş Filtre</h2>
+                <h2 className="text-sm font-bold text-tyro-text-primary">{t("kokpit.filter.title")}</h2>
                 {activeCount > 0 && (
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full text-white text-[10px] font-bold" style={{ backgroundColor: accentColor }}>{activeCount}</span>
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full text-white text-[10px] font-bold" style={accentBgStyle}>{activeCount}</span>
                 )}
               </div>
               <button type="button" onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-tyro-text-muted hover:bg-tyro-bg transition-colors cursor-pointer">
@@ -164,16 +171,16 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-4">
               {/* ── PROJE FİLTRELERİ ── */}
-              <div className="text-[11px] font-bold uppercase tracking-wider border-b border-tyro-border/30 pb-1" style={{ color: `${accentColor}99` }}>Proje Filtreleri</div>
+              <div className="text-[11px] font-bold uppercase tracking-wider border-b border-tyro-border/30 pb-1" style={sectionLabelStyle}>{t("kokpit.filter.projectFilters")}</div>
 
-              <Section title="Proje Durumu">
+              <Section title={t("kokpit.filter.projectStatus")}>
                 <Select
                   selectionMode="multiple"
                   variant="bordered"
                   size="sm"
-                  placeholder="Durum seçin..."
+                  placeholder={t("kokpit.filter.selectStatus")}
                   selectedKeys={setToKeys(statuses)}
                   onSelectionChange={(keys) => setStatuses(keysToSet(keys))}
                   classNames={selectClasses}
@@ -189,28 +196,28 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
                 </Select>
               </Section>
 
-              <Section title="Kaynak">
+              <Section title={t("common.source")}>
                 <Select
                   selectionMode="multiple"
                   variant="bordered"
                   size="sm"
-                  placeholder="Kaynak seçin..."
+                  placeholder={t("kokpit.filter.selectSource")}
                   selectedKeys={setToKeys(sources)}
                   onSelectionChange={(keys) => setSources(keysToSet(keys))}
                   classNames={selectClasses}
                 >
-                  <SelectItem key="Türkiye">Türkiye</SelectItem>
-                  <SelectItem key="Kurumsal">Kurumsal</SelectItem>
-                  <SelectItem key="International">International</SelectItem>
+                  <SelectItem key="Türkiye">{t("kokpit.filter.sourceTurkiye")}</SelectItem>
+                  <SelectItem key="Kurumsal">{t("kokpit.filter.sourceKurumsal")}</SelectItem>
+                  <SelectItem key="International">{t("kokpit.filter.sourceInternational")}</SelectItem>
                 </Select>
               </Section>
 
-              <Section title="Departman">
+              <Section title={t("common.department")}>
                 <Select
                   selectionMode="multiple"
                   variant="bordered"
                   size="sm"
-                  placeholder="Departman seçin..."
+                  placeholder={t("kokpit.filter.selectDepartment")}
                   selectedKeys={setToKeys(dept)}
                   onSelectionChange={(keys) => setDept(keysToSet(keys))}
                   classNames={selectClasses}
@@ -221,12 +228,12 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
                 </Select>
               </Section>
 
-              <Section title="Proje Sahibi">
+              <Section title={t("kokpit.filter.projectOwner")}>
                 <Select
                   selectionMode="multiple"
                   variant="bordered"
                   size="sm"
-                  placeholder="Sahip seçin..."
+                  placeholder={t("kokpit.filter.selectOwner")}
                   selectedKeys={setToKeys(owners)}
                   onSelectionChange={(keys) => setOwners(keysToSet(keys))}
                   classNames={selectClasses}
@@ -237,12 +244,12 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
                 </Select>
               </Section>
 
-              <Section title="Etiket">
+              <Section title={t("kokpit.filter.tag")}>
                 <Select
                   selectionMode="multiple"
                   variant="bordered"
                   size="sm"
-                  placeholder="Etiket seçin..."
+                  placeholder={t("kokpit.filter.selectTag")}
                   selectedKeys={setToKeys(tags)}
                   onSelectionChange={(keys) => setTags(keysToSet(keys))}
                   classNames={selectClasses}
@@ -261,58 +268,58 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
                 </Select>
               </Section>
 
-              <Section title="Tarih Aralığı">
+              <Section title={t("kokpit.filter.dateRange")}>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">Başlangıç</label>
+                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">{t("kokpit.filter.start")}</label>
                     <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)}
                       className="w-full h-8 px-2 text-xs rounded-lg border border-tyro-border bg-tyro-bg text-tyro-text-primary focus:outline-none focus:ring-2 focus:ring-tyro-navy/10" />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">Bitiş</label>
+                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">{t("kokpit.filter.end")}</label>
                     <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)}
                       className="w-full h-8 px-2 text-xs rounded-lg border border-tyro-border bg-tyro-bg text-tyro-text-primary focus:outline-none focus:ring-2 focus:ring-tyro-navy/10" />
                   </div>
                 </div>
               </Section>
 
-              <Section title="Kontrol Tarihi">
+              <Section title={t("kokpit.filter.reviewDate")}>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">Başlangıç</label>
+                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">{t("kokpit.filter.start")}</label>
                     <input type="date" value={reviewDateFrom} onChange={(e) => setReviewDateFrom(e.target.value)}
                       className="w-full h-8 px-2 text-xs rounded-lg border border-tyro-border bg-tyro-bg text-tyro-text-primary focus:outline-none focus:ring-2 focus:ring-tyro-navy/10" />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">Bitiş</label>
+                    <label className="block text-[11px] font-semibold text-tyro-text-secondary mb-1">{t("kokpit.filter.end")}</label>
                     <input type="date" value={reviewDateTo} onChange={(e) => setReviewDateTo(e.target.value)}
                       className="w-full h-8 px-2 text-xs rounded-lg border border-tyro-border bg-tyro-bg text-tyro-text-primary focus:outline-none focus:ring-2 focus:ring-tyro-navy/10" />
                   </div>
                 </div>
               </Section>
 
-              <Section title="Proje İlerleme">
+              <Section title={t("kokpit.filter.projectProgress")}>
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
                     <label className="text-[10px] font-semibold text-tyro-text-secondary block mb-0.5">Min %{progressMin}</label>
-                    <input type="range" min={0} max={100} value={progressMin} onChange={(e) => setProgressMin(Number(e.target.value))} className="w-full h-1.5" style={{ accentColor }} />
+                    <input type="range" min={0} max={100} value={progressMin} onChange={(e) => setProgressMin(Number(e.target.value))} className="w-full h-1.5" style={accentRangeStyle} />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-semibold text-tyro-text-secondary block mb-0.5">Max %{progressMax}</label>
-                    <input type="range" min={0} max={100} value={progressMax} onChange={(e) => setProgressMax(Number(e.target.value))} className="w-full h-1.5" style={{ accentColor }} />
+                    <input type="range" min={0} max={100} value={progressMax} onChange={(e) => setProgressMax(Number(e.target.value))} className="w-full h-1.5" style={accentRangeStyle} />
                   </div>
                 </div>
               </Section>
 
               {/* ── AKSİYON FİLTRELERİ ── */}
-              <div className="text-[11px] font-bold uppercase tracking-wider border-b border-tyro-border/30 pb-1 mt-2" style={{ color: `${accentColor}99` }}>Aksiyon Filtreleri</div>
+              <div className="text-[11px] font-bold uppercase tracking-wider border-b border-tyro-border/30 pb-1 mt-2" style={sectionLabelStyle}>{t("kokpit.filter.actionFilters")}</div>
 
-              <Section title="Aksiyon Durumu">
+              <Section title={t("kokpit.filter.actionStatus")}>
                 <Select
                   selectionMode="multiple"
                   variant="bordered"
                   size="sm"
-                  placeholder="Durum seçin..."
+                  placeholder={t("kokpit.filter.selectStatus")}
                   selectedKeys={setToKeys(aksStatuses)}
                   onSelectionChange={(keys) => setAksStatuses(keysToSet(keys))}
                   classNames={selectClasses}
@@ -328,12 +335,12 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
                 </Select>
               </Section>
 
-              <Section title="Aksiyon Sahibi">
+              <Section title={t("kokpit.filter.actionOwner")}>
                 <Select
                   selectionMode="multiple"
                   variant="bordered"
                   size="sm"
-                  placeholder="Sahip seçin..."
+                  placeholder={t("kokpit.filter.selectOwner")}
                   selectedKeys={setToKeys(aksOwners)}
                   onSelectionChange={(keys) => setAksOwners(keysToSet(keys))}
                   classNames={selectClasses}
@@ -344,28 +351,28 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
                 </Select>
               </Section>
 
-              <Section title="Aksiyon İlerleme">
+              <Section title={t("kokpit.filter.actionProgress")}>
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
                     <label className="text-[10px] font-semibold text-tyro-text-secondary block mb-0.5">Min %{aksProgressMin}</label>
-                    <input type="range" min={0} max={100} value={aksProgressMin} onChange={(e) => setAksProgressMin(Number(e.target.value))} className="w-full h-1.5" style={{ accentColor }} />
+                    <input type="range" min={0} max={100} value={aksProgressMin} onChange={(e) => setAksProgressMin(Number(e.target.value))} className="w-full h-1.5" style={accentRangeStyle} />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-semibold text-tyro-text-secondary block mb-0.5">Max %{aksProgressMax}</label>
-                    <input type="range" min={0} max={100} value={aksProgressMax} onChange={(e) => setAksProgressMax(Number(e.target.value))} className="w-full h-1.5" style={{ accentColor }} />
+                    <input type="range" min={0} max={100} value={aksProgressMax} onChange={(e) => setAksProgressMax(Number(e.target.value))} className="w-full h-1.5" style={accentRangeStyle} />
                   </div>
                 </div>
               </Section>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center gap-2 px-5 py-3 border-t border-tyro-border bg-tyro-bg/50">
+            <div className="flex items-center gap-2 px-4 sm:px-5 py-3 border-t border-tyro-border bg-tyro-bg/50">
               <Button variant="flat" size="sm" className="rounded-button text-xs" startContent={<RotateCcw size={13} />} onPress={clearAll} isDisabled={activeCount === 0}>
-                Temizle
+                {t("common.clear")}
               </Button>
               <div className="flex-1" />
-              <Button size="sm" className="rounded-button text-xs font-semibold px-5 text-white" style={{ backgroundColor: accentColor }} onPress={handleApply}>
-                Uygula {activeCount > 0 ? `(${activeCount})` : ""}
+              <Button size="sm" className="rounded-button text-xs font-semibold px-5 text-white" style={accentBgStyle} onPress={handleApply}>
+                {t("common.apply")}{activeCount > 0 ? ` (${activeCount})` : ""}
               </Button>
             </div>
           </motion.div>

@@ -1,14 +1,10 @@
-import { useState, useRef, useLayoutEffect, useCallback, useEffect } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import { HomeIcon } from "@/components/ui/HomeIcon";
-import { useDataStore } from "@/stores/dataStore";
-import {
-  BarChart3, Target, ListChecks, MoreHorizontal,
-  GanttChart, GitMerge, Users, Settings, Map,
-} from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { BarChart3, MoreHorizontal, Map, UserCircle2 } from "lucide-react";
+import { AnimatePresence, motion, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { usePermissions } from "@/hooks/usePermissions";
 
 export default function BottomNav() {
@@ -20,25 +16,16 @@ export default function BottomNav() {
 
   const mainItems = [
     { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace" },
-    { id: "projeler", label: t("nav.objectives"), icon: Target, path: "/projeler", pageKey: "projeler" as const },
-    { id: "aksiyonlar", label: t("nav.actions"), icon: ListChecks, path: "/aksiyonlar", pageKey: "aksiyonlar" as const },
-  ];
-
-  const moreItems = [
-    { id: "dashboard", label: t("nav.kpi"), icon: BarChart3, path: "/dashboard", pageKey: "kpi" as const },
     { id: "stratejik-kokpit", label: t("nav.strategicHQ"), icon: Map, path: "/stratejik-kokpit", pageKey: "stratejikKokpit" as const },
-    { id: "t-alignment", label: t("nav.tAlignment"), icon: GitMerge, path: "/t-alignment", pageKey: "projeler" as const },
-    { id: "gantt", label: t("nav.gantt"), icon: GanttChart, path: "/gantt", pageKey: "gantt" as const },
-    { id: "users", label: t("nav.users"), icon: Users, path: "/kullanicilar", pageKey: "kullanicilar" as const },
-    { id: "settings", label: t("nav.settings"), icon: Settings, path: "/ayarlar", pageKey: "ayarlar" as const },
+    { id: "dashboard", label: t("nav.kpi"), icon: BarChart3, path: "/dashboard", pageKey: "kpi" as const },
+    { id: "profil", label: t("nav.profile"), icon: UserCircle2, path: "/profil" },
   ];
 
-  const aksiyonlar = useDataStore((s) => s.aksiyonlar);
+  const moreItems = [] as typeof mainItems;
   const { canAccessPage } = usePermissions();
-  const riskCount = aksiyonlar.filter((a) => a.status === "Behind" || a.status === "At Risk").length;
   const [moreOpen, setMoreOpen] = useState(false);
+  const [pressing, setPressing] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
-  const [indicatorX, setIndicatorX] = useState(0);
 
   const filteredMainItems = mainItems.filter(
     (item) => !("pageKey" in item && item.pageKey) || canAccessPage(item.pageKey)
@@ -49,37 +36,45 @@ export default function BottomNav() {
 
   const isActive = (path: string) => location.pathname === path;
   const isMoreActive = filteredMoreItems.some((item) => location.pathname === item.path);
-
   const allNavItems = [...filteredMainItems, ...(filteredMoreItems.length > 0 ? [{ id: "more", label: t("common.viewAll"), icon: MoreHorizontal, path: "__more__" }] : [])];
-  const activeIndex = allNavItems.findIndex((item) => item.path === "__more__" ? (isMoreActive || moreOpen) : isActive(item.path));
 
-  // Measure active tab center for blob indicator
-  const measureIndicator = useCallback(() => {
-    if (activeIndex < 0 || !navRef.current) return;
-    const buttons = navRef.current.querySelectorAll<HTMLButtonElement>("[data-nav-item]");
-    const btn = buttons[activeIndex];
-    if (btn) {
-      const navRect = navRef.current.getBoundingClientRect();
-      const btnRect = btn.getBoundingClientRect();
-      setIndicatorX(btnRect.left - navRect.left + btnRect.width / 2);
-    }
-  }, [activeIndex]);
+  // --- Droplet resting state (subtle, calm) ---
+  const dropletRest = useMemo(() => ({
+    background: `radial-gradient(ellipse at 50% 30%, ${accentColor}18, ${accentColor}0a 60%, transparent 100%)`,
+    boxShadow: `
+      0 2px 12px ${accentColor}12,
+      inset 0 -2px 5px ${accentColor}08,
+      inset 0 1.5px 3px rgba(255,255,255,0.6)
+    `,
+    border: `1px solid ${accentColor}12`,
+  }), [accentColor]);
 
-  useLayoutEffect(() => {
-    measureIndicator();
-    const t = setTimeout(measureIndicator, 50);
-    return () => clearTimeout(t);
-  }, [measureIndicator]);
+  // --- Droplet pressed state (loupe/magnify — brighter, stronger glow) ---
+  const dropletPressed = useMemo(() => ({
+    background: `radial-gradient(ellipse at 50% 25%, ${accentColor}40, ${accentColor}20 50%, ${accentColor}08 80%, transparent 100%)`,
+    boxShadow: `
+      0 4px 28px ${accentColor}35,
+      0 0 48px ${accentColor}15,
+      inset 0 -3px 8px ${accentColor}18,
+      inset 0 2px 5px rgba(255,255,255,0.8)
+    `,
+    border: `1.5px solid ${accentColor}25`,
+  }), [accentColor]);
 
-  useEffect(() => {
-    window.addEventListener("resize", measureIndicator);
-    return () => window.removeEventListener("resize", measureIndicator);
-  }, [measureIndicator]);
+  // Top glint
+  const highlightStyle = useMemo(() => ({
+    background: `radial-gradient(ellipse at 50% 25%, rgba(255,255,255,0.85), rgba(255,255,255,0.1) 65%, transparent 85%)`,
+  }), []);
 
-  const handleNavigate = (path: string) => {
+  // Transition flash
+  const glowFlashStyle = useMemo(() => ({
+    background: `radial-gradient(circle, ${accentColor}40, transparent 70%)`,
+  }), [accentColor]);
+
+  const handleNavigate = useCallback((path: string) => {
     navigate(path);
     setMoreOpen(false);
-  };
+  }, [navigate]);
 
   return (
     <>
@@ -97,8 +92,8 @@ export default function BottomNav() {
       </AnimatePresence>
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-30 lg:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        className="fixed bottom-3 left-4 right-4 z-30 lg:hidden"
+        style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
         {/* More menu popup */}
         <AnimatePresence>
@@ -108,7 +103,7 @@ export default function BottomNav() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="absolute bottom-full right-3 mb-2 w-52 bg-white/95 dark:bg-tyro-surface/95 backdrop-blur-2xl rounded-2xl border border-white/30 dark:border-white/10 shadow-[0_8px_40px_rgba(0,0,0,0.15)] p-1.5"
+              className="absolute bottom-full right-0 mb-2 w-52 bg-white/60 dark:bg-tyro-surface/50 backdrop-blur-[40px] backdrop-saturate-[1.8] rounded-2xl border border-white/30 dark:border-white/10 shadow-[0_8px_40px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.4)] p-1.5"
             >
               {filteredMoreItems.map((item, i) => {
                 const Icon = item.icon;
@@ -134,65 +129,104 @@ export default function BottomNav() {
           )}
         </AnimatePresence>
 
-        {/* ── WhatsApp-style Bottom Tab Bar ── */}
-        <div className="bg-white/80 dark:bg-tyro-surface/80 backdrop-blur-2xl border-t border-tyro-border/20">
+        {/* ── Liquid Glass Bottom Tab Bar ── */}
+        <div className="bg-white/40 dark:bg-tyro-surface/30 backdrop-blur-[40px] backdrop-saturate-[1.8] rounded-[20px] border border-white/40 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08),0_0_0_0.5px_rgba(255,255,255,0.3),inset_0_1px_0_rgba(255,255,255,0.6)]">
           <div
             ref={navRef}
-            className="relative flex items-center justify-around h-[56px]"
+            className="relative flex items-center justify-around h-[68px] px-1"
           >
-            {/* Top edge indicator — WhatsApp style thick rounded bar */}
-            {activeIndex >= 0 && (
-              <motion.div
-                className="absolute top-0 h-[3px] rounded-b-full"
-                style={{ backgroundColor: accentColor, width: 28 }}
-                animate={{ left: indicatorX - 14 }}
-                transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.6 }}
-              />
-            )}
-
             {allNavItems.map((item) => {
               const isMore = item.path === "__more__";
               const active = isMore ? (isMoreActive || moreOpen) : isActive(item.path);
               const Icon = item.icon;
+              const isPressed = pressing === item.id;
 
               return (
-                <button
+                <motion.button
                   key={item.id}
                   data-nav-item
                   onClick={() => isMore ? setMoreOpen((prev) => !prev) : handleNavigate(item.path)}
-                  className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 cursor-pointer active:scale-95 transition-transform"
+                  onTapStart={() => setPressing(item.id)}
+                  onTap={() => setPressing(null)}
+                  onTapCancel={() => setPressing(null)}
+                  className="relative flex flex-col items-center justify-center flex-1 h-full cursor-pointer select-none"
                 >
-                  {/* Badge */}
-                  {item.id === "aksiyonlar" && riskCount > 0 && (
-                    <span className="absolute top-1.5 right-[calc(50%-18px)] min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center z-10">
-                      {riskCount}
-                    </span>
+                  {/* ── Water Droplet Capsule ── */}
+                  {active && (
+                    <motion.div
+                      layoutId="liquid-droplet"
+                      className="absolute -z-10 rounded-[18px]"
+                      style={{
+                        inset: "6px 10px",
+                        ...(isPressed ? dropletPressed : dropletRest),
+                      }}
+                      animate={{
+                        scale: isPressed ? 1.12 : 1,
+                      }}
+                      transition={{
+                        layout: { type: "spring", stiffness: 350, damping: 22, mass: 0.7 },
+                        scale: { type: "spring", stiffness: 500, damping: 18 },
+                      }}
+                    >
+                      {/* Specular highlight — brighter on press (loupe flash) */}
+                      <motion.div
+                        className="absolute top-[1px] left-[18%] right-[18%] h-[38%] rounded-full pointer-events-none"
+                        style={highlightStyle}
+                        animate={{ opacity: isPressed ? 1 : 0.6 }}
+                        transition={{ duration: 0.15 }}
+                      />
+                    </motion.div>
                   )}
 
-                  {/* Icon with transition */}
+                  {/* Glow flash — only during transition, fades out */}
+                  {active && (
+                    <motion.div
+                      key={item.id + "-glow"}
+                      className="absolute inset-0 -z-20 rounded-[18px] pointer-events-none"
+                      style={glowFlashStyle}
+                      initial={{ opacity: 0.9, scale: 1.4 }}
+                      animate={{ opacity: 0, scale: 1 }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                    />
+                  )}
+
+                  {/* Icon — loupe magnify on press */}
                   <motion.div
                     animate={{
-                      scale: active ? 1.1 : 1,
-                      y: active ? -1 : 0,
+                      scale: isPressed && active ? 1.35 : active ? 1.08 : 1,
+                      y: isPressed && active ? -3 : active ? -1 : 1,
                     }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 18 }}
                   >
                     <Icon
-                      size={22}
-                      strokeWidth={active ? 2.5 : 1.7}
-                      className="transition-colors duration-200"
-                      style={{ color: active ? accentColor : "var(--tyro-text-muted)" }}
+                      size={active ? 22 : 20}
+                      strokeWidth={active ? 2 : 1.5}
+                      className="transition-colors duration-150"
+                      style={{
+                        color: active ? accentColor : "var(--tyro-text-muted)",
+                        opacity: active ? 1 : 0.5,
+                      }}
                     />
                   </motion.div>
 
-                  {/* Label */}
-                  <span
-                    className="text-[10px] font-semibold leading-tight transition-colors duration-200"
-                    style={{ color: active ? accentColor : "var(--tyro-text-muted)" }}
+                  {/* Label — loupe magnify on press */}
+                  <motion.span
+                    animate={{
+                      opacity: isPressed && active ? 1 : active ? 1 : 0.4,
+                      y: isPressed && active ? 1 : active ? 0 : -1,
+                      scale: isPressed && active ? 1.15 : 1,
+                    }}
+                    transition={{ type: "spring", stiffness: 500, damping: 18 }}
+                    className={`mt-0.5 leading-none whitespace-nowrap ${
+                      active ? "text-[10px] font-semibold" : "text-[9px] font-medium"
+                    }`}
+                    style={{
+                      color: active ? accentColor : "var(--tyro-text-muted)",
+                    }}
                   >
                     {item.label}
-                  </span>
-                </button>
+                  </motion.span>
+                </motion.button>
               );
             })}
           </div>

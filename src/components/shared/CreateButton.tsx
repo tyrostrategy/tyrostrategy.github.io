@@ -29,7 +29,7 @@ export default function CreateButton({ onPress, label }: CreateButtonProps) {
       onMouseLeave={() => setHovered(false)}
     >
       <span className="relative z-10 flex items-center gap-1.5">
-        {displayLabel}
+        <span className="hidden sm:inline">{displayLabel}</span>
         <Plus
           size={14}
           className="transition-transform duration-300 ease-out"

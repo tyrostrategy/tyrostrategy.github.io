@@ -569,7 +569,7 @@ function TAlignmentInner() {
         }}
         title={t("detail.objectiveDetail")}
         icon={<Crosshair size={18} />}
-        maxWidth={520}
+        maxWidth={640}
       >
         {selectedProje && (
           <ProjeDetail

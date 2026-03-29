@@ -54,6 +54,7 @@ function CompanyNode({ projeCount, aksiyonCount, overallProgress, theme }: {
   projeCount: number; aksiyonCount: number; overallProgress: number;
   theme: ReturnType<typeof useSidebarTheme>;
 }) {
+  const { t } = useTranslation();
   const accentColor = theme.accentColor ?? theme.brandStrategy;
   return (
     <motion.div
@@ -86,7 +87,7 @@ function CompanyNode({ projeCount, aksiyonCount, overallProgress, theme }: {
             <span style={{ color: theme.brandStrategy }}>Agro</span>
           </span>
           <span className="text-[11px] font-medium mt-0.5" style={{ color: theme.textSecondary }}>
-            {projeCount} proje · {aksiyonCount} aksiyon
+            {t("pages.strategyMap.projectCount", { count: projeCount, actions: aksiyonCount })}
           </span>
         </div>
       </div>
@@ -109,8 +110,8 @@ function CompanyNode({ projeCount, aksiyonCount, overallProgress, theme }: {
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[13px] font-bold" style={{ color: theme.textPrimary }}>Genel</span>
-            <span className="text-[11px]" style={{ color: theme.textSecondary }}>İlerleme</span>
+            <span className="text-[13px] font-bold" style={{ color: theme.textPrimary }}>{t("pages.strategyMap.overall")}</span>
+            <span className="text-[11px]" style={{ color: theme.textSecondary }}>{t("pages.strategyMap.progress")}</span>
           </div>
         </div>
       </div>
@@ -137,6 +138,7 @@ function ArrowDown({ color = "#cbd5e1", height = 36 }: { color?: string; height?
 
 // Theme node with progress
 function ThemeNode({ source, count, progress }: { source: Source; count: number; progress: number }) {
+  const { t } = useTranslation();
   const colors = THEME_COLORS[source] ?? THEME_COLORS["Kurumsal"];
   return (
     <motion.div
@@ -160,7 +162,7 @@ function ThemeNode({ source, count, progress }: { source: Source; count: number;
       </div>
       <div>
         <p className="text-[13px] font-bold" style={{ color: colors.text }}>{source}</p>
-        <p className="text-[11px] font-medium" style={{ color: colors.text, opacity: 0.7 }}>{count} proje</p>
+        <p className="text-[11px] font-medium" style={{ color: colors.text, opacity: 0.7 }}>{t("pages.strategyMap.projectLabel", { count })}</p>
       </div>
     </motion.div>
   );
@@ -170,6 +172,7 @@ function ThemeNode({ source, count, progress }: { source: Source; count: number;
 function ObjectiveNode({ proje, onClick, expanded, onToggleExpand, aksiyonCount }: {
   proje: Proje; onClick: () => void; expanded: boolean; onToggleExpand: () => void; aksiyonCount: number;
 }) {
+  const { t } = useTranslation();
   const colors = THEME_COLORS[proje.source] ?? THEME_COLORS["Kurumsal"];
   const pColor = progressColor(proje.progress);
   const statusColor = { "On Track": "#10b981", "Achieved": "#3b82f6", "Behind": "#ef4444", "At Risk": "#f59e0b", "Not Started": "#94a3b8" }[proje.status] ?? "#94a3b8";
@@ -210,7 +213,7 @@ function ObjectiveNode({ proje, onClick, expanded, onToggleExpand, aksiyonCount 
           className="flex items-center gap-1 mt-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-tyro-text-muted hover:text-tyro-navy hover:bg-tyro-bg/60 transition-colors cursor-pointer"
         >
           {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-          {aksiyonCount} aksiyon
+          {t("pages.strategyMap.actionLabel", { count: aksiyonCount })}
         </button>
       )}
     </motion.div>
