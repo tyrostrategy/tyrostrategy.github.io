@@ -11,6 +11,7 @@ import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import { supabaseAdapter } from "@/lib/data/supabaseAdapter";
 import { toast } from "@/stores/toastStore";
 import i18n from "@/lib/i18n";
+import { departments } from "@/config/departments";
 
 const isSupabaseMode = import.meta.env.VITE_DATA_PROVIDER === "supabase";
 
@@ -325,12 +326,29 @@ export const useDataStore = create<DataState>()(
   )
 );
 
+/** Build mock AppUser list from departments config */
+function buildMockUsers(): AppUser[] {
+  const now = new Date().toISOString();
+  return departments.flatMap((dept) =>
+    dept.users.map((u, i) => ({
+      id: `mock-${dept.id}-${i}`,
+      displayName: u.name,
+      email: u.email,
+      department: dept.name,
+      role: u.name === "Cenk Şayli" ? "Admin" : "Kullanıcı",
+      locale: "tr",
+      createdAt: now,
+      updatedAt: now,
+    } as AppUser))
+  );
+}
+
 // Manual hydrate — prevents infinite loop with useSyncExternalStore
 if (typeof window !== "undefined") {
   useDataStore.persist.rehydrate();
 
-  // If Supabase mode: fetch fresh data from DB on startup
   if (isSupabaseMode) {
+    // Supabase mode: fetch fresh data from DB on startup
     Promise.all([
       supabaseAdapter.fetchProjeler(),
       supabaseAdapter.fetchAksiyonlar(),
@@ -338,9 +356,21 @@ if (typeof window !== "undefined") {
       supabaseAdapter.fetchUsers(),
     ]).then(([projeler, aksiyonlar, tagDefinitions, users]) => {
       console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags, ${users.length} users`);
-      useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
+
+      // Fix department mismatch: if Cenk's DB record has wrong department, patch it
+      const cenk = users.find((u) => u.email === "cenk.sayli@tiryaki.com.tr");
+      if (cenk && cenk.department !== "IT") {
+        supabaseAdapter.updateUser(cenk.id, { department: "IT" }).catch(() => {});
+        const fixed = users.map((u) => u.id === cenk.id ? { ...u, department: "IT" } : u);
+        useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users: fixed });
+      } else {
+        useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
+      }
     }).catch((err) => {
       console.error("[Supabase] Initial fetch failed, using cached data:", err?.message || err?.code || JSON.stringify(err));
     });
+  } else {
+    // Mock mode: populate users from departments config so KullanicilarPage works
+    useDataStore.setState({ users: buildMockUsers() });
   }
 }
