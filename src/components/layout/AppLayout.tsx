@@ -41,7 +41,7 @@ export default function AppLayout() {
         <MobileHeader />
         <main
           className={clsx(
-            "flex-1 overflow-y-auto px-4 sm:px-5 lg:px-8 pt-16 lg:pt-[36px] pb-28 lg:pb-6",
+            "flex-1 overflow-y-auto px-4 sm:px-5 lg:px-8 pt-[78px] lg:pt-[36px] pb-32 lg:pb-6",
             !isFullTheme && "bg-tyro-bg"
           )}
         >

@@ -157,22 +157,6 @@ table[aria-label] thead th {
 }
 .form-scroll-wrapper.has-scroll-top::before { opacity: 1; }
 .form-scroll-wrapper.has-scroll-bottom::after { opacity: 1; }
-/* Scroll-more chevron indicator — sits between gradient and footer */
-.form-scroll-chevron {
-  display: none;
-  position: absolute;
-  bottom: -14px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 6;
-  pointer-events: none;
-  animation: scrollBounce 1.5s ease-in-out infinite;
-}
-.form-scroll-wrapper.has-scroll-bottom .form-scroll-chevron { display: flex; }
-@keyframes scrollBounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.5; }
-  50% { transform: translateX(-50%) translateY(3px); opacity: 0.9; }
-}
 
 /* ===== Glassmorphism ===== */
 @layer components {
@@ -424,6 +408,19 @@ table[aria-label] thead th {
   background: rgba(17, 24, 39, 0.85);
   border-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile header liquid glass — dark mode */
+.dark .mobile-header-glass {
+  background: rgba(10, 15, 26, 0.6) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 1px 0 0 rgba(255,255,255,0.08) inset, 0 4px 24px 0 rgba(0,0,0,0.3) !important;
+}
+.dark .mobile-header-btn {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.06) inset !important;
+  color: #f1f5f9 !important;
 }
 
 @media (max-width: 768px) {

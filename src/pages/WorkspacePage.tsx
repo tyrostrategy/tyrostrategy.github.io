@@ -1,8 +1,9 @@
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search, Sparkles, Wand2, RefreshCw } from "lucide-react";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useMyWorkspace } from "@/hooks/useMyWorkspace";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useUIStore } from "@/stores/uiStore";
@@ -34,6 +35,53 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 200, damping: 20 } },
 };
 
+function SummaryPills({ items }: { items: { text: string; color?: string }[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [lineStarts, setLineStarts] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    const measure = () => {
+      if (!containerRef.current) return;
+      const spans = itemRefs.current;
+      const starts = spans.map((el, i) => {
+        if (i === 0 || !el || !spans[i - 1]) return true;
+        return el.offsetTop > (spans[i - 1]?.offsetTop ?? 0);
+      });
+      setLineStarts(starts);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [items]);
+
+  return (
+    <div ref={containerRef} className="mt-1 flex flex-wrap items-center gap-y-1 gap-x-1 -ml-2">
+      {items.map((item, i) => (
+        <span
+          key={i}
+          ref={(el) => { itemRefs.current[i] = el; }}
+          className="flex items-center gap-1 shrink-0"
+        >
+          {i > 0 && !lineStarts[i] && (
+            <span className="text-[8px] text-tyro-text-muted/50">•</span>
+          )}
+          <span
+            className={`text-[10px] font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${
+              item.color
+                ? `${item.color} bg-amber-50/80`
+                : "text-tyro-text-muted bg-tyro-bg/80"
+            }`}
+          >
+            {item.text}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export default function WorkspacePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -44,8 +92,10 @@ export default function WorkspacePage() {
   const brandColor = sidebarTheme.brandStrategy ?? sidebarTheme.accentColor ?? "#c8922a";
   const [wizardOpen, setWizardOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const { direction, isPastThreshold } = useScrollDirection(80);
+  const showFab = !isPastThreshold || direction === "up";
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       // Dynamic import to avoid bundling supabaseAdapter in mock mode
@@ -68,7 +118,13 @@ export default function WorkspacePage() {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, []);
+
+  // Register refresh function for MobileHeader
+  useEffect(() => {
+    useUIStore.getState().setWorkspaceRefreshFn(handleRefresh);
+    return () => useUIStore.getState().setWorkspaceRefreshFn(null);
+  }, [handleRefresh]);
 
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
@@ -92,17 +148,29 @@ export default function WorkspacePage() {
       return new Date(h.reviewDate) <= oneMonthAgo;
     }).length;
 
-    items.push({ text: `${activeProje} aktif proje takipte` });
-    if (pendingAks > 0) items.push({ text: `${pendingAks} aksiyon tamamlanmayı bekliyor` });
-    if (overdueReview > 0) items.push({ text: `${overdueReview} proje 1 aydan fazla kontrol edilmemiş`, color: "text-amber-600" });
+    items.push({ text: t("workspace.activeProjectsTracked", { count: activeProje }) });
+    if (pendingAks > 0) items.push({ text: t("workspace.actionsAwaitingCompletion", { count: pendingAks }) });
+    if (overdueReview > 0) items.push({ text: t("workspace.projectsNotReviewed", { count: overdueReview }), color: "text-amber-600" });
 
     return items;
   }, [ws, aksiyonlar]);
 
   return (
     <motion.div className="space-y-3 sm:space-y-5" variants={stagger} initial="hidden" animate="show">
-      {/* Header */}
-      <motion.div variants={fadeUp}>
+      {/* ── Mobile Compact Header ── */}
+      <motion.div variants={fadeUp} className="sm:hidden">
+        <div className="rounded-2xl bg-white/60 dark:bg-tyro-surface/50 backdrop-blur-sm border border-tyro-border/30 px-4 py-3 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+          <h1 className="text-[15px] font-bold tracking-tight text-tyro-text-primary truncate">
+            {t(getGreetingKey())}, {name.split(" ")[0]}
+          </h1>
+          {summaryItems.length > 0 && (
+            <SummaryPills items={summaryItems} />
+          )}
+        </div>
+      </motion.div>
+
+      {/* ── Desktop Full Header (unchanged) ── */}
+      <motion.div variants={fadeUp} className="hidden sm:block">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
@@ -131,7 +199,6 @@ export default function WorkspacePage() {
           </div>
 
           <div className="flex items-center gap-2 self-start w-full sm:w-auto">
-            {/* Search button */}
             <button
               type="button"
               onClick={openCommandPalette}
@@ -144,19 +211,17 @@ export default function WorkspacePage() {
               </kbd>
             </button>
 
-            {/* Refresh button */}
             <motion.button
               type="button"
               onClick={handleRefresh}
               disabled={refreshing}
               className="h-10 w-10 rounded-xl border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-bg transition-colors shrink-0 disabled:opacity-50"
               whileTap={{ scale: 0.93 }}
-              title="Verileri yenile"
+              title={t("workspace.refreshData")}
             >
               <RefreshCw size={16} className={`text-tyro-text-secondary ${refreshing ? "animate-spin" : ""}`} />
             </motion.button>
 
-            {/* Wizard trigger button — right of search */}
             <motion.button
               type="button"
               onClick={() => setWizardOpen(true)}
@@ -164,7 +229,7 @@ export default function WorkspacePage() {
               whileTap={{ scale: 0.95 }}
             >
               <Wand2 size={14} className="shrink-0" />
-              <span>Proje Sihirbazı</span>
+              <span>{t("kokpit.projectWizard")}</span>
             </motion.button>
           </div>
         </div>
@@ -196,6 +261,26 @@ export default function WorkspacePage() {
       >
         {wizardOpen && <ProjeAksiyonWizard onClose={() => setWizardOpen(false)} />}
       </SlidingPanel>
+
+      {/* ── Wizard FAB (mobile only) ── */}
+      <AnimatePresence>
+        {showFab && (
+          <motion.button
+            type="button"
+            onClick={() => setWizardOpen(true)}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 22 }}
+            className="fixed bottom-24 right-4 z-20 w-12 h-12 rounded-full backdrop-blur-[16px] backdrop-saturate-[1.4] border border-tyro-gold/30 shadow-[0_4px_24px_rgba(200,146,42,0.3),inset_0_1px_0_rgba(255,255,255,0.5)] flex items-center justify-center cursor-pointer sm:hidden"
+            style={{ background: "radial-gradient(ellipse at 50% 30%, rgba(200,146,42,0.85), rgba(200,146,42,0.65) 70%)" }}
+            whileTap={{ scale: 0.9 }}
+            aria-label={t("kokpit.projectWizard")}
+          >
+            <Wand2 size={20} className="text-white" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
