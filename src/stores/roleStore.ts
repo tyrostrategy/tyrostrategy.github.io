@@ -81,16 +81,25 @@ interface RoleStore {
   resetToDefaults: () => void;
 }
 
+function mergePerms(defaults: RolePermissions, saved: Partial<RolePermissions> | undefined): RolePermissions {
+  if (!saved) return defaults;
+  return {
+    ...defaults,
+    ...saved,
+    // Deep merge pages so new page keys added to defaults are preserved
+    pages: { ...defaults.pages, ...(saved.pages ?? {}) },
+  };
+}
+
 function loadFromStorage(): Record<UserRole, RolePermissions> {
   try {
     const raw = localStorage.getItem("tyro-role-permissions-v2");
     if (raw) {
       const parsed = JSON.parse(raw);
-      // Merge with defaults to handle new fields added later
       return {
-        Admin: { ...ADMIN_DEFAULTS, ...parsed.Admin },
-        "Proje Lideri": { ...PROJE_LIDERI_DEFAULTS, ...parsed["Proje Lideri"] },
-        Kullanıcı: { ...KULLANICI_DEFAULTS, ...parsed["Kullanıcı"] },
+        Admin: mergePerms(ADMIN_DEFAULTS, parsed.Admin),
+        "Proje Lideri": mergePerms(PROJE_LIDERI_DEFAULTS, parsed["Proje Lideri"]),
+        Kullanıcı: mergePerms(KULLANICI_DEFAULTS, parsed["Kullanıcı"]),
       };
     }
   } catch {
@@ -138,7 +147,7 @@ if (isSupabaseMode) {
         const updates: Record<string, RolePermissions> = {};
         for (const row of rows) {
           if (row.role in current) {
-            updates[row.role] = { ...current[row.role as UserRole], ...row.permissions } as RolePermissions;
+            updates[row.role] = mergePerms(current[row.role as UserRole], row.permissions as Partial<RolePermissions>);
           }
         }
         if (Object.keys(updates).length > 0) {
