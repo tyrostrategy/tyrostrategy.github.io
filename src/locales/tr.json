@@ -326,7 +326,10 @@
     "teamManagementDesc": "Gantt, WBS ve Strateji Haritası",
     "corporateSecurity": "Kurumsal Güvenlik",
     "corporateSecurityDesc": "Microsoft Entra ID ile SSO",
-    "demoMode": "Demo modu aktif. Azure AD yapılandırıldığında kurumsal SSO ile giriş yapılacaktır."
+    "demoMode": "Demo modu aktif. Azure AD yapılandırıldığında kurumsal SSO ile giriş yapılacaktır.",
+    "microsoftLogin": "Microsoft ile Giriş Yap",
+    "ssoSubtitle": "Kurumsal Microsoft hesabınızla giriş yapın",
+    "ssoInfo": "Tiryaki veya Sunrise kurumsal Microsoft hesabınızla giriş yapın (@tiryaki.com.tr, @sunrisefoods.com, @sunrisefoods.ca, @danemgida.com.tr)"
   },
   "dashboard": {
     "title": "KPI Dashboard",

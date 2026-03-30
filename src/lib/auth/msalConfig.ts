@@ -1,19 +1,23 @@
 import type { Configuration, PopupRequest } from "@azure/msal-browser";
 
+// Multi-tenant: "common" authority allows both Tiryaki and Sunrise tenant users to sign in.
+// The Azure App Registration must be configured as "Accounts in any organizational directory".
 export const msalConfig: Configuration = {
   auth: {
     clientId: import.meta.env.VITE_AZURE_CLIENT_ID || "placeholder",
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID || "common"}`,
-    redirectUri: import.meta.env.VITE_REDIRECT_URI || "http://localhost:5173",
+    authority: "https://login.microsoftonline.com/common",
+    redirectUri: typeof window !== "undefined" ? window.location.origin : "http://localhost:5173",
     postLogoutRedirectUri: "/",
-    navigateToLoginRequestUrl: true,
+    navigateToLoginRequestUrl: false,
   },
   cache: {
-    cacheLocation: "sessionStorage",
-    storeAuthStateInCookie: false,
+    // localStorage survives page refresh; sessionStorage is cleared on tab close
+    cacheLocation: "localStorage",
+    storeAuthStateInCookie: true,
   },
 };
 
 export const loginRequest: PopupRequest = {
   scopes: ["User.Read", "openid", "profile", "email"],
+  prompt: "select_account",
 };

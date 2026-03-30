@@ -326,7 +326,10 @@
     "teamManagementDesc": "Gantt, WBS & Strategy Map",
     "corporateSecurity": "Corporate Security",
     "corporateSecurityDesc": "SSO with Microsoft Entra ID",
-    "demoMode": "Demo mode is active. Corporate SSO login will be available once Azure AD is configured."
+    "demoMode": "Demo mode is active. Corporate SSO login will be available once Azure AD is configured.",
+    "microsoftLogin": "Sign in with Microsoft",
+    "ssoSubtitle": "Sign in with your corporate Microsoft account",
+    "ssoInfo": "Sign in with your Tiryaki or Sunrise Microsoft work account (@tiryaki.com.tr, @sunrisefoods.com, @sunrisefoods.ca, @danemgida.com.tr)"
   },
   "dashboard": {
     "title": "KPI Dashboard",

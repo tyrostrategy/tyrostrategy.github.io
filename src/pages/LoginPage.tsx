@@ -8,7 +8,21 @@ import { TyroLogo } from "@/components/ui/TyroLogo";
 import { RoleAvatar } from "@/components/ui/RoleAvatar";
 import { useUIStore } from "@/stores/uiStore";
 import { useDataStore } from "@/stores/dataStore";
+import { useMsalLogin } from "@/hooks/useMsalLogin";
 import { useState, useEffect, useMemo } from "react";
+
+const isMockAuth = import.meta.env.VITE_MOCK_AUTH === "true" || !import.meta.env.VITE_AZURE_CLIENT_ID;
+
+function MicrosoftIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+      <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+      <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+      <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+    </svg>
+  );
+}
 import type { UserRole } from "@/types";
 
 interface DemoUser {
@@ -63,6 +77,7 @@ export default function LoginPage() {
     { icon: LayoutDashboard, title: t("login.teamManagement"), desc: t("login.teamManagementDesc") },
     { icon: Shield, title: t("login.corporateSecurity"), desc: t("login.corporateSecurityDesc") },
   ];
+  const { login: msalLogin, loading: msalLoading, error: msalError } = useMsalLogin();
   const [loading, setLoading] = useState(false);
   const [featureIndex, setFeatureIndex] = useState(0);
   const [selectedUser, setSelectedUser] = useState<string>(demoUsers[0]?.name ?? "Cenk Şayli");
@@ -215,81 +230,119 @@ export default function LoginPage() {
                   {t("login.welcome")}
                 </h2>
                 <p className="text-tyro-text-muted text-[13px] sm:text-[15px] mb-6">
-                  {t("login.selectUser")}
+                  {isMockAuth ? t("login.selectUser") : t("login.ssoSubtitle")}
                 </p>
 
-                {/* User cards */}
-                <div className="flex flex-col gap-2.5 mb-6">
-                  {demoUsers.map((user, i) => {
-                    const isSelected = selectedUser === user.name;
-                    return (
-                      <motion.button
-                        key={user.name}
-                        type="button"
-                        onClick={() => setSelectedUser(user.name)}
-                        className="flex items-center gap-3 p-3 rounded-xl text-left cursor-pointer transition-all duration-200"
-                        style={{
-                          backgroundColor: isSelected ? `${user.accent}0a` : "#f8fafc",
-                          border: `1.5px solid ${isSelected ? user.accent : "#e2e8f0"}`,
-                          boxShadow: isSelected ? `0 2px 8px ${user.accent}18` : "none",
-                        }}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.35 + i * 0.08, duration: 0.35 }}
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <RoleAvatar name={user.name} role={user.role} size="sm" />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-[13px] font-semibold text-tyro-text-primary truncate">{user.name}</h4>
-                          <p className="text-[11px] text-tyro-text-muted truncate">{user.department}</p>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span
-                            className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                {/* ── Demo user cards (always visible as fallback) ── */}
+                <>
+                    <div className="flex flex-col gap-2.5 mb-6">
+                      {demoUsers.map((user, i) => {
+                        const isSelected = selectedUser === user.name;
+                        return (
+                          <motion.button
+                            key={user.name}
+                            type="button"
+                            onClick={() => setSelectedUser(user.name)}
+                            className="flex items-center gap-3 p-3 rounded-xl text-left cursor-pointer transition-all duration-200"
                             style={{
-                              backgroundColor: `${user.accent}15`,
-                              color: user.accentDark,
+                              backgroundColor: isSelected ? `${user.accent}0a` : "#f8fafc",
+                              border: `1.5px solid ${isSelected ? user.accent : "#e2e8f0"}`,
+                              boxShadow: isSelected ? `0 2px 8px ${user.accent}18` : "none",
                             }}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.35 + i * 0.08, duration: 0.35 }}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
                           >
-                            {getRoleLabel(user.role, t)}
-                          </span>
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              className="w-5 h-5 rounded-full flex items-center justify-center"
-                              style={{ backgroundColor: user.accent }}
-                            >
-                              <ChevronRight size={12} className="text-white" />
-                            </motion.div>
-                          )}
-                        </div>
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                            <RoleAvatar name={user.name} role={user.role} size="sm" />
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-[13px] font-semibold text-tyro-text-primary truncate">{user.name}</h4>
+                              <p className="text-[11px] text-tyro-text-muted truncate">{user.department}</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span
+                                className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                                style={{
+                                  backgroundColor: `${user.accent}15`,
+                                  color: user.accentDark,
+                                }}
+                              >
+                                {getRoleLabel(user.role, t)}
+                              </span>
+                              {isSelected && (
+                                <motion.div
+                                  initial={{ scale: 0, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  className="w-5 h-5 rounded-full flex items-center justify-center"
+                                  style={{ backgroundColor: user.accent }}
+                                >
+                                  <ChevronRight size={12} className="text-white" />
+                                </motion.div>
+                              )}
+                            </div>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
 
-                {/* Login button */}
+                    {/* Demo login button */}
+                    <Button
+                      size="lg"
+                      className="w-full h-[48px] sm:h-[52px] text-[14px] sm:text-[15px] font-semibold rounded-xl border-0 text-white"
+                      isLoading={loading}
+                      onPress={handleLogin}
+                      startContent={!loading ? <LogIn size={18} /> : undefined}
+                      style={{
+                        background: "linear-gradient(135deg, #1e3a5f, #2a5a8f)",
+                        boxShadow: "0 4px 16px rgba(30,58,95,0.3)",
+                      }}
+                    >
+                      {t("login.login")}
+                    </Button>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-3 my-4">
+                      <div className="flex-1 h-px bg-slate-200" />
+                      <span className="text-[11px] text-tyro-text-muted font-medium">veya</span>
+                      <div className="flex-1 h-px bg-slate-200" />
+                    </div>
+                  </>
+
+                {/* ── Microsoft login button ── */}
                 <Button
                   size="lg"
-                  className="w-full h-[48px] sm:h-[52px] text-[14px] sm:text-[15px] font-semibold rounded-xl border-0 text-white"
-                  isLoading={loading}
-                  onPress={handleLogin}
-                  startContent={!loading ? <LogIn size={18} /> : undefined}
+                  className="w-full h-[48px] sm:h-[52px] text-[14px] sm:text-[15px] font-semibold rounded-xl border-0"
+                  isLoading={msalLoading}
+                  onPress={msalLogin}
+                  startContent={!msalLoading ? <MicrosoftIcon /> : undefined}
                   style={{
-                    background: "linear-gradient(135deg, #1e3a5f, #2a5a8f)",
-                    boxShadow: "0 4px 16px rgba(30,58,95,0.3)",
+                    background: isMockAuth ? "#f8fafc" : "linear-gradient(135deg, #0078d4, #005a9e)",
+                    color: isMockAuth ? "#1e3a5f" : "#fff",
+                    border: isMockAuth ? "1.5px solid #e2e8f0" : "none",
+                    boxShadow: isMockAuth ? "none" : "0 4px 16px rgba(0,120,212,0.3)",
                   }}
                 >
-                  {t("login.login")}
+                  {t("login.microsoftLogin")}
                 </Button>
 
+                {/* MSAL error */}
+                {msalError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-3 flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-100"
+                  >
+                    <Shield size={13} className="text-red-400 mt-0.5 shrink-0" />
+                    <p className="text-[11px] text-red-600 leading-relaxed">{msalError}</p>
+                  </motion.div>
+                )}
+
                 {/* Info */}
-                <div className="flex items-start gap-2.5 mt-5 p-3 rounded-xl bg-slate-50">
+                <div className="flex items-start gap-2.5 mt-4 p-3 rounded-xl bg-slate-50">
                   <Shield size={14} className="text-tyro-text-muted mt-0.5 shrink-0" />
                   <p className="text-[11px] text-tyro-text-muted leading-relaxed">
-                    {t("login.demoMode")}
+                    {isMockAuth ? t("login.demoMode") : t("login.ssoInfo")}
                   </p>
                 </div>
 
