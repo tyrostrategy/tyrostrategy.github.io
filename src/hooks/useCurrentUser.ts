@@ -48,7 +48,7 @@ export function useCurrentUser(): CurrentUser {
   const initials = getInitials(name);
 
   // Mock modda login'de seçilen rolü kullan
-  const validRoles: UserRole[] = ["Admin", "Proje Lideri", "Kullanıcı"];
+  const validRoles: UserRole[] = ["Admin", "Proje Lideri", "Kullanıcı", "Management"];
   const role: UserRole = validRoles.includes(mockUserRole) ? mockUserRole : "Kullanıcı";
 
   return { name, email, department, initials, role };

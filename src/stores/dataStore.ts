@@ -335,8 +335,9 @@ function buildMockUsers(): AppUser[] {
       displayName: u.name,
       email: u.email,
       department: dept.name,
-      role: u.name === "Cenk Şayli" ? "Admin" : "Kullanıcı",
-      locale: "tr",
+      role: u.role,
+      title: u.title,
+      locale: "tr" as const,
       createdAt: now,
       updatedAt: now,
     } as AppUser))
@@ -357,15 +358,7 @@ if (typeof window !== "undefined") {
     ]).then(([projeler, aksiyonlar, tagDefinitions, users]) => {
       console.log(`[Supabase] Loaded ${projeler.length} projeler, ${aksiyonlar.length} aksiyonlar, ${tagDefinitions.length} tags, ${users.length} users`);
 
-      // Fix department mismatch: if Cenk's DB record has wrong department, patch it
-      const cenk = users.find((u) => u.email === "cenk.sayli@tiryaki.com.tr");
-      if (cenk && cenk.department !== "IT") {
-        supabaseAdapter.updateUser(cenk.id, { department: "IT" }).catch(() => {});
-        const fixed = users.map((u) => u.id === cenk.id ? { ...u, department: "IT" } : u);
-        useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users: fixed });
-      } else {
-        useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
-      }
+      useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
     }).catch((err) => {
       console.error("[Supabase] Initial fetch failed, using cached data:", err?.message || err?.code || JSON.stringify(err));
     });

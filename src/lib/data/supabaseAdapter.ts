@@ -133,6 +133,7 @@ interface DbUser {
   department: string | null;
   role: string;
   locale: string | null;
+  title: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -336,6 +337,7 @@ export const supabaseAdapter: DataService = {
       department: row.department ?? "",
       role: (row.role as UserRole) ?? "Kullanıcı",
       locale: row.locale ?? "tr",
+      title: row.title ?? undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     }));
@@ -349,9 +351,10 @@ export const supabaseAdapter: DataService = {
       department: user.department,
       role: user.role,
       locale: user.locale,
+      title: user.title ?? null,
     }).select().single();
     if (error) { console.error("[Supabase] createUser:", error); return null; }
-    return { id: data.id, email: data.email, displayName: data.display_name, department: data.department ?? "", role: data.role, locale: data.locale ?? "tr", createdAt: data.created_at, updatedAt: data.updated_at };
+    return { id: data.id, email: data.email, displayName: data.display_name, department: data.department ?? "", role: data.role, locale: data.locale ?? "tr", title: data.title ?? undefined, createdAt: data.created_at, updatedAt: data.updated_at };
   },
 
   async updateUser(id: string, data: Partial<AppUser>): Promise<void> {
@@ -362,6 +365,7 @@ export const supabaseAdapter: DataService = {
     if (data.department !== undefined) row.department = data.department;
     if (data.role !== undefined) row.role = data.role;
     if (data.locale !== undefined) row.locale = data.locale;
+    if (data.title !== undefined) row.title = data.title;
     const { error, count } = await supabase.from("users").update(row).eq("id", id).select();
     if (error) {
       console.error("[Supabase] updateUser error:", error.code, error.message, error.details);

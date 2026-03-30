@@ -104,7 +104,8 @@
   "roles": {
     "admin": "Admin",
     "projectLeader": "Project Leader",
-    "user": "User"
+    "user": "User",
+    "management": "Management"
   },
   "pages": {
     "projects": {
@@ -487,7 +488,8 @@
     "ownObjectivesAndActions": "Own projects and actions",
     "assignedActionsOnly": "Assigned actions only",
     "editOwnRecords": "User can only edit their own records",
-    "viewOwnData": "User can only view their own data"
+    "viewOwnData": "User can only view their own data",
+    "managementReadOnly": "View-only access to strategic dashboards"
   },
   "profile": {
     "title": "Profile",
@@ -623,7 +625,9 @@
     "columns": "Columns",
     "project": "Project",
     "action": "Action",
-    "completed": "Completed"
+    "completed": "Completed",
+    "jobTitle": "Job Title",
+    "jobTitlePlaceholder": "e.g. Sales Director"
   },
   "dataManagement": {
     "title": "Data Management",

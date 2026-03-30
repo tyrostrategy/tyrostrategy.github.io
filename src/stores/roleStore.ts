@@ -66,10 +66,31 @@ const KULLANICI_DEFAULTS: RolePermissions = {
   viewOnlyOwn: true,
 };
 
+const SUB_MANAGEMENT_DEFAULTS: RolePermissions = {
+  pages: {
+    kpi: true,
+    projeler: true,
+    aksiyonlar: true,
+    gantt: true,
+    wbs: true,
+    stratejikKokpit: true,
+    tMap: true,
+    tAlignment: true,
+    kullanicilar: false,
+    ayarlar: false,
+    guvenlik: false,
+  },
+  proje: { create: false, edit: false, delete: false },
+  aksiyon: { create: false, edit: false, delete: false },
+  editOnlyOwn: false,
+  viewOnlyOwn: false,
+};
+
 export const DEFAULT_PERMISSIONS: Record<UserRole, RolePermissions> = {
   Admin: ADMIN_DEFAULTS,
   "Proje Lideri": PROJE_LIDERI_DEFAULTS,
   Kullanıcı: KULLANICI_DEFAULTS,
+  "Management": SUB_MANAGEMENT_DEFAULTS,
 };
 
 // ===== Store =====
@@ -100,6 +121,7 @@ function loadFromStorage(): Record<UserRole, RolePermissions> {
         Admin: mergePerms(ADMIN_DEFAULTS, parsed.Admin),
         "Proje Lideri": mergePerms(PROJE_LIDERI_DEFAULTS, parsed["Proje Lideri"]),
         Kullanıcı: mergePerms(KULLANICI_DEFAULTS, parsed["Kullanıcı"]),
+        "Management": mergePerms(SUB_MANAGEMENT_DEFAULTS, parsed["Management"]),
       };
     }
   } catch {

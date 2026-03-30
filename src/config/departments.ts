@@ -1,6 +1,10 @@
+import type { UserRole } from "@/types";
+
 export interface DepartmentUser {
   name: string;
   email: string;
+  title: string;
+  role: UserRole;
 }
 
 export interface Department {
@@ -9,73 +13,144 @@ export interface Department {
   users: DepartmentUser[];
 }
 
-function toEmail(name: string): string {
-  const parts = name.toLowerCase().split(" ");
-  const clean = (s: string) =>
-    s.replace(/ç/g, "c").replace(/ğ/g, "g").replace(/ı/g, "i").replace(/ö/g, "o").replace(/ş/g, "s").replace(/ü/g, "u");
-  if (parts.length >= 2) return `${clean(parts[0])}.${clean(parts[parts.length - 1])}@tiryaki.com.tr`;
-  return `${clean(parts[0])}@tiryaki.com.tr`;
-}
-
-function u(name: string): DepartmentUser {
-  return { name, email: toEmail(name) };
-}
-
 export const departments: Department[] = [
   {
-    id: "turkiye-operasyonlari",
-    name: "Türkiye Operasyonları",
+    id: "bt",
+    name: "BT",
     users: [
-      u("Ozan Yeşilyer"),
-      u("Recep Mergen"),
-      u("Taylan Eğilmez"),
-      u("Murat Solak"),
+      { name: "Cenk Şayli",       email: "cenk.sayli@tiryaki.com.tr",       title: "Kurumsal Sistemler Yöneticisi",   role: "Admin" },
+      { name: "Kerime İkizler",   email: "kerime.ikizler@tiryaki.com.tr",   title: "BT Yönetişim Müdürü",            role: "Proje Lideri" },
+      { name: "Timur Karaman",    email: "timur.karaman@tiryaki.com.tr",    title: "Bilgi Teknolojileri Direktörü",  role: "Proje Lideri" },
     ],
   },
   {
-    id: "uluslararasi",
-    name: "Uluslararası Operasyonlar",
+    id: "coo-ofis",
+    name: "COO Ofis",
     users: [
-      u("Kemal Yıldız"),
-      u("Nevzat Çakmak"),
-      u("Fatih Tiryakioğlu"),
-      u("Yiğit Karacı"),
+      { name: "Nevzat Çakmak",   email: "nevzat.cakmak@tiryaki.com.tr",   title: "Stratejik Planlama ve Geliştirme Müdürü", role: "Admin" },
+      { name: "Büşra Kaplan",    email: "busra.kaplan@tiryaki.com.tr",    title: "Stratejik Planlama Uzman Yardımcısı",     role: "Admin" },
+      { name: "Burcu Gözen",     email: "burcu.gozen@tiryaki.com.tr",     title: "İş Analiz ve Performans Geliştirme Müdürü", role: "Proje Lideri" },
     ],
   },
   {
-    id: "kurumsal",
-    name: "Kurumsal",
+    id: "turkiye",
+    name: "Türkiye",
     users: [
-      u("İdris İlhan Telci"),
-      u("Güven Emrah Erenler"),
-      u("Suat Söbüçovalı"),
-      u("Nazlı Deniz Çetin"),
-      u("Kerime İkizler"),
+      { name: "Enver Tanrıverdioğlu", email: "enver.tanriverdioglu@tiryaki.com.tr", title: "Hammadde Satınalma ve Üretim Direktörü",             role: "Proje Lideri" },
+      { name: "Barış Şentürk",        email: "baris.senturk@tiryaki.com.tr",         title: "Endüstriyel Ürünler Satış Müdürü",                  role: "Proje Lideri" },
+      { name: "Recep Mergen",         email: "recep.mergen@tiryaki.com.tr",          title: "Yıldız Bölge Müdürü",                               role: "Proje Lideri" },
+      { name: "Ozan Yeşilyer",        email: "ozan.yesilyer@tiryaki.com.tr",         title: "Kuruyemiş Ticaret Direktörü",                       role: "Proje Lideri" },
+      { name: "Tamer Latifoğlu",      email: "tamer.latifoglu@tiryaki.com.tr",       title: "Operasyon Direktörü",                               role: "Proje Lideri" },
+      { name: "Taylan Eğilmez",       email: "taylan.egilmez@tiryaki.com.tr",        title: "Yem Katkı Maddeleri Direktörü",                     role: "Proje Lideri" },
+      { name: "Kazım Dolaşık",        email: "kazim.dolasik@tiryaki.com.tr",         title: "Tahıl, Yem ve Yağlı Tohumlar Ticaret Direktörü",   role: "Proje Lideri" },
+      { name: "Emin Oktay",           email: "emin.oktay@danemgida.com.tr",          title: "Satış Direktörü",                                   role: "Proje Lideri" },
     ],
   },
   {
-    id: "finans",
-    name: "Finans",
+    id: "organik",
+    name: "Organik",
     users: [
-      u("Burcu Gözen"),
-      u("Kübra Dömbek"),
+      { name: "Murat Solak",    email: "murat.solak@tiryaki.com.tr",   title: "Karadeniz Bölge Müdürü",          role: "Proje Lideri" },
+      { name: "Derya Boztunç",  email: "dboztunc@sunrisefoods.com",    title: "Tesis Kalite Müdürü",             role: "Proje Lideri" },
+      { name: "Emre Padar",     email: "emre.padar@tiryaki.com.tr",    title: "Karadeniz Bölge İşletme Müdürü", role: "Proje Lideri" },
+      { name: "Raif Karacı",    email: "raif.karaci@tiryaki.com.tr",   title: "Üretim ve Tedarik Zinciri Direktörü", role: "Proje Lideri" },
+      { name: "Ufuk Tosun",     email: "utosun@sunrisefoods.com",      title: "Oil Ingredients Manager",         role: "Proje Lideri" },
+      { name: "Kübra Dömbek",   email: "kdombek@sunrisefoods.com",     title: "Quality Assurance Executive",     role: "Proje Lideri" },
+      { name: "Ecem Ekinci",    email: "eekinci@sunrisefoods.com",     title: "Tedarik Zinciri Uzmanı",          role: "Proje Lideri" },
     ],
   },
   {
     id: "ik",
     name: "İnsan Kaynakları",
     users: [
-      u("Arzu Örsel"),
-      u("Devrim Aşkın"),
+      { name: "Tarkan Yılmaz",  email: "tarkan.yilmaz@tiryaki.com.tr",  title: "Ücretlendirme ve Yan Haklar Direktörü",          role: "Proje Lideri" },
+      { name: "Ahmet Kalkan",   email: "ahmet.kalkan@tiryaki.com.tr",   title: "İdari İşler Müdürü",                             role: "Proje Lideri" },
+      { name: "Emrah Erenler",  email: "emrah.erenler@tiryaki.com.tr",  title: "İşe Alım ve Organizasyonel Gelişim Direktörü",   role: "Proje Lideri" },
+      { name: "Halil Özturk",   email: "halil.ozturk@tiryaki.com.tr",   title: "İş Sağlığı ve Güvenliği Müdürü",                 role: "Proje Lideri" },
     ],
   },
   {
-    id: "it",
-    name: "IT",
+    id: "arge",
+    name: "Ar-Ge",
     users: [
-      u("Cenk Şayli"),
-      u("Ahmet Kalkan / Halil İbrahim Öztürk"),
-      u("Emre Padar"),
+      { name: "Elif Balcı",       email: "elif.balci@tiryaki.com.tr",   title: "Ar-Ge Yöneticisi",                    role: "Proje Lideri" },
+      { name: "Serkan Kançağı",   email: "skancagi@sunrisefoods.com",   title: "Ürün ve Proses Geliştirme Müdürü",    role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "yonetim",
+    name: "Yönetim",
+    users: [
+      { name: "Fatih Tiryakioğlu",    email: "fatih.tiryakioglu@tiryaki.com.tr",  title: "Başkan Yardımcısı / Uluslararası",             role: "Management" },
+      { name: "Bahadır Açık",         email: "bahadir.acik@tiryaki.com.tr",        title: "Başkan Yardımcısı / Operasyon",                role: "Management" },
+      { name: "Tekin Mengüç",         email: "tekin.menguc@tiryaki.com.tr",        title: "Başkan Yardımcısı / Tiryaki Türkiye",          role: "Management" },
+      { name: "Murat Boğahan",        email: "murat.bogahan@tiryaki.com.tr",       title: "Başkan Yardımcısı / İnsan Kaynakları",         role: "Management" },
+      { name: "Süleyman Tiryakioğlu", email: "suleyman.t@tiryaki.com.tr",          title: "CEO",                                          role: "Management" },
+      { name: "Türkay Tatar",         email: "turkay.tatar@tiryaki.com.tr",        title: "Başkan Yardımcısı / Finans ve Mali İşler",     role: "Management" },
+    ],
+  },
+  {
+    id: "uluslararasi",
+    name: "Uluslararası",
+    users: [
+      { name: "Serkan Can", email: "serkan.can@tiryaki.com.tr", title: "Kaynaklama Sertifikasyon Müdürü (Afrika)", role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "sunrise",
+    name: "Sunrise",
+    users: [
+      { name: "Şahin Kabataş", email: "skabatas@sunrisefoods.ca", title: "IT Director (Sunrise)", role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "denizcilik",
+    name: "Denizcilik",
+    users: [
+      { name: "İlhan Telci", email: "ilhan.telci@tiryaki.com.tr", title: "Deniz Operasyon Direktörü", role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "hukuk",
+    name: "Hukuk",
+    users: [
+      { name: "Uğurcan Patlar", email: "ugurcan.patlar@tiryaki.com.tr", title: "Hukuk Destek Uzmanı", role: "Proje Lideri" },
+      { name: "Mete Sayın",     email: "mete.sayin@tiryaki.com.tr",     title: "Hukuk Müşaviri",      role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "yatirim",
+    name: "Yatırım",
+    users: [
+      { name: "Yiğit Karacı", email: "yigit.karaci@tiryaki.com.tr", title: "Yatırım Projeleri Yöneticisi", role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "sigorta",
+    name: "Sigorta",
+    users: [
+      { name: "Nazlı Çetin", email: "nazli.cetin@tiryaki.com.tr", title: "Sigorta Direktörü", role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "vergi",
+    name: "Vergi",
+    users: [
+      { name: "Devrim Aşkın", email: "devrim.askin@tiryaki.com.tr", title: "Vergi & Muhasebe Direktörü", role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "kurumsal-iletisim",
+    name: "Kurumsal İletişim",
+    users: [
+      { name: "Arzu Örsel", email: "arzu.orsel@tiryaki.com.tr", title: "Kurumsal İletişim ve Sürdürülebilirlik Direktörü", role: "Proje Lideri" },
+    ],
+  },
+  {
+    id: "saf",
+    name: "SAF",
+    users: [
+      { name: "Gulnur Kalyoncu", email: "gulnur.kalyoncu@tiryaki.com.tr", title: "Geri Dönüşüm Müdürü", role: "Proje Lideri" },
     ],
   },
 ];

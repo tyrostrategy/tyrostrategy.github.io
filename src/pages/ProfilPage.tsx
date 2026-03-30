@@ -109,6 +109,7 @@ export default function ProfilPage() {
         <div className="divide-y divide-tyro-border/10">
           <DetailRow label={t("profile.fullName")} value={currentUser.name} />
           <DetailRow label={t("profile.email")} value={currentUser.email} />
+          {dbUser?.title && <DetailRow label={t("users.jobTitle")} value={dbUser.title} />}
           <DetailRow label={t("common.department")} value={currentUser.department || "—"} />
           <DetailRow label={t("profile.authRole")} value={currentUser.role} badge badgeColor={roleColor} />
           {dbUser?.createdAt && <DetailRow label={t("profile.registrationDate")} value={formatDate(dbUser.createdAt)} />}

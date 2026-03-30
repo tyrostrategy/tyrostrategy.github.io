@@ -6,7 +6,7 @@ export type ProjectStatus = "active" | "planned" | "completed" | "delayed";
 export type Priority = "critical" | "high" | "medium" | "low";
 
 // ===== RBAC =====
-export type UserRole = "Admin" | "Proje Lideri" | "Kullanıcı";
+export type UserRole = "Admin" | "Proje Lideri" | "Kullanıcı" | "Management";
 
 export interface CrudPermission {
   create: boolean;
@@ -104,8 +104,6 @@ export interface AdvancedFilters {
 }
 
 // ===== Application User =====
-export type UserRole = "Admin" | "Proje Lideri" | "Kullanıcı";
-
 export interface AppUser {
   id: string;
   email: string;
@@ -113,6 +111,7 @@ export interface AppUser {
   department: string;
   role: UserRole;
   locale: "tr" | "en";
+  title?: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -16,7 +16,7 @@ import SlidingPanel from "@/components/shared/SlidingPanel";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Mail, Building2, Shield, Briefcase, ListChecks, Check } from "lucide-react";
 
-type YetkiRol = "Admin" | "Proje Lideri" | "Kullanıcı";
+type YetkiRol = "Admin" | "Proje Lideri" | "Kullanıcı" | "Management";
 
 interface UserRow {
   id: string;
@@ -24,6 +24,7 @@ interface UserRow {
   initials: string;
   email: string;
   department: string;
+  title: string;
   active: boolean;
   role: YetkiRol;
   locale: "tr" | "en";
@@ -83,12 +84,14 @@ export default function KullanicilarPage() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newDept, setNewDept] = useState("");
+  const [newTitle, setNewTitle] = useState("");
   const [newRole, setNewRole] = useState<YetkiRol>("Kullanıcı");
   const [newLocale, setNewLocale] = useState<"tr" | "en">("tr");
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editDept, setEditDept] = useState("");
+  const [editTitle, setEditTitle] = useState("");
   const [editRole, setEditRole] = useState<YetkiRol>("Kullanıcı");
   const [editLocale, setEditLocale] = useState<"tr" | "en">("tr");
   const [editActive, setEditActive] = useState(true);
@@ -128,6 +131,7 @@ export default function KullanicilarPage() {
           initials: u.displayName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2),
           email: u.email,
           department: u.department,
+          title: u.title ?? "",
           active: true,
           role: u.role as YetkiRol,
           locale: u.locale ?? "tr",
@@ -145,6 +149,7 @@ export default function KullanicilarPage() {
       initials: name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2),
       email: nameToEmail(name),
       department: "",
+      title: "",
       active: true,
       role: assignRole(s.projeCount),
       locale: "tr" as const,
@@ -191,6 +196,7 @@ export default function KullanicilarPage() {
     setEditName(user.name);
     setEditEmail(user.email);
     setEditDept(user.department);
+    setEditTitle(user.title);
     setEditRole(user.role);
     setEditLocale(user.locale);
     setEditActive(user.active);
@@ -218,6 +224,7 @@ export default function KullanicilarPage() {
           Admin: { style: { color: sidebarTheme.accentColor }, icon: Crown },
           "Proje Lideri": { color: "text-tyro-gold", icon: Star },
           "Kullanıcı": { color: "text-tyro-text-muted", icon: UserIcon },
+          Management: { color: "text-violet-600", icon: Crown },
         };
         const rc = roleConfig[user.role];
         const RoleIcon = rc.icon;
@@ -253,7 +260,7 @@ export default function KullanicilarPage() {
               </button>
             </Tooltip>
             <Tooltip content={t("common.edit")} size="sm">
-              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }}>
+              <button className="text-lg text-tyro-text-muted cursor-pointer active:opacity-50" onClick={(e) => { e.stopPropagation(); setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditTitle(user.title); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }}>
                 <Pencil size={16} />
               </button>
             </Tooltip>
@@ -424,7 +431,7 @@ export default function KullanicilarPage() {
                 <span>{user.role}</span>
               </div>
               <div className="flex items-center gap-2 pt-2 border-t border-tyro-border/20" onClick={(e) => e.stopPropagation()}>
-                <button aria-label={t("common.edit")} onClick={() => { setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
+                <button aria-label={t("common.edit")} onClick={() => { setSelectedUser(user); setIsEditing(true); setEditName(user.name); setEditEmail(user.email); setEditDept(user.department); setEditTitle(user.title); setEditRole(user.role); setEditLocale(user.locale); setEditActive(user.active); }} className="flex items-center gap-1.5 px-3 h-9 min-w-[44px] rounded-lg text-xs font-medium text-tyro-text-secondary bg-tyro-bg hover:bg-tyro-border/30 transition-colors">
                   <Pencil size={14} /> {t("common.edit")}
                 </button>
               </div>
@@ -495,6 +502,10 @@ export default function KullanicilarPage() {
             <Input value={newEmail} onValueChange={setNewEmail} variant="bordered" size="sm" placeholder={t("users.emailPlaceholder")} startContent={<Mail size={14} className="text-tyro-text-muted" />} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
           </div>
           <div>
+            <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.jobTitle")}</label>
+            <Input value={newTitle} onValueChange={setNewTitle} variant="bordered" size="sm" placeholder={t("users.jobTitlePlaceholder")} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
+          </div>
+          <div>
             <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.department")}</label>
             <Input value={newDept} onValueChange={setNewDept} variant="bordered" size="sm" placeholder={t("users.department")} startContent={<Building2 size={14} className="text-tyro-text-muted" />} classNames={{ inputWrapper: "border-tyro-border", input: "font-semibold text-tyro-text-primary" }} />
           </div>
@@ -504,6 +515,7 @@ export default function KullanicilarPage() {
               <SelectItem key="Admin">{t("roles.admin")}</SelectItem>
               <SelectItem key="Proje Lideri">{t("roles.projectLeader")}</SelectItem>
               <SelectItem key="Kullanıcı">{t("users.user")}</SelectItem>
+              <SelectItem key="Management">{t("roles.management")}</SelectItem>
             </Select>
           </div>
           <div>
@@ -517,7 +529,7 @@ export default function KullanicilarPage() {
             <Button color="primary" size="sm" startContent={<Check size={14} />} className="rounded-button font-semibold"
               isDisabled={!newName.trim() || !newEmail.trim()}
               onPress={() => {
-                addUser({ displayName: newName.trim(), email: newEmail.trim(), department: newDept.trim(), role: newRole, locale: newLocale });
+                addUser({ displayName: newName.trim(), email: newEmail.trim(), department: newDept.trim(), title: newTitle.trim() || undefined, role: newRole, locale: newLocale });
                 toast.success(t("users.userCreated"), {
                   message: newName.trim(),
                   details: [
@@ -526,7 +538,7 @@ export default function KullanicilarPage() {
                     { label: t("users.department"), value: newDept.trim() || "—" },
                   ],
                 });
-                setNewName(""); setNewEmail(""); setNewDept(""); setNewRole("Kullanıcı"); setNewLocale("tr");
+                setNewName(""); setNewEmail(""); setNewDept(""); setNewTitle(""); setNewRole("Kullanıcı"); setNewLocale("tr");
                 setShowNewForm(false);
               }}>
               {t("common.save")}
@@ -561,6 +573,7 @@ export default function KullanicilarPage() {
                       Admin: { style: { color: sidebarTheme.accentColor }, icon: Crown },
                       "Proje Lideri": { color: "text-tyro-gold", icon: Star },
                       "Kullanıcı": { color: "text-tyro-text-muted", icon: UserIcon },
+                      Management: { color: "text-violet-600", icon: Crown },
                     };
                     const c = rc[selectedUser.role];
                     const Icon = c.icon;
@@ -616,6 +629,10 @@ export default function KullanicilarPage() {
                   <Input value={editEmail} onValueChange={setEditEmail} variant="bordered" size="sm" startContent={<Mail size={14} className="text-tyro-text-muted" />} placeholder={t("users.emailPlaceholder")} />
                 </div>
                 <div>
+                  <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.jobTitle")}</label>
+                  <Input value={editTitle} onValueChange={setEditTitle} variant="bordered" size="sm" placeholder={t("users.jobTitlePlaceholder")} />
+                </div>
+                <div>
                   <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("users.department")}</label>
                   <Input value={editDept} onValueChange={setEditDept} variant="bordered" size="sm" startContent={<Building2 size={14} className="text-tyro-text-muted" />} placeholder={t("users.department")} />
                 </div>
@@ -625,6 +642,7 @@ export default function KullanicilarPage() {
                     <SelectItem key="Admin">{t("roles.admin")}</SelectItem>
                     <SelectItem key="Proje Lideri">{t("roles.projectLeader")}</SelectItem>
                     <SelectItem key="Kullanıcı">{t("users.user")}</SelectItem>
+                    <SelectItem key="Management">{t("roles.management")}</SelectItem>
                   </Select>
                 </div>
                 <div>
@@ -649,10 +667,11 @@ export default function KullanicilarPage() {
                         const changes: { label: string; value: string }[] = [];
                         if (editName.trim() !== selectedUser.name) changes.push({ label: t("users.fullName"), value: editName.trim() });
                         if (editEmail.trim() !== selectedUser.email) changes.push({ label: t("users.email"), value: editEmail.trim() });
+                        if (editTitle.trim() !== selectedUser.title) changes.push({ label: t("users.jobTitle"), value: editTitle.trim() });
                         if (editDept.trim() !== selectedUser.department) changes.push({ label: t("users.department"), value: editDept.trim() });
                         if (editRole !== selectedUser.role) changes.push({ label: t("users.authRole"), value: editRole });
                         if (editLocale !== selectedUser.locale) changes.push({ label: t("users.language"), value: editLocale === "en" ? t("profile.english") : t("profile.turkish") });
-                        updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), department: editDept.trim(), role: editRole, locale: editLocale });
+                        updateUserDb(selectedUser.id, { displayName: editName.trim(), email: editEmail.trim(), title: editTitle.trim() || undefined, department: editDept.trim(), role: editRole, locale: editLocale });
                         toast.success(t("users.userUpdated"), {
                           message: editName.trim(),
                           details: changes.length > 0 ? changes : [{ label: t("users.status"), value: t("users.changeSaved") }],
@@ -671,6 +690,7 @@ export default function KullanicilarPage() {
             ) : (
               <div className="space-y-3">
                 <DetailRow icon={<Mail size={14} />} label={t("users.email")} value={selectedUser.email} />
+                {selectedUser.title && <DetailRow icon={<Briefcase size={14} />} label={t("users.jobTitle")} value={selectedUser.title} />}
                 <DetailRow icon={<Building2 size={14} />} label={t("users.department")} value={selectedUser.department} />
                 <DetailRow
                   icon={selectedUser.role === "Admin" ? <Crown size={14} /> : selectedUser.role === "Proje Lideri" ? <Star size={14} /> : <UserIcon size={14} />}

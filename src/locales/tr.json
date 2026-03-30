@@ -104,7 +104,8 @@
   "roles": {
     "admin": "Admin",
     "projectLeader": "Proje Lideri",
-    "user": "Kullanıcı"
+    "user": "Kullanıcı",
+    "management": "Yönetim"
   },
   "pages": {
     "objectives": {
@@ -487,7 +488,8 @@
     "ownObjectivesAndActions": "Kendi projeleri ve aksiyonları",
     "assignedActionsOnly": "Sadece atanmış aksiyonlar",
     "editOwnRecords": "Kullanıcı sadece kendine ait kayıtları düzenleyebilir",
-    "viewOwnData": "Kullanıcı sadece kendine ait verileri görebilir"
+    "viewOwnData": "Kullanıcı sadece kendine ait verileri görebilir",
+    "managementReadOnly": "Stratejik panolara salt okunur erişim"
   },
   "profile": {
     "title": "Profil",
@@ -623,7 +625,9 @@
     "columns": "Kolonlar",
     "project": "Proje",
     "action": "Aksiyon",
-    "completed": "Tamamlanan"
+    "completed": "Tamamlanan",
+    "jobTitle": "Ünvan",
+    "jobTitlePlaceholder": "ör. Satış Direktörü"
   },
   "dataManagement": {
     "title": "Veri Yönetimi",
