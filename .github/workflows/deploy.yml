@@ -28,7 +28,8 @@ jobs:
       - run: npm install --legacy-peer-deps
       - run: npm run build
         env:
-          VITE_MOCK_AUTH: "true"
+          VITE_MOCK_AUTH: "false"
+          VITE_AZURE_CLIENT_ID: ${{ secrets.VITE_AZURE_CLIENT_ID }}
           VITE_DATA_PROVIDER: "supabase"
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
