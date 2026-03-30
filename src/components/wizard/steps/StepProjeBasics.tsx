@@ -2,7 +2,7 @@ import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import { Input, Textarea, Select, SelectItem } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import { getSourceOptions } from "@/lib/constants";
-import { departmentNames } from "@/config/departments";
+import { PROJECT_DEPARTMENT_KEYS } from "@/config/departments";
 interface Props {
   control: Control<any>;
   errors: FieldErrors<any>;
@@ -104,8 +104,8 @@ export default function StepProjeBasics({ control, errors }: Props) {
               classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.departmentPlaceholder")}
             >
-              {departmentNames.map((name) => (
-                <SelectItem key={name}>{name}</SelectItem>
+              {PROJECT_DEPARTMENT_KEYS.map((key) => (
+                <SelectItem key={key}>{t(`projectDepartments.${key}`)}</SelectItem>
               ))}
             </Select>
           </div>

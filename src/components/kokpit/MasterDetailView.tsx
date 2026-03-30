@@ -18,6 +18,7 @@ import ProjeForm from "@/components/projeler/ProjeForm";
 import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { progressColor } from "@/lib/colorUtils";
 import { formatDate } from "@/lib/dateUtils";
+import { deptLabel } from "@/config/departments";
 import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import { STATUS_DOT_COLOR, getStatusLabel } from "@/lib/constants";
 import { toast } from "@/stores/toastStore";
@@ -390,7 +391,7 @@ function DetailPanel({
               {/* Row 2: kaynak, departman, sahip, katılımcılar */}
               <div className="border-t border-tyro-border/15 grid grid-cols-2 sm:grid-cols-4 divide-x divide-tyro-border/40">
                 <InfoCell icon={<Globe size={12} />} label={t("common.source")} value={proje.source} />
-                <InfoCell icon={<Building2 size={12} />} label={t("common.department")} value={proje.department} />
+                <InfoCell icon={<Building2 size={12} />} label={t("common.department")} value={deptLabel(proje.department, t)} />
                 <InfoCell icon={<Users size={12} />} label={t("common.owner")} value={proje.owner} className="border-t sm:border-t-0 border-tyro-border/40" />
                 <InfoCell label={t("common.participants")} value={proje.participants?.join(", ") || "—"} className="border-t sm:border-t-0 border-tyro-border/40" />
               </div>

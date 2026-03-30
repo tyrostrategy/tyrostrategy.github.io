@@ -4,6 +4,7 @@ import { Target, User, Calendar, Users, MapPin, FolderTree } from "lucide-react"
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import type { WizardFormData } from "../ProjeAksiyonWizard";
+import { deptLabel } from "@/config/departments";
 
 interface AksiyonEntry {
   name: string;
@@ -60,7 +61,7 @@ export default function StepReview({ control }: Props) {
             </div>
             <div className="flex items-center gap-1.5 text-tyro-text-secondary">
               <FolderTree size={12} />
-              <span>{data.department || "—"}</span>
+              <span>{deptLabel(data.department, t) || "—"}</span>
             </div>
             <div className="flex items-center gap-1.5 text-tyro-text-secondary">
               <User size={12} />

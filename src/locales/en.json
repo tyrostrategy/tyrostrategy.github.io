@@ -854,5 +854,23 @@
     "actionsTable": "Actions table",
     "objectivesTable": "Objectives table",
     "actions": "Action"
+  },
+  "projectDepartments": {
+    "uluslararasi-operasyonlar": "International Operations",
+    "insan-kaynaklari": "Human Resources",
+    "tarim": "Agriculture",
+    "bilgi-teknolojileri": "Information Technology",
+    "kurumsal-iletisim": "Corporate Communications",
+    "risk-yonetimi": "Risk Management",
+    "arge": "R&D",
+    "uretim": "Production",
+    "finans": "Finance",
+    "yonetim": "Management",
+    "is-guvenligi": "Occupational Safety",
+    "denizcilik": "Maritime",
+    "dis-ticaret": "Foreign Trade",
+    "ticaret": "Trade",
+    "kalite": "Quality",
+    "turkiye-operasyonlari": "Turkey Operations"
   }
 }

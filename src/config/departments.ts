@@ -158,6 +158,60 @@ export const departments: Department[] = [
 /** All department names as a flat array */
 export const departmentNames = departments.map((d) => d.name);
 
+/** Fixed PROJECT department enum keys — separate from user departments.
+ *  i18n via t(`projectDepartments.${key}`) */
+export const PROJECT_DEPARTMENT_KEYS = [
+  "uluslararasi-operasyonlar",
+  "insan-kaynaklari",
+  "tarim",
+  "bilgi-teknolojileri",
+  "kurumsal-iletisim",
+  "risk-yonetimi",
+  "arge",
+  "uretim",
+  "finans",
+  "yonetim",
+  "is-guvenligi",
+  "denizcilik",
+  "dis-ticaret",
+  "ticaret",
+  "kalite",
+  "turkiye-operasyonlari",
+] as const;
+
+/** Map old Turkish project department names to enum keys (backward compat) */
+const projeDeptNameToKey = new Map<string, string>([
+  ["Uluslararası Operasyonlar", "uluslararasi-operasyonlar"],
+  ["İnsan Kaynakları", "insan-kaynaklari"],
+  ["Tarım", "tarim"],
+  ["Bilgi Teknolojileri", "bilgi-teknolojileri"],
+  ["Kurumsal İletişim", "kurumsal-iletisim"],
+  ["Risk Yönetimi", "risk-yonetimi"],
+  ["Ar-Ge", "arge"],
+  ["Üretim", "uretim"],
+  ["Finans", "finans"],
+  ["Yönetim", "yonetim"],
+  ["İş Güvenliği", "is-guvenligi"],
+  ["Denizcilik", "denizcilik"],
+  ["Dış Ticaret", "dis-ticaret"],
+  ["Ticaret", "ticaret"],
+  ["Kalite", "kalite"],
+  ["IT", "bilgi-teknolojileri"],
+  ["Türkiye Operasyonları", "turkiye-operasyonlari"],
+]);
+
+/** Resolve a stored project department value (id or old Turkish name) to display label.
+ *  Falls back to raw value if no mapping found. */
+export function deptLabel(value: string | undefined | null, t: (key: string) => string): string {
+  if (!value) return "";
+  // Direct id match
+  if ((PROJECT_DEPARTMENT_KEYS as readonly string[]).includes(value)) return t(`projectDepartments.${value}`);
+  // Old Turkish name → id
+  const key = projeDeptNameToKey.get(value);
+  if (key) return t(`projectDepartments.${key}`);
+  return value;
+}
+
 /** Get department by user name */
 export function getDepartmentByUser(userName: string): Department | undefined {
   return departments.find((d) => d.users.some((u) => u.name === userName));

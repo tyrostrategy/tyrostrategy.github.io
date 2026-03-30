@@ -11,7 +11,7 @@ import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import { toast } from "@/stores/toastStore";
 import { useUIStore } from "@/stores/uiStore";
 import { getStatusOptions, getSourceOptions } from "@/lib/constants";
-import { departments } from "@/config/departments";
+import { departments, PROJECT_DEPARTMENT_KEYS, deptLabel } from "@/config/departments";
 import { DEFAULT_TAG_COLOR } from "@/config/tagColors";
 import TagChip from "@/components/ui/TagChip";
 import StatusBadge from "@/components/ui/StatusBadge";
@@ -21,7 +21,6 @@ import type { Proje } from "@/types";
 
 const CURRENT_USER = "Cenk \u015eayli";
 const allUsers = departments.flatMap((d) => d.users.map((u) => u.name));
-const departmentNames = departments.map((d) => d.name);
 
 const createHedefSchema = (t: TFunction) =>
   z.object({
@@ -107,7 +106,7 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
         if (data.status !== proje.status) details.push({ label: t("common.status"), value: data.status });
         if (data.owner !== proje.owner) details.push({ label: t("common.owner"), value: data.owner });
         if (data.source !== proje.source) details.push({ label: t("common.source"), value: data.source });
-        if (data.department !== proje.department) details.push({ label: t("common.department"), value: data.department });
+        if (data.department !== proje.department) details.push({ label: t("common.department"), value: deptLabel(data.department, t) });
         if (data.startDate !== proje.startDate) details.push({ label: t("common.startDate"), value: data.startDate });
         if (data.endDate !== proje.endDate) details.push({ label: t("common.endDate"), value: data.endDate });
         updateProje(proje.id, payload);
@@ -313,8 +312,8 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
               classNames={{ trigger: "border-tyro-border", value: "font-semibold text-tyro-text-primary" }}
               placeholder={t("forms.objective.departmentPlaceholder")}
             >
-              {departmentNames.map((name) => (
-                <SelectItem key={name}>{name}</SelectItem>
+              {PROJECT_DEPARTMENT_KEYS.map((key) => (
+                <SelectItem key={key}>{t(`projectDepartments.${key}`)}</SelectItem>
               ))}
             </Select>
           </div>

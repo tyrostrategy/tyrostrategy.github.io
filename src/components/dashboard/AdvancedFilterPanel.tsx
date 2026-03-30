@@ -5,6 +5,7 @@ import { X, RotateCcw } from "lucide-react";
 import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
+import { deptLabel } from "@/config/departments";
 
 interface AdvancedFilterPanelProps {
   isOpen: boolean;
@@ -140,7 +141,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               <FilterSection title={t("dashboard.department")}>
                 <div className="flex flex-wrap gap-2">
                   {departmanOptions.map((d) => (
-                    <ChipToggle key={d} label={d} active={departman.has(d)} onClick={() => toggleSet(departman, d, setDepartman)} />
+                    <ChipToggle key={d} label={deptLabel(d, t)} active={departman.has(d)} onClick={() => toggleSet(departman, d, setDepartman)} />
                   ))}
                 </div>
               </FilterSection>

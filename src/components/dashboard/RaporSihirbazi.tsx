@@ -24,6 +24,7 @@ import {
   useDeleteReportTemplate,
 } from "@/hooks/useSupabaseData";
 import type { Proje, Aksiyon, EntityStatus, Source } from "@/types";
+import { deptLabel } from "@/config/departments";
 
 // ===== Status helpers =====
 const STATUS_COLOR: Record<EntityStatus, string> = {
@@ -258,7 +259,7 @@ export default function RaporSihirbazi() {
 
   // Derived
   const allDepartments = useMemo(
-    () => [...new Set(projeler.map((h) => h.department))].filter(Boolean).sort(),
+    () => [...new Set(projeler.map((h) => h.department))].filter(Boolean).sort() as string[],
     [projeler]
   );
 
@@ -312,7 +313,7 @@ export default function RaporSihirbazi() {
   const deptBreakdown = useMemo(() => {
     const m: Record<string, { total: number; active: number; achieved: number; behind: number; avgProg: number }> = {};
     reportProjeler.forEach((h) => {
-      const d = h.department || t("dashboard.other");
+      const d = deptLabel(h.department, t) || t("dashboard.other");
       if (!m[d]) m[d] = { total: 0, active: 0, achieved: 0, behind: 0, avgProg: 0 };
       m[d].total++;
       m[d].avgProg += calcProjeProgress(h, aksiyonlar);
@@ -523,7 +524,7 @@ ${clone.outerHTML}
     const ws2 = wb.addWorksheet(t("dashboard.projectsSheet"));
     ws2.addRow([t("dashboard.projectName"), t("dashboard.descriptionCol"), t("dashboard.leaderCol"), t("dashboard.departmentCol"), t("dashboard.sourceCol"), t("dashboard.statusLabel"), t("dashboard.progressPercent"), t("dashboard.startDateCol"), t("dashboard.endDateCol")]);
     reportProjeler.forEach((h) => {
-      ws2.addRow([h.name, h.description || "", h.owner, h.department, h.source, STATUS_TR[h.status], calcProjeProgress(h, aksiyonlar), h.startDate, h.endDate]);
+      ws2.addRow([h.name, h.description || "", h.owner, deptLabel(h.department, t), h.source, STATUS_TR[h.status], calcProjeProgress(h, aksiyonlar), h.startDate, h.endDate]);
     });
     // Sheet 3: Actions
     const ws3 = wb.addWorksheet(t("dashboard.actionsSheet"));
@@ -556,7 +557,7 @@ ${clone.outerHTML}
       const p = calcProjeProgress(h, aksiyonlar);
       children.push(new Paragraph({ text: h.name, heading: HeadingLevel.HEADING_2 }));
       if (h.description) children.push(new Paragraph({ text: h.description }));
-      children.push(new Paragraph({ children: [new TextRun({ text: `${t("dashboard.leaderCol")}: ${h.owner} · ${h.source} · ${h.department} · %${p} · ${STATUS_TR[h.status]}` })] }));
+      children.push(new Paragraph({ children: [new TextRun({ text: `${t("dashboard.leaderCol")}: ${h.owner} · ${h.source} · ${deptLabel(h.department, t)} · %${p} · ${STATUS_TR[h.status]}` })] }));
       children.push(new Paragraph({ text: "" }));
     });
     const doc = new Document({ sections: [{ children }] });
@@ -586,7 +587,7 @@ ${clone.outerHTML}
       slide.addText(h.name, { x: 0.5, y: 0.3, w: 8, fontSize: 18, bold: true, color: "1e3a5f" });
       slide.addText(`%${p} · ${STATUS_TR[h.status]}`, { x: 0.5, y: 1, w: 4, fontSize: 24, bold: true, color: progressColor(p).replace("#", "") });
       if (h.description) slide.addText(h.description, { x: 0.5, y: 1.8, w: 9, fontSize: 12, color: "475569" });
-      slide.addText(`${h.owner} · ${h.source} · ${h.department}`, { x: 0.5, y: 2.5, w: 9, fontSize: 11, color: "64748b" });
+      slide.addText(`${h.owner} · ${h.source} · ${deptLabel(h.department, t)}`, { x: 0.5, y: 2.5, w: 9, fontSize: 11, color: "64748b" });
     });
     pptx.writeFile({ fileName: getFileName("pptx") });
   };
@@ -748,7 +749,7 @@ ${clone.outerHTML}
                   className="w-full text-[12px] px-3 py-2 rounded-lg border border-tyro-border bg-tyro-bg text-tyro-text-primary"
                 >
                   <option value="all">{t("dashboard.allDepartments")}</option>
-                  {allDepartments.map((d) => <option key={d} value={d}>{d}</option>)}
+                  {allDepartments.map((d) => <option key={d} value={d}>{deptLabel(d, t)}</option>)}
                 </select>
               </div>
 
@@ -1356,7 +1357,7 @@ ${clone.outerHTML}
                   <div key={h.id} className="glass-card rounded-xl px-4 py-3 flex items-center justify-between" style={{ borderLeft: `3px solid ${STATUS_COLOR[h.status]}` }}>
                     <div className="min-w-0 flex-1">
                       <p className="text-[12px] font-semibold text-tyro-text-primary truncate">{h.name}</p>
-                      <p className="text-[12px] text-tyro-text-secondary mt-0.5">{h.department} · {h.owner} · {t("dashboard.endDateLabel")}: {new Date(h.endDate).toLocaleDateString(dateLocale)}</p>
+                      <p className="text-[12px] text-tyro-text-secondary mt-0.5">{deptLabel(h.department, t)} · {h.owner} · {t("dashboard.endDateLabel")}: {new Date(h.endDate).toLocaleDateString(dateLocale)}</p>
                     </div>
                     <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0 ml-3" style={{ backgroundColor: `${STATUS_COLOR[h.status]}12`, color: STATUS_COLOR[h.status] }}>
                       {STATUS_TR[h.status]}
@@ -1407,7 +1408,7 @@ ${clone.outerHTML}
                           <span className="text-tyro-border">|</span>
                           <span className="text-tyro-text-secondary">{h.source}</span>
                           <span className="text-tyro-border">·</span>
-                          <span className="text-tyro-text-secondary">{h.department}</span>
+                          <span className="text-tyro-text-secondary">{deptLabel(h.department, t)}</span>
                           {h.tags && h.tags.length > 0 && (
                             <>
                               <span className="text-tyro-border">|</span>

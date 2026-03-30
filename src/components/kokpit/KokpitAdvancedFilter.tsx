@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
 import type { Proje, Aksiyon, EntityStatus, AdvancedFilters } from "@/types";
+import { deptLabel } from "@/config/departments";
 
 interface Props {
   isOpen: boolean;
@@ -223,7 +224,7 @@ export default function KokpitAdvancedFilter({ isOpen, onClose, projeler, aksiyo
                   classNames={selectClasses}
                 >
                   {departments.map((d) => (
-                    <SelectItem key={d}>{d}</SelectItem>
+                    <SelectItem key={d}>{deptLabel(d, t)}</SelectItem>
                   ))}
                 </Select>
               </Section>

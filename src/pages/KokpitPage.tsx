@@ -44,6 +44,7 @@ import { formatDate } from "@/lib/dateUtils";
 import { toCalendarDate, fromCalendarDate } from "@/lib/utils";
 import type { Proje, Aksiyon, EntityStatus, Source, AdvancedFilters } from "@/types";
 import i18n from "@/lib/i18n";
+import { deptLabel } from "@/config/departments";
 
 const KokpitAdvancedFilter = lazy(() => import("@/components/kokpit/KokpitAdvancedFilter"));
 
@@ -887,7 +888,7 @@ function TabloView({
                     </div>
                     <span className="text-[12px] font-semibold text-tyro-text-muted tabular-nums">%{proje.progress}</span>
                   </div>
-                  <span className="text-xs text-tyro-text-muted truncate">{proje.department}</span>
+                  <span className="text-xs text-tyro-text-muted truncate">{deptLabel(proje.department, t)}</span>
                   <span className="text-xs text-tyro-text-muted tabular-nums">{formatDate(proje.startDate)}</span>
                   <span className="text-xs text-tyro-text-muted tabular-nums">{formatDate(proje.endDate)}</span>
                   <span className="text-xs text-tyro-text-muted tabular-nums">{proje.reviewDate ? formatDate(proje.reviewDate) : "—"}</span>

@@ -12,6 +12,7 @@ import AksiyonDetail from "@/components/aksiyonlar/AksiyonDetail";
 import { progressColor, statusColor } from "@/lib/colorUtils";
 import { formatDate } from "@/lib/dateUtils";
 import type { Proje, Aksiyon } from "@/types";
+import { deptLabel } from "@/config/departments";
 
 type DetailMode = "detail" | "editing" | "addAksiyon" | "aksiyonDetail";
 
@@ -252,7 +253,7 @@ export default function ProjeDetail({
           </div>
           <div className="px-3 py-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-tyro-text-muted block mb-0.5">{t("common.department")}</span>
-            <p className="text-[12px] font-medium text-tyro-text-primary">{currentHedef.department || "-"}</p>
+            <p className="text-[12px] font-medium text-tyro-text-primary">{deptLabel(currentHedef.department, t) || "-"}</p>
           </div>
         </div>
         {/* Başlangıç + Bitiş */}

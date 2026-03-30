@@ -10,6 +10,7 @@ import KPICard from "@/components/dashboard/KPICard";
 import GlassCard from "@/components/ui/GlassCard";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import CircularProgress from "@/components/ui/CircularProgress";
+import { deptLabel } from "@/config/departments";
 
 // Lazy load heavy chart components (recharts ~200KB)
 const SourceChart = lazy(() => import("@/components/dashboard/SourceChart"));
@@ -469,7 +470,7 @@ function DepartmentDistribution({ projeler }: { projeler: { department: string; 
   const grouped = useMemo(() => {
     const m = new Map<string, Record<string, number>>();
     for (const p of projeler) {
-      const dept = p.department || t("dashboard.other");
+      const dept = deptLabel(p.department, t) || t("dashboard.other");
       if (!m.has(dept)) m.set(dept, {});
       const d = m.get(dept)!;
       d[p.status] = (d[p.status] || 0) + 1;

@@ -854,5 +854,23 @@
     "actionsTable": "Aksiyonlar tablosu",
     "objectivesTable": "Hedefler tablosu",
     "actions": "Aksiyon"
+  },
+  "projectDepartments": {
+    "uluslararasi-operasyonlar": "Uluslararası Operasyonlar",
+    "insan-kaynaklari": "İnsan Kaynakları",
+    "tarim": "Tarım",
+    "bilgi-teknolojileri": "Bilgi Teknolojileri",
+    "kurumsal-iletisim": "Kurumsal İletişim",
+    "risk-yonetimi": "Risk Yönetimi",
+    "arge": "Ar-Ge",
+    "uretim": "Üretim",
+    "finans": "Finans",
+    "yonetim": "Yönetim",
+    "is-guvenligi": "İş Güvenliği",
+    "denizcilik": "Denizcilik",
+    "dis-ticaret": "Dış Ticaret",
+    "ticaret": "Ticaret",
+    "kalite": "Kalite",
+    "turkiye-operasyonlari": "Türkiye Operasyonları"
   }
 }
