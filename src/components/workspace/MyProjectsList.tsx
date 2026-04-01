@@ -240,7 +240,7 @@ export default function MyProjectsList() {
                           className="h-full rounded-lg flex items-center justify-center cursor-help hover:brightness-110 transition-all"
                           style={{ width: `${(count / ws.myProjeler.length) * 100}%`, backgroundColor: SOURCE_COLORS[source] ?? "#94a3b8", minWidth: 28 }}
                         >
-                          <span className="text-[11px] font-bold text-white/90 drop-shadow-sm truncate px-0.5">{pct >= 20 ? `${source} · ${pct}%` : `${pct}%`}</span>
+                          <span className="text-[11px] font-bold text-white/90 drop-shadow-sm truncate px-0.5">{pct >= 20 ? `${source} · ${count}` : `${count}`}</span>
                         </div>
                       </Tooltip>
                     );
@@ -276,7 +276,7 @@ export default function MyProjectsList() {
                                 className="h-full rounded-lg flex items-center justify-center cursor-help hover:brightness-110 transition-all"
                                 style={{ width: `${(count / total) * 100}%`, backgroundColor: tagColor, minWidth: 28 }}
                               >
-                                <span className="text-[11px] font-bold text-white/90 drop-shadow-sm truncate px-0.5">{pct >= 20 ? `${tag} · ${pct}%` : `${pct}%`}</span>
+                                <span className="text-[11px] font-bold text-white/90 drop-shadow-sm truncate px-0.5">{pct >= 20 ? `${tag} · ${count}` : `${count}`}</span>
                               </div>
                             </Tooltip>
                           );
