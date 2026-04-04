@@ -19,7 +19,7 @@ const DARK = {
   overlay:
     "radial-gradient(ellipse 60% 50% at 50% 50%, transparent 20%, rgba(20,40,66,0.6) 100%)",
   dotColor: "rgba(200,146,42,0.15)",
-  auroraOpacity: "opacity-50",
+  auroraOpacity: "opacity-0",
   blur: "12px",
   bgSize: "300%, 200%",
 };
