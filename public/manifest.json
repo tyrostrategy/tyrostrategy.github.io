@@ -7,6 +7,32 @@
   "background_color": "#1e3a5f",
   "theme_color": "#1e3a5f",
   "orientation": "any",
+  "shortcuts": [
+    {
+      "name": "Stratejik Kokpit",
+      "short_name": "Kokpit",
+      "url": "/#/kokpit",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Profil",
+      "short_name": "Profil",
+      "url": "/#/profil",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/#/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Yardım",
+      "short_name": "Yardım",
+      "url": "/#/yardim",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icon-192.png",

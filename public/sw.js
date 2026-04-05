@@ -1,18 +1,40 @@
-// TYRO Strategy — minimal service worker for PWA install prompt
+// TYRO Strategy — service worker with offline fallback
 const CACHE_NAME = "tyro-v1";
+const OFFLINE_URL = "/offline.html";
 
-self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+// Pre-cache offline page on install
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.add(OFFLINE_URL))
+  );
+  self.skipWaiting();
+});
 
-// Network-first strategy — always try network, fall back to cache
+// Clean old caches & claim clients
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Network-first with offline fallback
 self.addEventListener("fetch", (e) => {
-  // Only cache same-origin GET requests
   if (e.request.method !== "GET" || !e.request.url.startsWith(self.location.origin)) return;
 
+  // Navigation requests (HTML pages) — show offline.html if network fails
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      fetch(e.request).catch(() => caches.match(OFFLINE_URL))
+    );
+    return;
+  }
+
+  // Other assets — network first, fall back to cache
   e.respondWith(
     fetch(e.request)
       .then((res) => {
-        // Cache successful responses
         if (res.ok) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
