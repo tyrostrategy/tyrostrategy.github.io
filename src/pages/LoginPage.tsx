@@ -351,18 +351,37 @@ export default function LoginPage() {
       </div>
 
       {/* ═════ MOBILE single-column ═════ */}
-      <div className="lg:hidden relative z-[5] min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="lg:hidden relative z-[30] min-h-screen flex flex-col items-center justify-center p-6">
         <motion.div
           className="w-full max-w-[440px] flex flex-col items-center gap-6 text-center"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="flex items-center justify-center gap-3">
-            <span className="flex-shrink-0 inline-flex items-center justify-center" style={{ width: 42, height: 42 }}>
-              <TyroLogo size={42} variant="login" />
-            </span>
-            <span className="text-[22px] font-extrabold tracking-tight text-white leading-none">
+          <div
+            className="flex flex-row items-center justify-center"
+            style={{ gap: 12, minHeight: 48 }}
+          >
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                flexShrink: 0,
+                display: "block",
+              }}
+            >
+              <TyroLogo size={44} variant="login" />
+            </div>
+            <div
+              style={{
+                fontSize: 22,
+                fontWeight: 800,
+                letterSpacing: "-0.01em",
+                color: "#ffffff",
+                lineHeight: 1,
+                whiteSpace: "nowrap",
+              }}
+            >
               tyro
               <span
                 style={{
@@ -375,7 +394,7 @@ export default function LoginPage() {
               >
                 strategy
               </span>
-            </span>
+            </div>
           </div>
 
           <h1 className="text-[26px] font-extrabold leading-tight text-white">
