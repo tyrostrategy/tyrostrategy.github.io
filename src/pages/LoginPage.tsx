@@ -410,11 +410,15 @@ export default function LoginPage() {
               <p className="text-[11px] leading-relaxed text-red-100">{msalError}</p>
             </div>
           )}
-
-          <p className="text-[10px] mt-2" style={{ color: "rgba(151,184,216,0.45)" }}>
-            {COPYRIGHT}
-          </p>
         </motion.div>
+
+        {/* Copyright — pinned to the bottom so the orbital rings never cut through it */}
+        <p
+          className="absolute bottom-4 left-0 right-0 text-center text-[10px] px-4"
+          style={{ color: "rgba(151,184,216,0.45)" }}
+        >
+          {COPYRIGHT}
+        </p>
       </div>
     </div>
   );

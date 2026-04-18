@@ -96,10 +96,10 @@ export default function PortalButton({
         <div
           className="absolute rounded-full"
           style={{
-            top: "-200px",
-            left: "-200px",
-            width: "400px",
-            height: "400px",
+            top: "-210px",
+            left: "-210px",
+            width: "420px",
+            height: "420px",
             background: hover
               ? "radial-gradient(circle, rgba(224,173,62,0.28) 0%, rgba(200,146,42,0.14) 45%, transparent 78%)"
               : "radial-gradient(circle, rgba(224,173,62,0.10) 0%, rgba(200,146,42,0.04) 45%, transparent 78%)",
@@ -111,10 +111,10 @@ export default function PortalButton({
         <div
           className="absolute rounded-full"
           style={{
-            top: "-135px",
-            left: "-135px",
-            width: "270px",
-            height: "270px",
+            top: "-145px",
+            left: "-145px",
+            width: "290px",
+            height: "290px",
             background: hover
               ? "radial-gradient(circle, rgba(200,146,42,0.4) 0%, transparent 72%)"
               : "radial-gradient(circle, rgba(200,146,42,0.16) 0%, transparent 72%)",
@@ -123,14 +123,14 @@ export default function PortalButton({
           }}
         />
 
-        {/* Inner orbital ring */}
+        {/* Inner orbital ring — encloses button with breathing room */}
         <motion.div
           className="absolute rounded-full"
           style={{
-            top: "-125px",
-            left: "-125px",
-            width: "250px",
-            height: "250px",
+            top: "-150px",
+            left: "-150px",
+            width: "300px",
+            height: "300px",
             border: `1px solid ${phase === "p1" ? "rgba(240,201,94,0.95)" : hover ? "rgba(224,173,62,0.70)" : "rgba(200,146,42,0.35)"}`,
             boxShadow: phase === "p1"
               ? "inset 0 0 30px rgba(240,201,94,0.5), 0 0 24px rgba(240,201,94,0.55)"
@@ -149,10 +149,10 @@ export default function PortalButton({
         <motion.div
           className="absolute rounded-full"
           style={{
-            top: "-150px",
-            left: "-150px",
-            width: "300px",
-            height: "300px",
+            top: "-180px",
+            left: "-180px",
+            width: "360px",
+            height: "360px",
             border: `1.5px dashed ${phase === "p1" ? "rgba(240,201,94,1)" : hover ? "rgba(224,173,62,0.82)" : "rgba(200,146,42,0.40)"}`,
             boxShadow: phase === "p1"
               ? "0 0 60px rgba(240,201,94,0.7)"
@@ -170,7 +170,7 @@ export default function PortalButton({
         {/* Orbital dots on outer ring */}
         <motion.div
           className="absolute"
-          style={{ top: "-150px", left: "-150px", width: "300px", height: "300px" }}
+          style={{ top: "-180px", left: "-180px", width: "360px", height: "360px" }}
           animate={{ rotate: 360 }}
           transition={{
             duration: phase === "p1" ? 0.4 : hover ? 7 : 16,
@@ -189,7 +189,7 @@ export default function PortalButton({
                 height: "5px",
                 background: "#e0ad3e",
                 boxShadow: "0 0 10px rgba(224,173,62,0.95)",
-                transform: `translate(-50%, -50%) rotate(${deg}deg) translate(150px)`,
+                transform: `translate(-50%, -50%) rotate(${deg}deg) translate(180px)`,
                 opacity: hover ? 1 : 0.55,
                 transition: "opacity 0.3s",
               }}
