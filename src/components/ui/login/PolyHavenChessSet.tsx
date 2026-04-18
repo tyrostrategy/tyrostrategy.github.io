@@ -15,8 +15,10 @@ import type { GroupProps } from "@react-three/fiber";
  * Assets: /public/models/chess_set/*
  */
 
-const GLTF_URL = "/models/chess_set/chess_set.gltf";
-const BOARD_DIFF_URL = "/models/chess_set/textures/chess_set_board_diff_1k.jpg";
+// Use Vite BASE_URL so assets resolve correctly on sub-path deployments
+// (e.g., GitHub Pages serves from /tyrostrategy/).
+const GLTF_URL = `${import.meta.env.BASE_URL}models/chess_set/chess_set.gltf`;
+const BOARD_DIFF_URL = `${import.meta.env.BASE_URL}models/chess_set/textures/chess_set_board_diff_1k.jpg`;
 
 export type PieceRefMap = Record<string, THREE.Object3D>;
 
