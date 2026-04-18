@@ -358,30 +358,10 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div
-            className="flex flex-row items-center justify-center"
-            style={{ gap: 12, minHeight: 48 }}
-          >
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                flexShrink: 0,
-                display: "block",
-              }}
-            >
-              <TyroLogo size={44} variant="login" />
-            </div>
-            <div
-              style={{
-                fontSize: 22,
-                fontWeight: 800,
-                letterSpacing: "-0.01em",
-                color: "#ffffff",
-                lineHeight: 1,
-                whiteSpace: "nowrap",
-              }}
-            >
+          {/* Logo + app name — identical pattern to desktop brand row */}
+          <div className="flex items-center gap-3">
+            <TyroLogo size={42} variant="login" />
+            <span className="text-[22px] font-extrabold tracking-tight text-white leading-none">
               tyro
               <span
                 style={{
@@ -394,7 +374,7 @@ export default function LoginPage() {
               >
                 strategy
               </span>
-            </div>
+            </span>
           </div>
 
           <h1 className="text-[26px] font-extrabold leading-tight text-white">
