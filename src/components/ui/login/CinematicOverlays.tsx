@@ -83,11 +83,11 @@ export default function CinematicOverlays({ phase }: { phase: IntroPhase }) {
         }}
       />
 
-      {/* ─── Dissolve to navy (z-14) — replaces gold flash ─── */}
+      {/* ─── Stargate-style finale (z-13..16) — replaces flat dissolve ─── */}
       <AnimatePresence>
         {showFlash && (
           <>
-            {/* Brief gold impact glow — when navy king falls (quick) */}
+            {/* Brief gold impact glow — quick screen wash at checkmate */}
             <motion.div
               key="impact-glow"
               className="pointer-events-none fixed inset-0 z-[13]"
@@ -102,18 +102,54 @@ export default function CinematicOverlays({ phase }: { phase: IntroPhase }) {
                 mixBlendMode: "screen",
               }}
             />
-            {/* Navy dissolve curtain — final fade */}
+
+            {/* Concentric portal rings — staggered gold expansion, Dr Strange-style */}
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={`portal-ring-${i}`}
+                className="pointer-events-none fixed z-[14] rounded-full"
+                aria-hidden="true"
+                style={{
+                  top: "50%",
+                  left: "50%",
+                  width: "240px",
+                  height: "240px",
+                  marginLeft: "-120px",
+                  marginTop: "-120px",
+                  border: `${2 - i * 0.4}px ${i === 1 ? "dashed" : "solid"} rgba(240,201,94,${0.9 - i * 0.2})`,
+                  boxShadow: `0 0 ${60 - i * 12}px rgba(240,201,94,${0.6 - i * 0.12}), inset 0 0 ${30 - i * 6}px rgba(240,201,94,${0.35 - i * 0.08})`,
+                }}
+                initial={{ scale: 0, opacity: 0, rotate: 0 }}
+                animate={{
+                  scale: 14 + i * 3,
+                  opacity: [0, 1, 0.8, 0],
+                  rotate: i % 2 === 0 ? 360 : -360,
+                }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 1.5 + i * 0.15,
+                  delay: i * 0.12,
+                  ease: [0.22, 0.8, 0.3, 1],
+                }}
+              />
+            ))}
+
+            {/* Navy dissolve curtain — final fade into app */}
             <motion.div
               key="dissolve-navy"
-              className="pointer-events-none fixed inset-0 z-[14]"
+              className="pointer-events-none fixed inset-0 z-[16]"
               aria-hidden="true"
               initial={{ opacity: 0 }}
-              animate={{ opacity: phase === "auth" ? 0.95 : 0.65 }}
+              animate={{ opacity: phase === "auth" ? 0.95 : 0.5 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: phase === "auth" ? 0.7 : 0.5, ease: "easeOut" }}
+              transition={{
+                duration: phase === "auth" ? 0.8 : 0.6,
+                delay: phase === "auth" ? 0.3 : 0,
+                ease: "easeOut",
+              }}
               style={{
                 background:
-                  "radial-gradient(ellipse at 50% 50%, #142842 0%, #0a1628 55%, #050b18 100%)",
+                  "radial-gradient(ellipse at 50% 50%, #1a3560 0%, #0a1628 45%, #050b18 100%)",
               }}
             />
           </>

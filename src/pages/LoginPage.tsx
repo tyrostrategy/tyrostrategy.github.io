@@ -12,6 +12,8 @@ import { useDataStore } from "@/stores/dataStore";
 import CinematicOverlays from "@/components/ui/login/CinematicOverlays";
 import CheckmateReveal from "@/components/ui/login/CheckmateReveal";
 import PortalButton from "@/components/ui/login/PortalButton";
+import ArchivedFeatureList, { type ArchivedCard } from "@/components/ui/login/ArchivedFeatureList";
+import type { ActiveFeatureCard } from "@/components/ui/login/MoveFeatureCard";
 import { cn } from "@/lib/cn";
 import type { IntroPhase } from "@/components/ui/login/introPhases";
 
@@ -33,6 +35,40 @@ export default function LoginPage() {
   const { login: msalLogin, loading: msalLoading, error: msalError } = useMsalLogin();
   const [phase, setPhase] = useState<IntroPhase>("idle");
   const [showCheckWindow, setShowCheckWindow] = useState(false);
+  // Lazy init so the default card is only computed once on mount.
+  const [archivedFeatures, setArchivedFeatures] = useState<ArchivedCard[]>(() => [
+    {
+      id: "intro-default",
+      icon: <Shield size={14} />,
+      title: t("login.introCard.title"),
+      desc: t("login.introCard.desc"),
+    },
+  ]);
+
+  // Keep the default intro card's label in sync with the active locale.
+  useEffect(() => {
+    setArchivedFeatures((prev) =>
+      prev.map((c) =>
+        c.id === "intro-default"
+          ? { ...c, title: t("login.introCard.title"), desc: t("login.introCard.desc") }
+          : c,
+      ),
+    );
+  }, [t, locale]);
+
+  const handleFeatureArchive = useCallback((card: ActiveFeatureCard) => {
+    setArchivedFeatures((prev) => {
+      if (prev.some((c) => c.id === card.id)) return prev;
+      const newCard: ArchivedCard = {
+        id: card.id,
+        icon: card.icon,
+        title: card.title,
+        desc: card.desc,
+      };
+      // Newer cards go on top, cap at 3 items total
+      return [newCard, ...prev].slice(0, 3);
+    });
+  }, []);
   const introTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const isAuthenticated = useIsAuthenticated();
@@ -116,7 +152,12 @@ export default function LoginPage() {
       {/* ═════ 3D CHESSBOARD — full-screen background ═════ */}
       <div className="hidden lg:block absolute inset-0 z-[1]" aria-hidden="true">
         <Suspense fallback={null}>
-          <LoginChessboard t={t} phase={phase} onPortalClick={startIntro} />
+          <LoginChessboard
+            t={t}
+            phase={phase}
+            onPortalClick={startIntro}
+            onFeatureArchive={handleFeatureArchive}
+          />
         </Suspense>
       </div>
 
@@ -245,6 +286,9 @@ export default function LoginPage() {
           >
             {t("login.heroDescription")}
           </motion.p>
+
+          {/* Archived feature history — cards teleport here from the board */}
+          <ArchivedFeatureList cards={archivedFeatures} />
         </motion.div>
 
         {/* Top-right: TR / EN toggle */}
@@ -315,8 +359,10 @@ export default function LoginPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="flex items-center justify-center gap-3">
-            <TyroLogo size={36} variant="login" />
-            <span className="text-[22px] font-extrabold tracking-tight text-white">
+            <span className="flex-shrink-0 inline-flex items-center justify-center" style={{ width: 42, height: 42 }}>
+              <TyroLogo size={42} variant="login" />
+            </span>
+            <span className="text-[22px] font-extrabold tracking-tight text-white leading-none">
               tyro
               <span
                 style={{

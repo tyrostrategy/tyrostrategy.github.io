@@ -5,6 +5,8 @@ import { EffectComposer, Bloom, Vignette, N8AO } from "@react-three/postprocessi
 import * as THREE from "three";
 import { Target, BarChart3, Network, CalendarClock, Shield } from "lucide-react";
 import PolyHavenChessSet, { type PieceRefMap } from "./login/PolyHavenChessSet";
+import BoardGrid from "./login/BoardGrid";
+import BoardBorderFrame from "./login/BoardBorderFrame";
 import MatchOrchestrator from "./login/MatchOrchestrator";
 import ScenePortalButton from "./login/ScenePortalButton";
 import MoveFeatureCard, { type ActiveFeatureCard } from "./login/MoveFeatureCard";
@@ -26,6 +28,7 @@ type Props = {
   t: (key: string) => string;
   phase: IntroPhase;
   onPortalClick: () => void;
+  onFeatureArchive?: (card: ActiveFeatureCard) => void;
 };
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -96,10 +99,13 @@ function GoldDust() {
 function CameraController() {
   const { camera } = useThree();
   const basePos = useMemo(() => new THREE.Vector3(0.28, 0.34, 0.52), []);
+  const zoomEnd = useMemo(() => new THREE.Vector3(0.18, 0.26, 0.36), []);
   const diveTarget = useMemo(() => new THREE.Vector3(0.08, 0.05, 0.18), []);
   const lookAtBase = useMemo(() => new THREE.Vector3(0.05, 0.04, 0), []);
   const lookAtDive = useMemo(() => new THREE.Vector3(0.05, -0.02, 0), []);
   const currentLookAt = useMemo(() => new THREE.Vector3().copy(lookAtBase), [lookAtBase]);
+  // Reusable temp vector for zoom-end calculation
+  const tempZoomPos = useMemo(() => new THREE.Vector3(), []);
 
   const mouseX = useRef(0);
   const mouseY = useRef(0);
@@ -116,22 +122,30 @@ function CameraController() {
   useFrame(() => {
     if (window._tyroLoginAnim && window._tyroLoginStart) {
       const elapsed = (performance.now() - window._tyroLoginStart) / 1000;
+
+      // Phase 2 — dive. Start from the ZOOM-END position so there's no cut
+      // between the end of zoom (elapsed 2.1) and the start of dive (2.2).
       if (elapsed >= 2.2) {
-        const t = Math.min((elapsed - 2.2) / 0.9, 1);
-        const eased = t * t * t;
-        camera.position.lerpVectors(basePos, diveTarget, eased);
+        const zoomEasedAtEnd = 0.6; // zoom reaches 60% of the way from basePos → zoomEnd at t=1
+        tempZoomPos.copy(basePos).lerp(zoomEnd, zoomEasedAtEnd);
+        const t = Math.min((elapsed - 2.2) / 1.3, 1);         // longer dive: 0.9s → 1.3s
+        const eased = t * t * (3 - 2 * t);                     // smoothstep (smoother than cubic-in)
+        camera.position.lerpVectors(tempZoomPos, diveTarget, eased);
         currentLookAt.lerpVectors(lookAtBase, lookAtDive, eased);
         camera.lookAt(currentLookAt);
         return;
       }
+
+      // Phase 1 — gentle zoom toward board
       if (elapsed >= 0.4) {
-        const t = Math.min((elapsed - 0.4) / 1.7, 1);
+        const t = Math.min((elapsed - 0.4) / 1.8, 1);
         const eased = t * t * (3 - 2 * t);
-        const zoomed = basePos.clone().lerp(new THREE.Vector3(0.18, 0.26, 0.36), eased * 0.6);
-        camera.position.copy(zoomed);
+        tempZoomPos.copy(basePos).lerp(zoomEnd, eased * 0.6);
+        camera.position.copy(tempZoomPos);
         camera.lookAt(lookAtBase);
         return;
       }
+
       camera.position.copy(basePos);
       camera.lookAt(lookAtBase);
       return;
@@ -151,7 +165,7 @@ function CameraController() {
 /* ═══════════════════════════════════════════════════════════════════
  * SCENE
  * ═══════════════════════════════════════════════════════════════════ */
-function Scene({ t, phase, onPortalClick }: Props) {
+function Scene({ t, phase, onPortalClick, onFeatureArchive }: Props) {
   const { scene } = useThree();
   const [pieces, setPieces] = useState<PieceRefMap>({});
   const [portalVisible, setPortalVisible] = useState(false);
@@ -184,18 +198,27 @@ function Scene({ t, phase, onPortalClick }: Props) {
     (move: Move, worldPos: [number, number, number]) => {
       if (!move.feature) return;
       if (cardTimeoutRef.current) clearTimeout(cardTimeoutRef.current);
-      setActiveCard({
-        id: move.id,
-        worldPos,
-        icon: featureIcon(move.feature.iconId),
-        title: t(`${move.feature.i18nKey}.title`),
-        desc: t(`${move.feature.i18nKey}.desc`),
+      setActiveCard((prev) => {
+        // Archive the previous card before replacing it
+        if (prev) onFeatureArchive?.(prev);
+        return {
+          id: move.id,
+          worldPos,
+          icon: featureIcon(move.feature!.iconId),
+          title: t(`${move.feature!.i18nKey}.title`),
+          desc: t(`${move.feature!.i18nKey}.desc`),
+        };
       });
       cardTimeoutRef.current = setTimeout(() => {
-        setActiveCard(null);
+        // When the card times out on its own, archive it too so the last
+        // card in the match always lands in the history panel.
+        setActiveCard((prev) => {
+          if (prev) onFeatureArchive?.(prev);
+          return null;
+        });
       }, 2800);
     },
-    [t],
+    [t, onFeatureArchive],
   );
 
   useEffect(() => {
@@ -233,6 +256,12 @@ function Scene({ t, phase, onPortalClick }: Props) {
       <Suspense fallback={null}>
         <PolyHavenChessSet position={[0.14, 0, 0]} onReady={handlePiecesReady} />
       </Suspense>
+
+      {/* Gold polished inlay frame around the playing area */}
+      <BoardBorderFrame position={[0.14, 0.018, 0]} />
+
+      {/* Gold glow grid lines on the board */}
+      <BoardGrid position={[0.14, 0.0176, 0]} />
 
       {/* Match orchestrator */}
       <MatchOrchestrator
@@ -277,7 +306,7 @@ function Scene({ t, phase, onPortalClick }: Props) {
 /* ═══════════════════════════════════════════════════════════════════
  * EXPORT
  * ═══════════════════════════════════════════════════════════════════ */
-export default function LoginChessboard({ t, phase, onPortalClick }: Props) {
+export default function LoginChessboard({ t, phase, onPortalClick, onFeatureArchive }: Props) {
   return (
     <Canvas
       camera={{ position: [0.28, 0.34, 0.52], fov: 42 }}
@@ -287,7 +316,7 @@ export default function LoginChessboard({ t, phase, onPortalClick }: Props) {
       style={{ width: "100%", height: "100%" }}
     >
       <Suspense fallback={null}>
-        <Scene t={t} phase={phase} onPortalClick={onPortalClick} />
+        <Scene t={t} phase={phase} onPortalClick={onPortalClick} onFeatureArchive={onFeatureArchive} />
         <EffectComposer multisampling={4}>
           <N8AO aoRadius={0.08} intensity={1.5} distanceFalloff={0.2} />
           <Bloom mipmapBlur intensity={0.32} luminanceThreshold={0.82} luminanceSmoothing={0.3} />

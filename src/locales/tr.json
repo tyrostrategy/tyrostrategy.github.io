@@ -353,6 +353,12 @@
       }
     },
     "heroDescription": "Kurumsal projelerinizi takip edin, aksiyonlarınızı yönetin, ekibinizle birlikte stratejik kararlar alın.",
+    "introCard": {
+      "title": "Stratejik Platform",
+      "desc": "Vizyondan aksiyona, kurumsal komuta merkezi."
+    },
+    "connect": "Bağlan",
+    "checkmateSubtitle": "Strateji Sahasına Giriş",
     "strategicPlanning": "Stratejik Planlama",
     "strategicPlanningDesc": "Proje ve aksiyon yönetimi",
     "kpiDashboard": "KPI Dashboard",

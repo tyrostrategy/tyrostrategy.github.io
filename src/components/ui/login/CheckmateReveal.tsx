@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import type { IntroPhase } from "./introPhases";
 
 /**
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export default function CheckmateReveal({ phase, text }: Props) {
+  const { t } = useTranslation();
   const show = phase === "p2" || phase === "p2b" || phase === "p3" || phase === "p4" || phase === "p5";
 
   return (
@@ -83,7 +85,7 @@ export default function CheckmateReveal({ phase, text }: Props) {
                 textTransform: "uppercase",
               }}
             >
-              Strateji Sahasına Giriş
+              {t("login.checkmateSubtitle")}
             </motion.p>
           </motion.div>
         </motion.div>

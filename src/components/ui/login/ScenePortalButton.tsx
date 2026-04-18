@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Html } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import { MousePointerClick } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { TyroLogo } from "@/components/ui/TyroLogo";
 import type { IntroPhase } from "./introPhases";
 
@@ -75,6 +76,8 @@ export default function ScenePortalButton({
   const imploding =
     phase === "p3" || phase === "p4" || phase === "p5" || phase === "p6" || phase === "auth";
   const show = visible && !imploding;
+  const { t } = useTranslation();
+  const connectLabel = t("login.connect");
 
   const [hover, setHover] = useState(false);
   const [scrambleDone, setScrambleDone] = useState(false);
@@ -82,7 +85,7 @@ export default function ScenePortalButton({
   // Scramble animations for each text segment
   const tyroText = useScrambleText("tyro", show, 700);
   const verseText = useScrambleText("verse", show, 800);
-  const baglanText = useScrambleText("Bağlan", show, 900);
+  const baglanText = useScrambleText(connectLabel, show, 900);
 
   // Mark scramble done after total ~1s so full styling kicks in
   useEffect(() => {
@@ -128,7 +131,23 @@ export default function ScenePortalButton({
               }}
               aria-hidden="true"
             >
-              {/* Radial glow pulse */}
+              {/* Outer radial bloom — extends BEYOND the outer ring */}
+              <div
+                className="absolute rounded-full"
+                style={{
+                  top: "-220px",
+                  left: "-220px",
+                  width: "440px",
+                  height: "440px",
+                  background: hover
+                    ? "radial-gradient(circle, rgba(224,173,62,0.32) 0%, rgba(200,146,42,0.18) 45%, transparent 78%)"
+                    : "radial-gradient(circle, rgba(224,173,62,0.12) 0%, rgba(200,146,42,0.05) 45%, transparent 78%)",
+                  animation: "portalRing 3s ease-in-out infinite",
+                  transition: "background 0.35s",
+                }}
+              />
+
+              {/* Inner radial glow pulse */}
               <div
                 className="absolute rounded-full"
                 style={{
@@ -137,14 +156,14 @@ export default function ScenePortalButton({
                   width: "300px",
                   height: "300px",
                   background: hover
-                    ? "radial-gradient(circle, rgba(200,146,42,0.40) 0%, transparent 72%)"
-                    : "radial-gradient(circle, rgba(200,146,42,0.16) 0%, transparent 72%)",
+                    ? "radial-gradient(circle, rgba(200,146,42,0.45) 0%, transparent 72%)"
+                    : "radial-gradient(circle, rgba(200,146,42,0.18) 0%, transparent 72%)",
                   animation: "portalRing 3s ease-in-out infinite",
                   transition: "background 0.4s",
                 }}
               />
 
-              {/* Inner orbital ring — encloses button with ~25px breathing room */}
+              {/* Inner orbital ring */}
               <motion.div
                 className="absolute rounded-full"
                 style={{
@@ -152,15 +171,21 @@ export default function ScenePortalButton({
                   left: "-140px",
                   width: "280px",
                   height: "280px",
-                  border: `1px solid ${hover ? "rgba(224,173,62,0.70)" : "rgba(200,146,42,0.35)"}`,
-                  boxShadow: hover ? "inset 0 0 20px rgba(200,146,42,0.28)" : "none",
-                  transition: "border-color 0.3s, box-shadow 0.3s",
+                  border: `1px solid ${phase === "p1" ? "rgba(240,201,94,0.95)" : hover ? "rgba(224,173,62,0.70)" : "rgba(200,146,42,0.35)"}`,
+                  boxShadow: phase === "p1"
+                    ? "inset 0 0 35px rgba(240,201,94,0.55), 0 0 28px rgba(240,201,94,0.6)"
+                    : hover ? "inset 0 0 20px rgba(200,146,42,0.28)" : "none",
+                  transition: "border-color 0.25s, box-shadow 0.25s",
                 }}
                 animate={{ rotate: -360 }}
-                transition={{ duration: hover ? 10 : 22, repeat: Infinity, ease: "linear" }}
+                transition={{
+                  duration: phase === "p1" ? 0.5 : hover ? 10 : 22,
+                  repeat: Infinity,
+                  ease: phase === "p1" ? "easeIn" : "linear",
+                }}
               />
 
-              {/* Outer orbital ring — ~50px further out, dashed */}
+              {/* Outer orbital ring */}
               <motion.div
                 className="absolute rounded-full"
                 style={{
@@ -168,12 +193,18 @@ export default function ScenePortalButton({
                   left: "-170px",
                   width: "340px",
                   height: "340px",
-                  border: `1.5px dashed ${hover ? "rgba(224,173,62,0.82)" : "rgba(200,146,42,0.40)"}`,
-                  boxShadow: hover ? "0 0 44px rgba(200,146,42,0.45)" : "none",
-                  transition: "border-color 0.3s, box-shadow 0.3s",
+                  border: `1.5px dashed ${phase === "p1" ? "rgba(240,201,94,1)" : hover ? "rgba(224,173,62,0.82)" : "rgba(200,146,42,0.40)"}`,
+                  boxShadow: phase === "p1"
+                    ? "0 0 70px rgba(240,201,94,0.75)"
+                    : hover ? "0 0 44px rgba(200,146,42,0.45)" : "none",
+                  transition: "border-color 0.25s, box-shadow 0.25s",
                 }}
                 animate={{ rotate: 360 }}
-                transition={{ duration: hover ? 7 : 16, repeat: Infinity, ease: "linear" }}
+                transition={{
+                  duration: phase === "p1" ? 0.4 : hover ? 7 : 16,
+                  repeat: Infinity,
+                  ease: phase === "p1" ? "easeIn" : "linear",
+                }}
               />
 
               {/* Orbital dots on outer ring */}
@@ -186,7 +217,11 @@ export default function ScenePortalButton({
                   height: "340px",
                 }}
                 animate={{ rotate: 360 }}
-                transition={{ duration: hover ? 7 : 16, repeat: Infinity, ease: "linear" }}
+                transition={{
+                  duration: phase === "p1" ? 0.4 : hover ? 7 : 16,
+                  repeat: Infinity,
+                  ease: phase === "p1" ? "easeIn" : "linear",
+                }}
               >
                 {[0, 90, 180, 270].map((deg) => (
                   <div
@@ -206,6 +241,105 @@ export default function ScenePortalButton({
                   />
                 ))}
               </motion.div>
+
+              {/* ─── Dr. Strange portal burst — only during phase p1 ─── */}
+              <AnimatePresence>
+                {phase === "p1" && (
+                  <>
+                    {/* Expanding burst ring #1 — inner quick flash */}
+                    <motion.div
+                      key="burst-1"
+                      className="absolute rounded-full"
+                      style={{
+                        top: "-170px",
+                        left: "-170px",
+                        width: "340px",
+                        height: "340px",
+                        border: "2px solid rgba(240,201,94,0.9)",
+                        boxShadow:
+                          "0 0 50px rgba(240,201,94,0.7), inset 0 0 40px rgba(240,201,94,0.45)",
+                      }}
+                      initial={{ scale: 0.6, opacity: 0 }}
+                      animate={{ scale: 1.8, opacity: [0, 1, 0], rotate: 180 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                    />
+                    {/* Expanding burst ring #2 — delayed, wider */}
+                    <motion.div
+                      key="burst-2"
+                      className="absolute rounded-full"
+                      style={{
+                        top: "-200px",
+                        left: "-200px",
+                        width: "400px",
+                        height: "400px",
+                        border: "1.5px dashed rgba(240,201,94,0.8)",
+                        boxShadow: "0 0 70px rgba(240,201,94,0.55)",
+                      }}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 2.0, opacity: [0, 0.9, 0], rotate: -240 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 1.0, delay: 0.1, ease: "easeOut" }}
+                    />
+                    {/* Expanding burst ring #3 — outer, fastest fade */}
+                    <motion.div
+                      key="burst-3"
+                      className="absolute rounded-full"
+                      style={{
+                        top: "-230px",
+                        left: "-230px",
+                        width: "460px",
+                        height: "460px",
+                        border: "1px solid rgba(255,230,170,0.7)",
+                        boxShadow: "0 0 90px rgba(255,230,170,0.4)",
+                      }}
+                      initial={{ scale: 0.4, opacity: 0 }}
+                      animate={{ scale: 2.2, opacity: [0, 0.8, 0], rotate: 300 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 1.1, delay: 0.2, ease: "easeOut" }}
+                    />
+                    {/* Radiating spark particles — 12 outward streaks */}
+                    {Array.from({ length: 12 }).map((_, i) => {
+                      const angle = (i / 12) * 360;
+                      return (
+                        <motion.div
+                          key={`spark-${i}`}
+                          className="absolute"
+                          style={{
+                            top: "50%",
+                            left: "50%",
+                            width: "3px",
+                            height: "22px",
+                            background:
+                              "linear-gradient(180deg, rgba(255,235,180,1) 0%, rgba(240,201,94,0.8) 50%, transparent 100%)",
+                            transformOrigin: "50% 0%",
+                            borderRadius: "2px",
+                            boxShadow: "0 0 10px rgba(240,201,94,0.9)",
+                          }}
+                          initial={{
+                            opacity: 0,
+                            rotate: angle,
+                            x: -1.5,
+                            y: 0,
+                            scale: 0.3,
+                          }}
+                          animate={{
+                            opacity: [0, 1, 0],
+                            y: [0, 180, 220],
+                            scale: [0.3, 1.2, 0.6],
+                          }}
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            duration: 0.9,
+                            delay: i * 0.025,
+                            ease: "easeOut",
+                          }}
+                        />
+                      );
+                    })}
+                  </>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Button */}
@@ -235,7 +369,7 @@ export default function ScenePortalButton({
                 <span
                   style={{
                     fontFamily: "inherit",
-                    fontSize: "15px",
+                    fontSize: "17px",
                     fontWeight: 800,
                     letterSpacing: "-0.01em",
                     lineHeight: 1,
@@ -247,7 +381,7 @@ export default function ScenePortalButton({
                 <span
                   style={{
                     fontFamily: "inherit",
-                    fontSize: "15px",
+                    fontSize: "17px",
                     fontWeight: 800,
                     letterSpacing: "-0.01em",
                     lineHeight: 1,
@@ -275,14 +409,14 @@ export default function ScenePortalButton({
                 <span
                   style={{
                     fontFamily: "inherit",
-                    fontSize: "15px",
+                    fontSize: "17px",
                     fontWeight: 800,
                     letterSpacing: "-0.01em",
                     lineHeight: 1,
                     color: "#ffffff",
                   }}
                 >
-                  {scrambleDone ? "Bağlan" : baglanText}
+                  {scrambleDone ? connectLabel : baglanText}
                 </span>
                 <motion.span
                   style={{ display: "inline-flex" }}

@@ -353,6 +353,12 @@
       }
     },
     "heroDescription": "Track your corporate projects, manage your actions, and make strategic decisions together with your team.",
+    "introCard": {
+      "title": "Strategic Platform",
+      "desc": "From vision to action — the enterprise command center."
+    },
+    "connect": "Connect",
+    "checkmateSubtitle": "Enter the Strategy Arena",
     "strategicPlanning": "Strategic Planning",
     "strategicPlanningDesc": "Project and action management",
     "kpiDashboard": "KPI Dashboard",

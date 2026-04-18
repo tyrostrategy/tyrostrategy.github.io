@@ -1,40 +1,35 @@
-import { useMemo } from "react";
-import * as THREE from "three";
+import { Stars } from "@react-three/drei";
 
 /**
- * StarField — ambient tiny stars scattered in the deep background.
- * Static (no animation), additive blending for bright pinpoint effect.
- * ~50 stars, all placed at z < -1.3 (behind the chessboard).
+ * StarField — drei's Stars wraps the scene in a spherical shell of
+ * randomly-placed points. Combined with sizeAttenuation and the
+ * procedural shader, it gives a rich "stardom" sky regardless of
+ * camera position or frustum.
  */
 
-const STAR_COUNT = 55;
-
 export default function StarField() {
-  const positions = useMemo(() => {
-    const arr = new Float32Array(STAR_COUNT * 3);
-    for (let i = 0; i < STAR_COUNT; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 4.0;        // wide X spread
-      arr[i * 3 + 1] = Math.random() * 2.0 + 0.05;     // upper hemisphere
-      arr[i * 3 + 2] = -1.5 - Math.random() * 1.8;     // deep background
-    }
-    return arr;
-  }, []);
-
   return (
-    <points frustumCulled={false} renderOrder={-1}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} count={STAR_COUNT} />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.015}
-        color="#fff5dd"
-        transparent
-        opacity={0.85}
-        sizeAttenuation
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        fog={false}
+    <>
+      {/* Dim far layer — dense background dust */}
+      <Stars
+        radius={4}
+        depth={3}
+        count={900}
+        factor={0.08}
+        saturation={0}
+        fade
+        speed={0.3}
       />
-    </points>
+      {/* Bright accent layer — fewer, larger warm stars */}
+      <Stars
+        radius={2.5}
+        depth={1.5}
+        count={180}
+        factor={0.16}
+        saturation={0}
+        fade
+        speed={0.2}
+      />
+    </>
   );
 }

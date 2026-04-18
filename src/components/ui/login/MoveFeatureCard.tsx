@@ -32,7 +32,7 @@ export default function MoveFeatureCard({ card }: Props) {
       position={[card.worldPos[0], card.worldPos[1] + 0.16, anchorZ]}
       center
       zIndexRange={[20, 10]}
-      style={{ pointerEvents: "none" }}
+      style={{ pointerEvents: "none", transform: "translateX(55%)" }}
     >
       <AnimatePresence>
         <motion.div
