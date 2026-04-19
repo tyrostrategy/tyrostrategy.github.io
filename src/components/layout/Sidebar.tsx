@@ -37,6 +37,7 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { RoleAvatar } from "@/components/ui/RoleAvatar";
 import { clsx } from "clsx";
 import { useMsal } from "@azure/msal-react";
+import { setSupabaseUserContext } from "@/lib/supabase";
 
 /** Animated mesh gradient blobs for mesh-style themes */
 function MeshBlobs({ colors }: { colors: string[] }) {
@@ -135,6 +136,8 @@ function SidebarContent({ collapsed, onNavigate, pinned, onTogglePin }: { collap
   const handleLogout = () => {
     setProfileOpen(false);
     setMockLoggedIn(false);
+    // Clear the RLS identity header so subsequent requests are anonymous
+    setSupabaseUserContext(null);
     // Clear MSAL session — use redirect on mobile, popup on desktop
     const isMob = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
     if (isMob) {

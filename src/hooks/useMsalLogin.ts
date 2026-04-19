@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { loginRequest } from "@/lib/auth/msalConfig";
 import { useUIStore } from "@/stores/uiStore";
 import { useDataStore } from "@/stores/dataStore";
-import { setSupabaseUserContext } from "@/lib/supabase/client";
+import { setSupabaseUserContext } from "@/lib/supabase";
 
 /** Detect mobile / tablet browsers where popups are unreliable */
 function isMobile(): boolean {
@@ -36,9 +36,11 @@ export function applyUser(user: { email?: string; displayName: string; role: str
   ui.setMockUserRole(user.role);
   if (user.locale) ui.setLocale(user.locale as "tr" | "en");
   ui.setMockLoggedIn(true);
-  // Tell Supabase who we are — RLS policies (migration 006) use this
+  // Tell Supabase who we are — the fetch wrapper will attach an
+  // X-User-Email header on every subsequent request. RLS policies
+  // (migration 006 + 008) resolve role from this header.
   if (user.email) {
-    void setSupabaseUserContext(user.email);
+    setSupabaseUserContext(user.email);
   }
 }
 
