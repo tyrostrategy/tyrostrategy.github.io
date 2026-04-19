@@ -17,7 +17,7 @@ interface KanbanViewProps<T extends { id: string }> {
 export const statusColumns: KanbanColumn[] = [
   { key: "On Track", label: "Yolunda", color: "bg-tyro-success" },
   { key: "At Risk", label: "Riskte", color: "bg-tyro-warning" },
-  { key: "Behind", label: "Geride", color: "bg-tyro-danger" },
+  { key: "Behind", label: "Yüksek Riskte", color: "bg-tyro-danger" },
   { key: "Not Started", label: "Başlanmadı", color: "bg-tyro-text-muted" },
   { key: "Achieved", label: "Tamamlandı", color: "bg-tyro-navy" },
   { key: "On Hold", label: "Askıda", color: "bg-violet-500" },

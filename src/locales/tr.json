@@ -33,12 +33,12 @@
   "status": {
     "onTrack": "Yolunda",
     "achieved": "Tamamlandı",
-    "behind": "Geride",
+    "behind": "Yüksek Riskte",
     "atRisk": "Riskte",
     "notStarted": "Başlanmadı",
     "cancelled": "İptal",
     "onHold": "Askıda",
-    "late": "Geride"
+    "late": "Yüksek Riskte"
   },
   "common": {
     "search": "Ara...",
@@ -392,8 +392,8 @@
     "activeProjects": "Aktif Projeler",
     "onTrackTrend": "yolunda",
     "totalProjects": "{{count}} toplam proje",
-    "delayedRisky": "Geride / Riskte",
-    "behindTrend": "geride, {{atRisk}} riskte",
+    "delayedRisky": "Yüksek Riskte / Riskte",
+    "behindTrend": "yüksek riskte, {{atRisk}} riskte",
     "totalProjectsOf": "{{count}} toplam projeden",
     "avgProgress": "Ortalama İlerleme",
     "projectAverage": "{{count}} proje ortalaması",
@@ -404,7 +404,7 @@
     "viewAllProjects": "Tüm projeleri gör",
     "statusOnTrack": "Yolunda",
     "statusAtRisk": "Riskte",
-    "statusBehind": "Geride",
+    "statusBehind": "Yüksek Riskte",
     "statusAchieved": "Tamamlandı",
     "statusNotStarted": "Başlanmadı",
     "statusCancelled": "İptal",
@@ -514,7 +514,7 @@
     "insightOnTrack": "Genel ilerleme %{{progress}} ile proje doğrultusunda ilerliyor.",
     "insightNeedsMomentum": "Genel ilerleme %{{progress}} seviyesinde — ivme kazanılması gerekiyor.",
     "insightCritical": "Genel ilerleme %{{progress}} ile kritik seviyede düşük. Acil aksiyon gerekli.",
-    "insightAtRisk": "{{count}} proje riskte veya geride durumda — dikkat gerektiriyor.",
+    "insightAtRisk": "{{count}} proje riskte veya yüksek riskte — dikkat gerektiriyor.",
     "insightCompletionRate": "Proje tamamlanma oranı %{{rate}}. {{count}} proje başarıyla tamamlanmış.",
     "insightWorstDept": "{{dept}} departmanı %{{progress}} ortalama ilerleme ile en düşük performansı sergiliyor.",
     "insightBestDept": "{{dept}} departmanı %{{progress}} ile en yüksek performansı gösteriyor."
@@ -600,8 +600,8 @@
     "rules": "Kurallar",
     "multiTag": "Çoklu etiket",
     "multiTagDesc": "Kapalıyken projelere yalnızca tek etiket atanabilir",
-    "behindThreshold": "Geride eşiği",
-    "behindThresholdDesc": "Beklenen ilerlemeye göre %{{value}}'den fazla geride → Geride",
+    "behindThreshold": "Yüksek Risk eşiği",
+    "behindThresholdDesc": "Beklenen ilerlemeye göre %{{value}}'den fazla geride → Yüksek Riskte",
     "atRiskThreshold": "Riskte eşiği",
     "atRiskThresholdDesc": "Beklenen ilerlemeye göre %{{value}}'den fazla geride → Riskte",
     "integrations": "Entegrasyonlar",
@@ -745,7 +745,7 @@
     "daysLate": "g gecikmiş",
     "daysLeft": "g kaldı",
     "day": "gün",
-    "late": "Geride"
+    "late": "Yüksek Riskte"
   },
   "footer": {
     "poweredBy": "Powered by",
