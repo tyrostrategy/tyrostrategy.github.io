@@ -11,8 +11,14 @@ export const msalConfig: Configuration = {
     navigateToLoginRequestUrl: false,
   },
   cache: {
-    // localStorage survives page refresh; sessionStorage is cleared on tab close
-    cacheLocation: "localStorage",
+    // sessionStorage (per-tab): tokens evaporate when the tab closes, so an
+    // XSS window is bounded and the token never lingers on disk. Users get a
+    // one-click silent SSO re-login when re-opening the tab (Microsoft's
+    // session cookie is still on login.microsoftonline.com).
+    // Trade-off accepted for defense-in-depth on an enterprise internal app.
+    cacheLocation: "sessionStorage",
+    // Fallback cookie still helps IE/legacy edge cases during the redirect
+    // handshake — harmless on modern browsers.
     storeAuthStateInCookie: true,
   },
 };
