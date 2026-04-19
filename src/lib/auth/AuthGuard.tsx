@@ -5,6 +5,7 @@ import { InteractionStatus } from "@azure/msal-browser";
 import { Navigate } from "react-router-dom";
 import { useUIStore } from "@/stores/uiStore";
 import { useDataStore } from "@/stores/dataStore";
+import { applyUser } from "@/hooks/useMsalLogin";
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const isAuthenticated = useIsAuthenticated();
@@ -21,10 +22,8 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     const email = accounts[0].username.toLowerCase().trim();
     const user = users.find((u) => u.email.toLowerCase() === email);
     if (user) {
-      useUIStore.getState().setMockUserName(user.displayName);
-      useUIStore.getState().setMockUserRole(user.role);
-      if (user.locale) useUIStore.getState().setLocale(user.locale as "tr" | "en");
-      useUIStore.getState().setMockLoggedIn(true);
+      // applyUser also sets the Supabase session context (RLS) for us
+      applyUser(user);
     }
   }, [isAuthenticated, mockLoggedIn, accounts, users, inProgress]);
 

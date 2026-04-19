@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { loginRequest } from "@/lib/auth/msalConfig";
 import { useUIStore } from "@/stores/uiStore";
 import { useDataStore } from "@/stores/dataStore";
+import { setSupabaseUserContext } from "@/lib/supabase/client";
 
 /** Detect mobile / tablet browsers where popups are unreliable */
 function isMobile(): boolean {
@@ -29,12 +30,16 @@ export function resolveUser(email: string, users: { email: string; displayName: 
   return users.find((u) => u.email.toLowerCase() === email);
 }
 
-export function applyUser(user: { displayName: string; role: string; locale?: string }) {
+export function applyUser(user: { email?: string; displayName: string; role: string; locale?: string }) {
   const ui = useUIStore.getState();
   ui.setMockUserName(user.displayName);
   ui.setMockUserRole(user.role);
   if (user.locale) ui.setLocale(user.locale as "tr" | "en");
   ui.setMockLoggedIn(true);
+  // Tell Supabase who we are — RLS policies (migration 006) use this
+  if (user.email) {
+    void setSupabaseUserContext(user.email);
+  }
 }
 
 export function useMsalLogin() {
