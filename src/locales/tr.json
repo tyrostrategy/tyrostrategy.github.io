@@ -296,7 +296,7 @@
     "lateOrRisk": "Geciken / Riskli",
     "late": "geciken",
     "atRisk": "riskli",
-    "sourceDistribution": "Kaynak Dağılımı",
+    "sourceDistribution": "İş Kolu Dağılımı",
     "tagDistribution": "Olgunlaşma Seviyesi Dağılımı",
     "objectiveProgress": "Proje İlerlemesi",
     "actionProgress": "Aksiyon İlerlemesi",

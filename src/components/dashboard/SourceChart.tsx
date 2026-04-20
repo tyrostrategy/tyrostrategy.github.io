@@ -84,10 +84,10 @@ export default function SourceChart() {
   return (
     <GlassCard className="p-5 flex-1 flex flex-col">
       <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">
-        İş Grubu Dağılımı
+        İş Kolu Dağılımı
       </h3>
       <p className="text-[11px] text-tyro-text-secondary mb-3">
-        Türkiye, Kurumsal ve International iş grupları
+        Türkiye, Kurumsal ve International iş kolları
       </p>
       <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height={220}>
