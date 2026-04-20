@@ -115,10 +115,12 @@ export default function KullanicilarPage() {
       s.projeCount += 1;
       if (h.status === "Achieved") s.achievedCount += 1;
       statsMap.set(h.owner, s);
-      // Also credit participants
+      // Also credit participants — a member of the project counts the
+      // project toward their projeCount just like the owner does.
       for (const participant of h.participants ?? []) {
         if (!participant || participant === h.owner) continue;
         const ps = statsMap.get(participant) || { projeCount: 0, aksiyonCount: 0, achievedCount: 0 };
+        ps.projeCount += 1;
         if (h.status === "Achieved") ps.achievedCount += 1;
         statsMap.set(participant, ps);
       }

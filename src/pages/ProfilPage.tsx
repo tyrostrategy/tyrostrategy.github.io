@@ -28,7 +28,12 @@ export default function ProfilPage() {
   const roleColor = ROLE_COLORS[currentUser.role] ?? "#64748b";
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
 
-  const myProjeCount = projeler.filter((p) => p.owner === currentUser.name).length;
+  // "My projects" = projects where I'm the owner OR a participant
+  const myProjeCount = projeler.filter(
+    (p) =>
+      p.owner === currentUser.name ||
+      (p.participants ?? []).includes(currentUser.name),
+  ).length;
   const myAksiyonCount = aksiyonlar.filter((a) => a.owner === currentUser.name).length;
   const myAchievedCount = aksiyonlar.filter((a) => a.owner === currentUser.name && a.status === "Achieved").length;
 
