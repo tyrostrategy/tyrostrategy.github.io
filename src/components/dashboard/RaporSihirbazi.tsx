@@ -90,7 +90,6 @@ export default function RaporSihirbazi() {
     { id: "cover", label: t("dashboard.coverPage"), defaultOn: true },
     { id: "summary", label: t("dashboard.generalSummary"), defaultOn: true },
     { id: "statusPie", label: t("dashboard.statusPieChart"), defaultOn: false },
-    { id: "progressChart", label: t("dashboard.progressDistribution"), defaultOn: true },
     { id: "deptTable", label: t("dashboard.departmentTable"), defaultOn: true },
     // "Dikkat gerektiren" standalone section was removed — its content is
     // surfaced inline in the AI Insights panel at the top of the Executive
@@ -331,18 +330,8 @@ export default function RaporSihirbazi() {
   // standalone section is gone, and the AI Insights panel computes its
   // own filter (High Risk / At Risk, no tag filter) inline.
 
-  const progressDist = useMemo(() => {
-    const d = { full: 0, high: 0, mid: 0, low: 0, zero: 0 };
-    reportProjeler.forEach((h) => {
-      const p = calcProjeProgress(h, aksiyonlar);
-      if (p >= 100) d.full++;
-      else if (p >= 75) d.high++;
-      else if (p >= 50) d.mid++;
-      else if (p > 0) d.low++;
-      else d.zero++;
-    });
-    return d;
-  }, [reportProjeler, aksiyonlar]);
+  // progressDist useMemo removed — its sole consumer (the "İlerleme
+  // Dağılımı" card inside the Executive Summary) was removed.
 
   const reportAksiyonlar = useMemo(
     () => aksiyonlar.filter((a) => reportProjeler.some((h) => h.id === a.projeId)),
@@ -1228,10 +1217,8 @@ ${clone.outerHTML}
               });
             }
 
-            // Circular progress SVG
-            const circR = 60;
-            const circC = 2 * Math.PI * circR;
-            const circOffset = circC * (1 - avgProgress / 100);
+            // (circR / circC / circOffset donut helpers removed along
+            //  with the Circular Progress card.)
 
             return (
               <Section num={1} title={t("dashboard.executiveSummary")}>
@@ -1268,49 +1255,10 @@ ${clone.outerHTML}
                   ))}
                 </div>
 
-                {/* Circular Progress + Progress Distribution — side by side */}
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Circular Progress */}
-                  <div className="glass-card rounded-xl p-5 flex flex-col items-center justify-center">
-                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">{t("dashboard.averageProgress")}</p>
-                    <svg width="150" height="150" viewBox="0 0 150 150">
-                      <circle cx="75" cy="75" r={circR} fill="none" stroke="#e2e8f0" strokeWidth="10" />
-                      <circle
-                        cx="75" cy="75" r={circR} fill="none"
-                        stroke={progressColor(avgProgress)} strokeWidth="10"
-                        strokeLinecap="round"
-                        strokeDasharray={circC} strokeDashoffset={circOffset}
-                        transform="rotate(-90 75 75)"
-                      />
-                      <text x="75" y="70" textAnchor="middle" className="text-[28px] font-extrabold" fill={progressColor(avgProgress)}>%{avgProgress}</text>
-                      <text x="75" y="90" textAnchor="middle" className="text-[11px]" fill="#64748b">{t("dashboard.completion")}</text>
-                    </svg>
-                  </div>
-
-                  {/* Progress Distribution */}
-                  <div className="glass-card rounded-xl p-5">
-                    <p className="text-[12px] font-semibold text-tyro-text-secondary mb-3">{t("dashboard.progressDistribution")}</p>
-                    <div className="space-y-2.5">
-                      {[
-                        { label: t("dashboard.completedLabel"), count: progressDist.full, color: "#059669" },
-                        { label: t("dashboard.progressAdvanced"), count: progressDist.high, color: "#10b981" },
-                        { label: t("dashboard.progressMedium"), count: progressDist.mid, color: "#3b82f6" },
-                        { label: t("dashboard.progressLow"), count: progressDist.low, color: "#f59e0b" },
-                        { label: t("dashboard.notStartedLabel"), count: progressDist.zero, color: "#94a3b8" },
-                      ].map((row) => {
-                        const pct = reportProjeler.length > 0 ? Math.round((row.count / reportProjeler.length) * 100) : 0;
-                        return (
-                          <div key={row.label} className="flex items-center gap-2">
-                            <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: row.color }} />
-                            <span className="text-[12px] text-tyro-text-secondary flex-1">{row.label}</span>
-                            <span className="text-[12px] font-bold tabular-nums" style={{ color: row.color }}>{row.count}</span>
-                            <span className="text-[11px] text-tyro-text-muted w-8 text-right">{pct}%</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
+                {/* The "Ortalama İlerleme" donut + "İlerleme Dağılımı"
+                    breakdown were removed — the status card grid above
+                    already carries the per-status counts, and the avg
+                    progress number lives on the cover stat strip. */}
               </Section>
             );
           })()}
