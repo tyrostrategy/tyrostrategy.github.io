@@ -1164,26 +1164,29 @@ ${clone.outerHTML}
             //  and the attention list, each inline in its own filter.)
 
             // AI Insights — per spec, only three categories:
-            //   1) Projects opened this month (startDate in current month/year)
-            //   2) Projects completed this month (status=Achieved, endDate in current month/year)
-            //   3) Projects needing attention (status High Risk or At Risk)
-            // The old composite insights (progress %, dept perf, etc.) were
-            // removed along with the standalone "Dikkat Gerektiren" section
-            // — that content lives here now.
+            //   1) Projects OPENED this month = createdAt in current month/year.
+            //      ("açıldı" in the app = added to the system, not scheduled
+            //       start date — which is a business schedule field that can
+            //       be any past/future date.)
+            //   2) Projects CLOSED this month = status=Achieved AND updatedAt
+            //      in current month/year. updatedAt bumps on any edit, but
+            //      it's the best signal we have without a status-changed-at
+            //      column; if status is currently Achieved and it was touched
+            //      this month, it almost always means the close happened now.
+            //   3) Projects needing attention = status High Risk or At Risk.
             const _now = new Date();
             const _thisMonth = _now.getMonth();
             const _thisYear = _now.getFullYear();
+            const _inThisMonth = (iso?: string) => {
+              if (!iso) return false;
+              const d = new Date(iso);
+              return d.getMonth() === _thisMonth && d.getFullYear() === _thisYear;
+            };
 
-            const openedThisMonth = reportProjeler.filter((h) => {
-              if (!h.startDate) return false;
-              const d = new Date(h.startDate);
-              return d.getMonth() === _thisMonth && d.getFullYear() === _thisYear;
-            });
-            const closedThisMonth = reportProjeler.filter((h) => {
-              if (h.status !== "Achieved" || !h.endDate) return false;
-              const d = new Date(h.endDate);
-              return d.getMonth() === _thisMonth && d.getFullYear() === _thisYear;
-            });
+            const openedThisMonth = reportProjeler.filter((h) => _inThisMonth(h.createdAt));
+            const closedThisMonth = reportProjeler.filter(
+              (h) => h.status === "Achieved" && _inThisMonth(h.updatedAt),
+            );
             const attentionProjeler = reportProjeler.filter(
               (h) => h.status === "High Risk" || h.status === "At Risk",
             );
