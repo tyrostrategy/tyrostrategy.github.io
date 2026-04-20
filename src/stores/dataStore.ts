@@ -191,17 +191,25 @@ export const useDataStore = create<DataState>()(
         }),
       updateProje: (id, data) =>
         set((s) => {
+          // Pick up the pre-transition row so we can detect a status
+          // change from not-Achieved → Achieved (fills completedAt) or
+          // vice versa (clears it). The enriched payload is synced to
+          // DB too — otherwise completedAt updated locally but stayed
+          // NULL in Postgres.
+          const before = s.projeler.find((h) => h.id === id);
+          const syncData: Partial<Proje> = { ...data };
+          if (before) {
+            if (data.status === "Achieved" && before.status !== "Achieved") {
+              syncData.completedAt = new Date().toISOString();
+            } else if (data.status && data.status !== "Achieved" && before.status === "Achieved") {
+              syncData.completedAt = undefined;
+            }
+          }
           const projeler = s.projeler.map((h) => {
             if (h.id !== id) return h;
-            const updated = { ...h, ...data };
-            if (data.status === "Achieved" && h.status !== "Achieved") {
-              updated.completedAt = new Date().toISOString();
-            } else if (data.status && data.status !== "Achieved") {
-              updated.completedAt = undefined;
-            }
-            return updated;
+            return { ...h, ...syncData };
           });
-          syncToSupabase(() => supabaseAdapter.updateProje(id, data));
+          syncToSupabase(() => supabaseAdapter.updateProje(id, syncData));
           return { projeler };
         }),
       deleteProje: (id) => {
@@ -220,32 +228,54 @@ export const useDataStore = create<DataState>()(
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
           const projeler = recalcProjeProgress(s.projeler, aksiyonlar, newAksiyon.projeId);
           syncToSupabase(() => supabaseAdapter.createAksiyon({ ...newAksiyon }));
-          // Also sync parent proje progress
+          // Also sync parent proje progress + completedAt drift (recalc
+          // may set/clear completedAt on the parent row).
           const updatedProje = projeler.find((p) => p.id === newAksiyon.projeId);
-          if (updatedProje) syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, { progress: updatedProje.progress, status: updatedProje.status }));
+          const prevProje = s.projeler.find((p) => p.id === newAksiyon.projeId);
+          if (updatedProje) {
+            const parentSync: Partial<Proje> = { progress: updatedProje.progress, status: updatedProje.status };
+            if (prevProje && updatedProje.completedAt !== prevProje.completedAt) {
+              parentSync.completedAt = updatedProje.completedAt;
+            }
+            syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, parentSync));
+          }
           return { aksiyonlar, projeler };
         }),
       updateAksiyon: (id, data) =>
         set((s) => {
+          // Same completedAt-on-Achieved logic + DB sync as updateProje.
+          const before = s.aksiyonlar.find((a) => a.id === id);
+          const syncData: Partial<Aksiyon> = { ...data };
+          if (before) {
+            if (data.status === "Achieved" && before.status !== "Achieved") {
+              syncData.completedAt = new Date().toISOString();
+            } else if (data.status && data.status !== "Achieved" && before.status === "Achieved") {
+              syncData.completedAt = undefined;
+            }
+          }
           const aksiyonlar = s.aksiyonlar.map((a) => {
             if (a.id !== id) return a;
-            const updated = { ...a, ...data };
-            if (data.status === "Achieved" && a.status !== "Achieved") {
-              updated.completedAt = new Date().toISOString();
-            } else if (data.status && data.status !== "Achieved") {
-              updated.completedAt = undefined;
-            }
-            return updated;
+            return { ...a, ...syncData };
           });
           const aksiyon = aksiyonlar.find((a) => a.id === id);
           const projeler = aksiyon
             ? recalcProjeProgress(s.projeler, aksiyonlar, aksiyon.projeId)
             : s.projeler;
-          syncToSupabase(() => supabaseAdapter.updateAksiyon(id, data));
-          // Also sync parent proje progress
+          syncToSupabase(() => supabaseAdapter.updateAksiyon(id, syncData));
+          // Also sync parent proje progress + completedAt if parent auto-flipped
           if (aksiyon) {
             const updatedProje = projeler.find((p) => p.id === aksiyon.projeId);
-            if (updatedProje) syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, { progress: updatedProje.progress, status: updatedProje.status }));
+            const prevProje = s.projeler.find((p) => p.id === aksiyon.projeId);
+            if (updatedProje) {
+              const parentSync: Partial<Proje> = {
+                progress: updatedProje.progress,
+                status: updatedProje.status,
+              };
+              if (prevProje && updatedProje.completedAt !== prevProje.completedAt) {
+                parentSync.completedAt = updatedProje.completedAt;
+              }
+              syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, parentSync));
+            }
           }
           return { aksiyonlar, projeler };
         }),
@@ -260,7 +290,14 @@ export const useDataStore = create<DataState>()(
         syncToSupabase(() => supabaseAdapter.deleteAksiyon(id));
         if (aksiyon) {
           const updatedProje = projeler.find((p) => p.id === aksiyon.projeId);
-          if (updatedProje) syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, { progress: updatedProje.progress, status: updatedProje.status }));
+          const prevProje = state.projeler.find((p) => p.id === aksiyon.projeId);
+          if (updatedProje) {
+            const parentSync: Partial<Proje> = { progress: updatedProje.progress, status: updatedProje.status };
+            if (prevProje && updatedProje.completedAt !== prevProje.completedAt) {
+              parentSync.completedAt = updatedProje.completedAt;
+            }
+            syncToSupabase(() => supabaseAdapter.updateProje(updatedProje.id, parentSync));
+          }
         }
         return true;
       },

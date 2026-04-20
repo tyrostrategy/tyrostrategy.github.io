@@ -1168,11 +1168,13 @@ ${clone.outerHTML}
             //      ("açıldı" in the app = added to the system, not scheduled
             //       start date — which is a business schedule field that can
             //       be any past/future date.)
-            //   2) Projects CLOSED this month = status=Achieved AND updatedAt
-            //      in current month/year. updatedAt bumps on any edit, but
-            //      it's the best signal we have without a status-changed-at
-            //      column; if status is currently Achieved and it was touched
-            //      this month, it almost always means the close happened now.
+            //   2) Projects CLOSED this month = completedAt in current
+            //      month/year. completedAt auto-fills in dataStore the
+            //      moment a proje's status flips to Achieved (and clears
+            //      when it flips back out), so it's the direct "closed on"
+            //      timestamp — no dependence on status=currently-Achieved
+            //      since a proje re-opened later would still have lost its
+            //      completedAt (good: re-opened = not closed anymore).
             //   3) Projects needing attention = status High Risk or At Risk.
             const _now = new Date();
             const _thisMonth = _now.getMonth();
@@ -1184,9 +1186,7 @@ ${clone.outerHTML}
             };
 
             const openedThisMonth = reportProjeler.filter((h) => _inThisMonth(h.createdAt));
-            const closedThisMonth = reportProjeler.filter(
-              (h) => h.status === "Achieved" && _inThisMonth(h.updatedAt),
-            );
+            const closedThisMonth = reportProjeler.filter((h) => _inThisMonth(h.completedAt));
             const attentionProjeler = reportProjeler.filter(
               (h) => h.status === "High Risk" || h.status === "At Risk",
             );
