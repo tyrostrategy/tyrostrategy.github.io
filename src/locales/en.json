@@ -185,6 +185,7 @@
       "namePlaceholder": "Enter project name",
       "description": "Description",
       "descriptionPlaceholder": "Enter project description (optional)",
+      "descriptionEmpty": "Enter project description",
       "owner": "Project Leader",
       "ownerPlaceholder": "Select project leader",
       "source": "Source",

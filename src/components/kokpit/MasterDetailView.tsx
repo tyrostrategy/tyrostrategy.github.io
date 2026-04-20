@@ -416,18 +416,20 @@ function DetailPanel({
                 <InfoCell icon={<Calendar size={12} />} label={t("common.createdAt")} value={proje.createdAt ? formatDate(proje.createdAt) : "—"} className="border-t sm:border-t-0 border-tyro-border/40" />
                 <InfoCell label={t("common.participants")} value={proje.participants?.join(", ") || "—"} className="border-t sm:border-t-0 border-tyro-border/40" />
               </div>
-              {/* Row 3: Proje ID + Açıklama */}
-              {(proje.id || proje.description) && (
-                <div className="border-t border-tyro-border/15 px-3 py-2.5 flex items-center gap-1.5">
-                  <span className="text-[11px] text-tyro-text-muted tabular-nums shrink-0">{proje.id}</span>
-                  {proje.description && (
-                    <>
-                      <span className="text-tyro-text-muted">·</span>
-                      <p className="text-[11px] text-tyro-text-muted truncate">{proje.description}</p>
-                    </>
-                  )}
-                </div>
-              )}
+              {/* Row 3: Proje ID + Açıklama
+                   Empty descriptions fall back to an italic placeholder
+                   hint so the row always reads with the same shape. */}
+              <div className="border-t border-tyro-border/15 px-3 py-2.5 flex items-center gap-1.5">
+                <span className="text-[11px] text-tyro-text-muted tabular-nums shrink-0">{proje.id}</span>
+                <span className="text-tyro-text-muted">·</span>
+                {proje.description?.trim() ? (
+                  <p className="text-[11px] text-tyro-text-muted truncate">{proje.description}</p>
+                ) : (
+                  <p className="text-[11px] italic text-tyro-text-muted/70 truncate">
+                    {t("forms.objective.descriptionEmpty")}
+                  </p>
+                )}
+              </div>
               {/* Row 4: Ana Proje (sadece varsa) */}
               {parentProje && (
                 <div className="border-t border-tyro-border/15 px-3 py-2.5">

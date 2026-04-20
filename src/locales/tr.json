@@ -185,6 +185,7 @@
       "namePlaceholder": "Proje adını giriniz",
       "description": "Açıklama",
       "descriptionPlaceholder": "Proje açıklaması giriniz (isteğe bağlı)",
+      "descriptionEmpty": "Proje açıklaması giriniz",
       "owner": "Proje Lideri",
       "ownerPlaceholder": "Proje lideri seçiniz",
       "source": "Kaynak",
