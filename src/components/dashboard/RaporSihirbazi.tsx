@@ -1111,8 +1111,8 @@ ${clone.outerHTML}
                       { label: t("dashboard.avgProgressShort"), value: `%${avgProgress}` },
                     ].map((s) => (
                       <div key={s.label} className="text-center">
-                        <p className="text-[22px] font-extrabold text-white tabular-nums">{s.value}</p>
-                        <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">{s.label}</p>
+                        <p className="text-[9px] text-white/40 uppercase tracking-wider">{s.label}</p>
+                        <p className="text-[22px] font-extrabold text-white tabular-nums mt-0.5">{s.value}</p>
                       </div>
                     ))}
                   </div>
