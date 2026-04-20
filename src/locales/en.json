@@ -422,6 +422,14 @@
     "projectCountLabel": "{{count}} projects",
     "leaderDistribution": "Distribution by Project Leader",
     "leaderDistributionDesc": "Project statuses by project leader",
+    "breakdownMatrixTitle": "Project Breakdown Matrix",
+    "breakdownTabs": {
+      "dept": "Department",
+      "leader": "Project Leader",
+      "source": "Business Line"
+    },
+    "tagDistribution": "Maturity Level Distribution",
+    "tagDistributionDesc": "Distribution of projects by maturity level tag",
     "advancedFilter": "Advanced Filter",
     "dateRange": "Date Range",
     "start": "Start",

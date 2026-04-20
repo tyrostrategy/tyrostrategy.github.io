@@ -1,5 +1,4 @@
 import { useState, useMemo, lazy, Suspense } from "react";
-import { Tooltip } from "@heroui/react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
@@ -12,16 +11,16 @@ import KPICard from "@/components/dashboard/KPICard";
 import GlassCard from "@/components/ui/GlassCard";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import CircularProgress from "@/components/ui/CircularProgress";
-import { deptLabel } from "@/config/departments";
 
 // Lazy load heavy chart components (recharts ~200KB)
-const SourceChart = lazy(() => import("@/components/dashboard/SourceChart"));
 const ProjectStatusBreakdown = lazy(() => import("@/components/dashboard/ProjectStatusBreakdown"));
 const MultiRingWidget = lazy(() => import("@/components/dashboard/MultiRingWidget"));
 const ActivityFeed = lazy(() => import("@/components/dashboard/ActivityFeed"));
-const TagActivityGauge = lazy(() => import("@/components/dashboard/TagActivityGauge"));
 const AdvancedFilterPanel = lazy(() => import("@/components/dashboard/AdvancedFilterPanel"));
 const RaporSihirbazi = lazy(() => import("@/components/dashboard/RaporSihirbazi"));
+// Lighter — no recharts — can eagerly import
+import BreakdownMatrixCard from "@/components/dashboard/BreakdownMatrixCard";
+import TagDistributionCard from "@/components/dashboard/TagDistributionCard";
 
 function getGreeting(t: (key: string) => string): string {
   const hour = new Date().getHours();
@@ -321,25 +320,15 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Row 2: İş Kolu Bazlı Proje Dağılımı (7) + Tag Gauge (5) */}
-      <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="col-span-12 lg:col-span-7 h-64 rounded-2xl bg-tyro-surface animate-pulse" /><div className="col-span-12 lg:col-span-5 h-64 rounded-2xl bg-tyro-surface animate-pulse" /></div>}>
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-5 items-stretch">
-          <motion.div variants={fadeUp} className="lg:col-span-3 flex">
-            <SourceChart />
-          </motion.div>
-          <motion.div variants={fadeUp} className="lg:col-span-1 flex">
-            <TagActivityGauge />
-          </motion.div>
-        </div>
-      </Suspense>
-
-      {/* Row 3: Departman Bazlı + Proje Lideri Bazlı Dağılım */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-        <motion.div variants={fadeUp}>
-          <DepartmentDistribution projeler={projeler} />
+      {/* Row 2: Tabbed breakdown matrix (9) + maturity tag card (3) —
+           the right-hand card is sized to line up with the 4th KPI
+           tile in the row above (KPIs are grid-cols-4, so each is 3/12). */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
+        <motion.div variants={fadeUp} className="lg:col-span-9 flex">
+          <BreakdownMatrixCard projeler={projeler} />
         </motion.div>
-        <motion.div variants={fadeUp}>
-          <LeaderDistribution projeler={projeler} />
+        <motion.div variants={fadeUp} className="lg:col-span-3 flex">
+          <TagDistributionCard projeler={projeler} />
         </motion.div>
       </div>
     </motion.div>
@@ -463,174 +452,9 @@ function ActiveBentoCard({ kpi, completedProjeler }: ActiveBentoCardProps) {
   );
 }
 
-// ===== Departman Bazlı Proje Dağılımı =====
-const STATUS_COLORS: Record<string, string> = {
-  "On Track": "#10b981",
-  "At Risk": "#f59e0b",
-  "High Risk": "#ef4444",
-  "Achieved": "#06b6d4",
-  "Not Started": "#94a3b8",
-  "Cancelled": "#6b7280",
-  "On Hold": "#8b5cf6",
-};
+// The former DepartmentDistribution / LeaderDistribution inline
+// components + their STATUS_COLORS / useStatusLabels helpers were
+// deleted when the dashboard moved to the consolidated
+// BreakdownMatrixCard — see src/components/dashboard/BreakdownMatrixCard.tsx.
+// Shared palette now lives at src/lib/statusColors.ts.
 
-function useStatusLabels(): Record<string, string> {
-  const { t } = useTranslation();
-  return {
-    "On Track": t("dashboard.statusOnTrack"),
-    "At Risk": t("dashboard.statusAtRisk"),
-    "High Risk": t("dashboard.statusBehind"),
-    "Achieved": t("dashboard.statusAchieved"),
-    "Not Started": t("dashboard.statusNotStarted"),
-    "Cancelled": t("dashboard.statusCancelled"),
-    "On Hold": t("dashboard.statusOnHold"),
-  };
-}
-
-function DepartmentDistribution({ projeler }: { projeler: { department: string; status: string }[] }) {
-  const { t } = useTranslation();
-  const STATUS_LABELS = useStatusLabels();
-  const grouped = useMemo(() => {
-    const m = new Map<string, Record<string, number>>();
-    for (const p of projeler) {
-      const dept = deptLabel(p.department, t) || t("dashboard.other");
-      if (!m.has(dept)) m.set(dept, {});
-      const d = m.get(dept)!;
-      d[p.status] = (d[p.status] || 0) + 1;
-    }
-    return Array.from(m.entries())
-      .map(([dept, statuses]) => ({ dept, statuses, total: Object.values(statuses).reduce((a, b) => a + b, 0) }))
-      .sort((a, b) => b.total - a.total);
-  }, [projeler]);
-
-  return (
-    <GlassCard className="p-5 flex-1 flex flex-col">
-      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">{t("dashboard.deptDistribution")}</h3>
-      <p className="text-[11px] text-tyro-text-secondary mb-4">{t("dashboard.deptDistributionDesc")}</p>
-      <div className="flex-1 space-y-3 overflow-y-auto">
-        {grouped.map(({ dept, statuses, total }) => (
-          <div key={dept}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[12px] font-semibold text-tyro-text-primary">{dept}</span>
-              <span className="text-[11px] text-tyro-text-muted">{t("dashboard.projectCountLabel", { count: total })}</span>
-            </div>
-            <div className="flex h-5 rounded-lg overflow-hidden bg-tyro-bg gap-0.5">
-              {Object.entries(statuses).map(([status, count]) => {
-                const pct = (count / total) * 100;
-                return (
-                  <Tooltip
-                    key={status}
-                    content={
-                      <div className="flex items-center gap-1.5 px-1 py-0.5">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[status] || "#94a3b8" }} />
-                        <span className="font-semibold">{STATUS_LABELS[status] || status}</span>
-                        <span className="text-white/70">· {count} proje</span>
-                      </div>
-                    }
-                    placement="top"
-                    size="sm"
-                  >
-                    <div
-                      className="h-full flex items-center justify-center transition-all cursor-default hover:brightness-110"
-                      style={{
-                        width: `${pct}%`,
-                        backgroundColor: STATUS_COLORS[status] || "#94a3b8",
-                        minWidth: pct > 0 ? 20 : 0,
-                      }}
-                    >
-                      <span className="text-[10px] font-bold text-white/90 drop-shadow-sm px-0.5">{count}</span>
-                    </div>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* Legend */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-4 pt-3 border-t border-tyro-border/20">
-        {Object.entries(STATUS_COLORS).slice(0, 5).map(([status, color]) => (
-          <div key={status} className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[10px] text-tyro-text-muted">{STATUS_LABELS[status]}</span>
-          </div>
-        ))}
-      </div>
-    </GlassCard>
-  );
-}
-
-// ===== Proje Lideri Bazlı Dağılım =====
-function LeaderDistribution({ projeler }: { projeler: { owner: string; status: string }[] }) {
-  const { t } = useTranslation();
-  const STATUS_LABELS = useStatusLabels();
-  const grouped = useMemo(() => {
-    const m = new Map<string, Record<string, number>>();
-    for (const p of projeler) {
-      const owner = p.owner || t("dashboard.notSpecified");
-      if (!m.has(owner)) m.set(owner, {});
-      const d = m.get(owner)!;
-      d[p.status] = (d[p.status] || 0) + 1;
-    }
-    return Array.from(m.entries())
-      .map(([owner, statuses]) => ({ owner, statuses, total: Object.values(statuses).reduce((a, b) => a + b, 0) }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 10); // top 10
-  }, [projeler]);
-
-  return (
-    <GlassCard className="p-5 flex-1 flex flex-col">
-      <h3 className="text-[13px] font-bold text-tyro-text-primary mb-1">{t("dashboard.leaderDistribution")}</h3>
-      <p className="text-[11px] text-tyro-text-secondary mb-4">{t("dashboard.leaderDistributionDesc")}</p>
-      <div className="flex-1 space-y-3 overflow-y-auto">
-        {grouped.map(({ owner, statuses, total }) => (
-          <div key={owner}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[12px] font-semibold text-tyro-text-primary truncate max-w-[200px]">{owner}</span>
-              <span className="text-[11px] text-tyro-text-muted shrink-0">{t("dashboard.projectCountLabel", { count: total })}</span>
-            </div>
-            <div className="flex h-5 rounded-lg overflow-hidden bg-tyro-bg gap-0.5">
-              {Object.entries(statuses).map(([status, count]) => {
-                const pct = (count / total) * 100;
-                return (
-                  <Tooltip
-                    key={status}
-                    content={
-                      <div className="flex items-center gap-1.5 px-1 py-0.5">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[status] || "#94a3b8" }} />
-                        <span className="font-semibold">{STATUS_LABELS[status] || status}</span>
-                        <span className="text-white/70">· {count} proje</span>
-                      </div>
-                    }
-                    placement="top"
-                    size="sm"
-                  >
-                    <div
-                      className="h-full flex items-center justify-center transition-all cursor-default hover:brightness-110"
-                      style={{
-                        width: `${pct}%`,
-                        backgroundColor: STATUS_COLORS[status] || "#94a3b8",
-                        minWidth: pct > 0 ? 20 : 0,
-                      }}
-                    >
-                      <span className="text-[10px] font-bold text-white/90 drop-shadow-sm px-0.5">{count}</span>
-                    </div>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* Legend */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-4 pt-3 border-t border-tyro-border/20">
-        {Object.entries(STATUS_COLORS).slice(0, 5).map(([status, color]) => (
-          <div key={status} className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-            <span className="text-[10px] text-tyro-text-muted">{STATUS_LABELS[status]}</span>
-          </div>
-        ))}
-      </div>
-    </GlassCard>
-  );
-}

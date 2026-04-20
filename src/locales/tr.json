@@ -422,6 +422,14 @@
     "projectCountLabel": "{{count}} proje",
     "leaderDistribution": "Proje Lideri Bazlı Dağılım",
     "leaderDistributionDesc": "Proje liderlerine göre proje statüleri",
+    "breakdownMatrixTitle": "Proje Dağılım Matrisi",
+    "breakdownTabs": {
+      "dept": "Departman",
+      "leader": "Proje Lideri",
+      "source": "İş Kolu"
+    },
+    "tagDistribution": "Olgunlaşma Seviyesi Dağılımı",
+    "tagDistributionDesc": "Projelerin olgunlaşma seviyesi etiketlerine göre dağılımı",
     "advancedFilter": "Gelişmiş Filtre",
     "dateRange": "Tarih Aralığı",
     "start": "Başlangıç",
