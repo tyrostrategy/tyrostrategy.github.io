@@ -8,7 +8,9 @@ import i18n from "@/lib/i18n";
 
 const ADMIN_DEFAULTS: RolePermissions = {
   pages: {
+    anasayfa: true,
     kpi: true,
+    raporKonfigurasyonu: true,
     projeler: true,
     aksiyonlar: true,
     gantt: true,
@@ -28,7 +30,9 @@ const ADMIN_DEFAULTS: RolePermissions = {
 
 const PROJE_LIDERI_DEFAULTS: RolePermissions = {
   pages: {
+    anasayfa: true,
     kpi: false,
+    raporKonfigurasyonu: true,
     projeler: true,
     aksiyonlar: true,
     gantt: true,
@@ -48,7 +52,9 @@ const PROJE_LIDERI_DEFAULTS: RolePermissions = {
 
 const KULLANICI_DEFAULTS: RolePermissions = {
   pages: {
+    anasayfa: true,
     kpi: false,
+    raporKonfigurasyonu: false,
     projeler: true,
     aksiyonlar: true,
     gantt: true,
@@ -68,7 +74,9 @@ const KULLANICI_DEFAULTS: RolePermissions = {
 
 const SUB_MANAGEMENT_DEFAULTS: RolePermissions = {
   pages: {
+    anasayfa: true,
     kpi: true,
+    raporKonfigurasyonu: true,
     projeler: true,
     aksiyonlar: true,
     gantt: true,

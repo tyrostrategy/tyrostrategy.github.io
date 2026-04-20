@@ -29,6 +29,10 @@ const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 function ProtectedRoute({ pageKey, children }: { pageKey: keyof RolePermissions["pages"]; children: ReactNode }) {
   const { canAccessPage } = usePermissions();
   if (!canAccessPage(pageKey)) {
+    // Fallback is /workspace, but /workspace itself is now gated by
+    // `anasayfa` — if that's what was denied, fall through to /profil
+    // (always accessible) to avoid a redirect loop.
+    if (pageKey === "anasayfa") return <Navigate to="/profil" replace />;
     return <Navigate to="/workspace" replace />;
   }
   return <>{children}</>;
@@ -62,7 +66,7 @@ export default function App() {
               </AuthGuard>
             }
           >
-            <Route path="/workspace" element={<PageSuspense><WorkspacePage /></PageSuspense>} />
+            <Route path="/workspace" element={<ProtectedRoute pageKey="anasayfa"><PageSuspense><WorkspacePage /></PageSuspense></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute pageKey="kpi"><PageSuspense><DashboardPage /></PageSuspense></ProtectedRoute>} />
             <Route path="/projeler" element={<ProtectedRoute pageKey="projeler"><PageSuspense><ProjelerPage /></PageSuspense></ProtectedRoute>} />
             <Route path="/aksiyonlar" element={<ProtectedRoute pageKey="aksiyonlar"><PageSuspense><AksiyonlarPage /></PageSuspense></ProtectedRoute>} />

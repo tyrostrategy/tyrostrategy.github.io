@@ -344,7 +344,7 @@
         "desc": "Proje zaman çizelgeleri ve kontrol tarihi takibi."
       },
       "reports": {
-        "title": "Rapor Sihirbazı",
+        "title": "Rapor Konfigürasyonu",
         "desc": "Tek tıkla PDF/Excel ihracatı ve özel şablonlar."
       },
       "security": {
@@ -397,7 +397,7 @@
     "totalProjectsOf": "{{count}} toplam projeden",
     "avgProgress": "Ortalama İlerleme",
     "projectAverage": "{{count}} proje ortalaması",
-    "reportWizard": "Rapor Sihirbazı",
+    "reportWizard": "Rapor Konfigürasyonu",
     "completedGoals": "Tamamlanan Hedefler",
     "noCompletedProjects": "Henüz tamamlanan proje yok",
     "viewAllGoals": "Tüm hedefleri gör",
@@ -424,7 +424,7 @@
     "source": "Kaynak",
     "department": "Departman",
     "projectLeader": "Proje Lideri",
-    "reportWizardTitle": "Yönetim Raporu Sihirbazı",
+    "reportWizardTitle": "Yönetim Rapor Konfigürasyonu",
     "reportWizardDesc": "Stratejik proje ve aksiyonlarınızın executive düzeyinde bir özetini oluşturun.\nFiltrelerinizi ayarlayıp raporu çalıştırın, PDF olarak dışa aktarın.",
     "runReport": "Raporu Çalıştır",
     "refresh": "Yenile",
@@ -958,7 +958,7 @@
       },
       "reports": {
         "title": "Raporlama",
-        "wizard": "Rapor Sihirbazı ile filtrelenmiş yönetim raporları oluşturabilirsiniz.",
+        "wizard": "Rapor Konfigürasyonu ile filtrelenmiş yönetim raporları oluşturabilirsiniz.",
         "export": "Raporları PDF, Excel veya HTML formatında dışa aktarın.",
         "filters": "Gelişmiş filtreler ile tarihe, duruma, departmana göre raporları özelleştirin.",
         "templates": "Sık kullandığınız filtre kombinasyonlarını şablon olarak kaydedin."
@@ -1019,7 +1019,7 @@
       "title": "Yenilikler",
       "currentVersion": "Mevcut Sürüm",
       "v1_0_0": "v1.0.0 — İlk Sürüm",
-      "v1_0_0_desc": "Proje ve aksiyon yönetimi, KPI Dashboard, Gantt, T-Map, T-Align görünümleri, rol tabanlı erişim kontrolü, çoklu dil desteği, Rapor Sihirbazı."
+      "v1_0_0_desc": "Proje ve aksiyon yönetimi, KPI Dashboard, Gantt, T-Map, T-Align görünümleri, rol tabanlı erişim kontrolü, çoklu dil desteği, Rapor Konfigürasyonu."
     },
     "contact": {
       "title": "İletişim & Destek",

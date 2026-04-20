@@ -70,7 +70,7 @@ export default function DashboardPage() {
   const activeTab = searchParams.get("tab") || "dashboard";
   const allProjeler = useDataStore((s) => s.projeler);
   const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
-  const { filterProjeler, filterAksiyonlar } = usePermissions();
+  const { filterProjeler, filterAksiyonlar, canAccessPage } = usePermissions();
   const projeler = useMemo(() => filterProjeler(allProjeler), [allProjeler, filterProjeler]);
   const aksiyonlar = useMemo(() => filterAksiyonlar(allAksiyonlar), [allAksiyonlar, filterAksiyonlar]);
   const openCommandPalette = useUIStore((s) => s.openCommandPalette);
@@ -160,9 +160,15 @@ export default function DashboardPage() {
   // ===== Tab render helper =====
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
 
+  // Rapor Konfigürasyonu tab is gated by the `raporKonfigurasyonu`
+  // page permission — role defaults give it to Admin/Proje Lideri/
+  // Management but not to the standard Kullanıcı role.
+  const canSeeReportTab = canAccessPage("raporKonfigurasyonu");
   const tabItems = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-    { id: "rapor", label: t("dashboard.reportWizard"), icon: FileText },
+    ...(canSeeReportTab
+      ? [{ id: "rapor", label: t("dashboard.reportWizard"), icon: FileText }]
+      : []),
   ];
 
   // Desktop tabs — original style
@@ -225,8 +231,9 @@ export default function DashboardPage() {
     </div>
   );
 
-  // ===== Rapor Sihirbazı tab =====
-  if (activeTab === "rapor") {
+  // ===== Rapor Konfigürasyonu tab =====
+  // Also guard against URL-typed ?tab=rapor when the user lacks the perm.
+  if (activeTab === "rapor" && canSeeReportTab) {
     return (
       <div>
         <div className="flex items-center justify-between mb-5 print:hidden">

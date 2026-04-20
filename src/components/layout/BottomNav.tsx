@@ -15,7 +15,7 @@ export default function BottomNav() {
   const accentColor = theme.accentColor ?? "#c8922a";
 
   const mainItems = [
-    { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace" },
+    { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace", pageKey: "anasayfa" as const },
     { id: "stratejik-kokpit", label: t("nav.strategicHQ"), icon: Map, path: "/stratejik-kokpit", pageKey: "stratejikKokpit" as const },
     { id: "dashboard", label: t("nav.kpi"), icon: BarChart3, path: "/dashboard", pageKey: "kpi" as const },
     { id: "profil", label: t("nav.profile"), icon: UserCircle2, path: "/profil" },

@@ -31,7 +31,9 @@ export default function GuvenlikPage() {
   };
 
   const PAGE_LABELS: Record<keyof PagePermissions, string> = {
+    anasayfa: t("nav.home"),
     kpi: t("nav.kpi"),
+    raporKonfigurasyonu: t("dashboard.reportWizard"),
     projeler: t("nav.objectives"),
     aksiyonlar: t("nav.actions"),
     gantt: t("nav.gantt"),

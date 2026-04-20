@@ -78,7 +78,7 @@ function getNavSections(t: (key: string) => string) {
     {
       title: t("sections.mainMenu"),
       items: [
-        { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace" },
+        { id: "workspace", label: t("nav.home"), icon: HomeIcon, path: "/workspace", pageKey: "anasayfa" as const },
         { id: "stratejik-kokpit", label: t("nav.strategicHQ"), icon: LayoutDashboard, path: "/stratejik-kokpit", pageKey: "stratejikKokpit" as const },
         { id: "projeler", label: t("nav.objectives"), icon: Crosshair, path: "/projeler", pageKey: "projeler" as const },
         { id: "aksiyonlar", label: t("nav.actions"), icon: CircleCheckBig, path: "/aksiyonlar", pageKey: "aksiyonlar" as const },

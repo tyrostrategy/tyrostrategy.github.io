@@ -15,7 +15,9 @@ export interface CrudPermission {
 }
 
 export interface PagePermissions {
+  anasayfa: boolean;
   kpi: boolean;
+  raporKonfigurasyonu: boolean;
   projeler: boolean;
   aksiyonlar: boolean;
   gantt: boolean;

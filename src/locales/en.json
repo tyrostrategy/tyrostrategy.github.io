@@ -344,7 +344,7 @@
         "desc": "Project timelines and review-date tracking."
       },
       "reports": {
-        "title": "Report Wizard",
+        "title": "Report Configuration",
         "desc": "One-click PDF/Excel export with custom templates."
       },
       "security": {
@@ -397,7 +397,7 @@
     "totalProjectsOf": "{{count}} total projects",
     "avgProgress": "Average Progress",
     "projectAverage": "{{count}} project average",
-    "reportWizard": "Report Wizard",
+    "reportWizard": "Report Configuration",
     "completedGoals": "Completed Goals",
     "noCompletedProjects": "No completed projects yet",
     "viewAllGoals": "View all goals",
@@ -424,7 +424,7 @@
     "source": "Source",
     "department": "Department",
     "projectLeader": "Project Leader",
-    "reportWizardTitle": "Executive Report Wizard",
+    "reportWizardTitle": "Executive Report Configuration",
     "reportWizardDesc": "Generate an executive-level summary of your strategic projects and actions.\nConfigure your filters and run the report, export as PDF.",
     "runReport": "Run Report",
     "refresh": "Refresh",
@@ -958,7 +958,7 @@
       },
       "reports": {
         "title": "Reporting",
-        "wizard": "Create filtered management reports using the Report Wizard.",
+        "wizard": "Create filtered management reports using the Report Configuration.",
         "export": "Export reports in PDF, Excel, or HTML format.",
         "filters": "Customize reports by date, status, and department using advanced filters.",
         "templates": "Save your frequently used filter combinations as templates."
@@ -1019,7 +1019,7 @@
       "title": "What's New",
       "currentVersion": "Current Version",
       "v1_0_0": "v1.0.0 — Initial Release",
-      "v1_0_0_desc": "Project and action management, KPI Dashboard, Gantt, T-Map, T-Align views, role-based access control, multi-language support, Report Wizard."
+      "v1_0_0_desc": "Project and action management, KPI Dashboard, Gantt, T-Map, T-Align views, role-based access control, multi-language support, Report Configuration."
     },
     "contact": {
       "title": "Contact & Support",
