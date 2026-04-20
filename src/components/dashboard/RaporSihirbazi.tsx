@@ -355,6 +355,9 @@ export default function RaporSihirbazi() {
   const reportSubtitle = sourceFilter === "all" ? t("dashboard.allSources") : sourceFilter;
 
   const today = new Date().toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" });
+  // Cover-specific short form: only month + year (per report cover spec —
+  // covers don't need day-level precision).
+  const coverDate = new Date().toLocaleDateString(dateLocale, { month: "long", year: "numeric" });
   const sourceConf = SOURCES.find((s) => s.id === sourceFilter)!;
 
   const toggleStatus = (s: EntityStatus) => {
@@ -572,8 +575,10 @@ ${clone.outerHTML}
     // Cover slide
     const s1 = pptx.addSlide();
     s1.addText(reportTitle, { x: 0.5, y: 1.5, w: 9, h: 1.2, fontSize: 28, bold: true, color: "1e3a5f", align: "center" });
-    s1.addText(`${today} · ${t("dashboard.projectsCount", { count: reportProjeler.length })} · ${t("dashboard.actionsCount", { count: reportAksiyonlar.length })}`, { x: 0.5, y: 2.8, w: 9, fontSize: 14, color: "64748b", align: "center" });
-    s1.addText("TYRO Strategy · Powered by TTECH", { x: 0.5, y: 4.5, w: 9, fontSize: 10, color: "94a3b8", align: "center" });
+    // PPTX cover follows the same rules as the HTML cover: month+year
+    // only, no aksiyon count, no "Powered by TTECH" line.
+    s1.addText(`${coverDate} · ${t("dashboard.projectsCount", { count: reportProjeler.length })}`, { x: 0.5, y: 2.8, w: 9, fontSize: 14, color: "64748b", align: "center" });
+    s1.addText("TYRO Strategy", { x: 0.5, y: 4.5, w: 9, fontSize: 10, color: "94a3b8", align: "center" });
     // Summary slide
     const s2 = pptx.addSlide();
     s2.addText(t("dashboard.generalSummaryHeading"), { x: 0.5, y: 0.3, w: 9, fontSize: 22, bold: true, color: "1e3a5f" });
@@ -1082,7 +1087,6 @@ ${clone.outerHTML}
                         <p className="text-[9px] text-white/40">{t("dashboard.strategicPlatform")}</p>
                       </div>
                     </div>
-                    <p className="text-[8px] text-white/20 mt-1 ml-[42px]">Powered by TTECH Business Solutions</p>
                   </div>
                   <p className="text-[9px] text-white/30 uppercase tracking-wider mt-1">{t("dashboard.confidentialCorporate")}</p>
                 </div>
@@ -1093,16 +1097,16 @@ ${clone.outerHTML}
                   <h1 className="text-[28px] font-extrabold text-white tracking-tight leading-tight">{reportTitle}</h1>
                   <p className="text-[15px] text-white/60 mt-1">{reportSubtitle}</p>
                   <div className="h-[2px] w-16 rounded-full bg-gradient-to-r from-tyro-gold to-tyro-gold-light mx-auto mt-4 mb-4" />
-                  <p className="text-[13px] text-white/70">{today}</p>
+                  <p className="text-[13px] text-white/70">{coverDate}</p>
                   {effectiveDateRange && (
                     <p className="text-[11px] text-white/40 mt-1">
-                      {t("dashboard.period")}: {new Date(effectiveDateRange.from).toLocaleDateString(dateLocale)} — {new Date(effectiveDateRange.to).toLocaleDateString(dateLocale)}
+                      {t("dashboard.period")}: {new Date(effectiveDateRange.from).toLocaleDateString(dateLocale, { month: "long", year: "numeric" })} — {new Date(effectiveDateRange.to).toLocaleDateString(dateLocale, { month: "long", year: "numeric" })}
                     </p>
                   )}
                   <div className="flex items-center justify-center gap-8 mt-8">
                     {[
+                      // Aksiyon sayısı kaldırıldı — kapakta sadece proje-düzey özeti.
                       { label: t("dashboard.project"), value: reportProjeler.length },
-                      { label: t("dashboard.action"), value: reportAksiyonlar.length },
                       { label: t("common.department"), value: allDepartments.length },
                       { label: t("dashboard.avgProgressShort"), value: `%${avgProgress}` },
                     ].map((s) => (
