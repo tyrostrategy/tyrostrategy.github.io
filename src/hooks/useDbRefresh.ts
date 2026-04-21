@@ -45,7 +45,10 @@ export function useDbRefresh(cooldownMs: number = DEFAULT_COOLDOWN_MS): void {
         useDataStore.setState({ projeler, aksiyonlar, tagDefinitions, users });
       })
       .catch((err) => {
-        console.error("[useDbRefresh] failed:", err);
+        // err from Supabase is usually a PostgrestError-shape object;
+        // JSON.stringify so the console actually shows { code, message,
+        // details } instead of the useless "[object Object]".
+        console.error("[useDbRefresh] failed:", err?.message || JSON.stringify(err));
       });
   }, [cooldownMs]);
 }
