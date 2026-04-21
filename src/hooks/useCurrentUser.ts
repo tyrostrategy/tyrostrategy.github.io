@@ -40,21 +40,35 @@ export function useCurrentUser(): CurrentUser {
   const initials = getInitials(name);
 
   const validRoles: UserRole[] = ["Admin", "Proje Lideri", "Kullanıcı", "Management"];
-  const role: UserRole = validRoles.includes(mockUserRole) ? mockUserRole : "Kullanıcı";
+  // localStorage-cached role — used ONLY as a fallback when the DB
+  // row can't be resolved yet (cold boot before Supabase fetch lands).
+  const cachedRole: UserRole = validRoles.includes(mockUserRole) ? mockUserRole : "Kullanıcı";
 
-  // Try DB users first, fallback to hardcoded departments
-  const dbUser = dbUsers.find((u) => u.displayName.toLowerCase().trim() === name.toLowerCase().trim());
+  // DB is the single source of truth. If the admin changes this user's
+  // role in one browser, the Supabase fetch on this browser will land
+  // and dbUsers gets refreshed → useCurrentUser reads the new role
+  // immediately, no re-login needed. Previously we were reading role
+  // from uiStore.mockUserRole which is a write-once-on-login cache in
+  // localStorage — it would keep an old role indefinitely until the
+  // user manually logged out + back in.
+  const dbUser = dbUsers.find(
+    (u) => u.displayName.toLowerCase().trim() === name.toLowerCase().trim(),
+  );
   if (dbUser) {
+    const dbRole = validRoles.includes(dbUser.role as UserRole)
+      ? (dbUser.role as UserRole)
+      : cachedRole;
     return {
       name,
       email: dbUser.email,
       department: dbUser.department || "Bilinmiyor",
       title: dbUser.title ?? "",
       initials,
-      role,
+      role: dbRole,
     };
   }
 
+  // No DB row match yet (cold boot / offline) — use the cached values.
   const fallback = findInDepts(name);
-  return { name, email: fallback.email, department: fallback.department, title: fallback.title, initials, role };
+  return { name, email: fallback.email, department: fallback.department, title: fallback.title, initials, role: cachedRole };
 }
