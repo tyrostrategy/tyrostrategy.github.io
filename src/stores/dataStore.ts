@@ -14,17 +14,31 @@ import i18n from "@/lib/i18n";
 import { departments } from "@/config/departments";
 import { isSupabaseMode } from "@/lib/supabaseMode";
 
-/** Fire-and-forget Supabase sync — doesn't block UI, retries once on failure */
-function syncToSupabase(fn: () => Promise<unknown>) {
+/**
+ * Fire-and-forget Supabase sync — doesn't block UI.
+ *
+ * Exponential backoff with jitter on failure:
+ *   - initial call fails → retry 1 after ~2s
+ *   - retry 1 fails → retry 2 after ~8s
+ *   - retry 2 fails → retry 3 after ~32s
+ *   - retry 3 fails → give up, show toast
+ *
+ * Each delay has ±30% random jitter so 50 concurrent users' retries don't
+ * synchronize on the same wall-clock second (thundering herd). Critical for
+ * surviving short Supabase outages without saturating the free-tier quota.
+ */
+function syncToSupabase(fn: () => Promise<unknown>, attempt = 0): void {
   if (!isSupabaseMode) return;
-  fn().catch(() => {
-    // Retry once after 2s
-    setTimeout(() => {
-      fn().catch((err) => {
-        console.error("[Supabase Sync]", err);
-        toast.error(i18n.t("toast.syncFailed"));
-      });
-    }, 2000);
+  fn().catch((err) => {
+    if (attempt >= 3) {
+      console.error("[Supabase Sync] Failed after 3 retries:", err);
+      toast.error(i18n.t("toast.syncFailed"));
+      return;
+    }
+    // 2s, 8s, 32s base + ±30% jitter
+    const base = 2000 * Math.pow(4, attempt);
+    const delay = base * (0.7 + Math.random() * 0.6);
+    setTimeout(() => syncToSupabase(fn, attempt + 1), delay);
   });
 }
 
