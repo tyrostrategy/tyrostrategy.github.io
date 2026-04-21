@@ -48,7 +48,7 @@ function getPages(
     { name: t("nav.objectives"), path: "/projeler", icon: Target, pageKey: "projeler" },
     { name: t("nav.actions"), path: "/aksiyonlar", icon: ListChecks, pageKey: "aksiyonlar" },
     { name: t("nav.gantt"), path: "/gantt", icon: GanttChart, pageKey: "gantt" },
-    { name: "T-Map", path: "/strategy-map", icon: MapIcon, pageKey: "wbs" },
+    { name: "T-Map", path: "/strategy-map", icon: MapIcon, pageKey: "tMap" },
     { name: t("nav.tAlignment"), path: "/t-alignment", icon: GitMerge, pageKey: "projeler" },
     { name: t("dashboard.reportWizard"), path: "/dashboard?tab=rapor", icon: FileText, pageKey: "raporKonfigurasyonu" },
     { name: t("nav.users"), path: "/kullanicilar", icon: Users, pageKey: "kullanicilar" },

@@ -37,7 +37,6 @@ export default function GuvenlikPage() {
     projeler: t("nav.objectives"),
     aksiyonlar: t("nav.actions"),
     gantt: t("nav.gantt"),
-    wbs: t("nav.wbs"),
     stratejikKokpit: t("nav.stratejikKokpit"),
     tMap: "T-Map",
     tAlignment: "T-Align",

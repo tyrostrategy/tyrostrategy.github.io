@@ -88,7 +88,7 @@ function getNavSections(t: (key: string) => string) {
       title: t("sections.views"),
       items: [
         { id: "dashboard", label: t("nav.kpi"), icon: BarChart3, path: "/dashboard", pageKey: "kpi" as const },
-        { id: "strategy-map", label: "T-Map", icon: Map, path: "/strategy-map", pageKey: "wbs" as const },
+        { id: "strategy-map", label: "T-Map", icon: Map, path: "/strategy-map", pageKey: "tMap" as const },
         { id: "t-alignment", label: t("nav.tAlignment"), icon: GitMerge, path: "/t-alignment", pageKey: "projeler" as const },
         { id: "gantt", label: t("nav.gantt"), icon: CalendarRange, path: "/gantt", pageKey: "gantt" as const },
       ],

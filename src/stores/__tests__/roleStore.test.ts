@@ -36,7 +36,6 @@ describe("roleStore", () => {
       expect(perms.pages.projeler).toBe(true);
       expect(perms.pages.aksiyonlar).toBe(true);
       expect(perms.pages.gantt).toBe(true);
-      expect(perms.pages.wbs).toBe(true);
       expect(perms.pages.kullanicilar).toBe(true);
       expect(perms.pages.ayarlar).toBe(true);
       expect(perms.pages.guvenlik).toBe(true);
@@ -62,12 +61,11 @@ describe("roleStore", () => {
       expect(perms.pages.guvenlik).toBe(false);
     });
 
-    it("Proje Lideri can access projeler, aksiyonlar, gantt, wbs", () => {
+    it("Proje Lideri can access projeler, aksiyonlar, gantt", () => {
       const perms = useRoleStore.getState().getPermissions("Proje Lideri");
       expect(perms.pages.projeler).toBe(true);
       expect(perms.pages.aksiyonlar).toBe(true);
       expect(perms.pages.gantt).toBe(true);
-      expect(perms.pages.wbs).toBe(true);
     });
 
     it("Proje Lideri has restricted CRUD permissions", () => {

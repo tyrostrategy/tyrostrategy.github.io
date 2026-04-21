@@ -21,7 +21,6 @@ export interface PagePermissions {
   projeler: boolean;
   aksiyonlar: boolean;
   gantt: boolean;
-  wbs: boolean;
   stratejikKokpit: boolean;
   tMap: boolean;
   tAlignment: boolean;
