@@ -306,7 +306,7 @@ function DetailPanel({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="flex flex-col gap-3 h-full px-3 sm:px-5 py-3 sm:py-4 overflow-hidden"
+      className="flex flex-col gap-3 px-3 sm:px-5 py-3 sm:py-4"
     >
       {/* === HERO SECTION === */}
       {(() => {
@@ -455,8 +455,8 @@ function DetailPanel({
         </button>
       </div>
 
-      {/* === ACTIONS LIST === scrollable */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      {/* === ACTIONS LIST === natural height — page scrolls, no internal scroll */}
+      <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-[13px] font-bold text-tyro-text-primary">
             {t("kokpit.actionsCount", { count: totalCount })}
@@ -814,7 +814,7 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
           parentProje={selectedProje.parentObjectiveId ? projeler.find((h) => h.id === selectedProje.parentObjectiveId) : undefined}
         />
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
+        <div className="flex-1 min-h-[400px] flex flex-col items-center justify-center gap-3 text-center px-6">
           <div className="w-16 h-16 rounded-full bg-tyro-bg flex items-center justify-center">
             <Target size={28} className="text-tyro-text-muted/40" />
           </div>
@@ -831,14 +831,16 @@ export default function MasterDetailView({ projeler, onOpenWizard, externalSearc
 
 
   return (
-    <div className="flex h-[calc(100vh-200px)] min-h-[500px] relative">
-      {/* Left: 360px on desktop, full on mobile — hidden when detail open on mobile */}
-      <div className={`lg:w-[360px] lg:shrink-0 h-full ${mobileDetail ? "hidden lg:block" : "w-full lg:w-[360px]"}`}>
+    <div className="flex min-h-[500px] relative items-start gap-1">
+      {/* Left: 360px on desktop, full on mobile — hidden when detail open on mobile.
+          Sticky sidebar so project list stays visible while right-panel content
+          (proje detayı + aksiyonlar) scrolls naturally with the page. */}
+      <div className={`lg:w-[360px] lg:shrink-0 lg:sticky lg:top-3 lg:max-h-[calc(100vh-100px)] lg:h-[calc(100vh-100px)] ${mobileDetail ? "hidden lg:block" : "w-full lg:w-[360px]"}`}>
         {leftPanel}
       </div>
       {/* Panel divider */}
-      <div className="hidden lg:block w-px bg-tyro-border/30 mx-1 shrink-0" />
-      {/* Right: flex-1 */}
+      <div className="hidden lg:block w-px bg-tyro-border/30 mx-1 shrink-0 self-stretch" />
+      {/* Right: flex-1, content-height — grows with aksiyon count, page scrolls */}
       {rightPanel}
 
       {/* FABs removed — actions moved to page-level toolbar */}

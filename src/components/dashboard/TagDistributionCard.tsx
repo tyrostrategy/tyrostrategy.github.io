@@ -1,23 +1,38 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import GlassCard from "@/components/ui/GlassCard";
-import { useDataStore } from "@/stores/dataStore";
 import type { Proje } from "@/types";
 
 interface Props {
   projeler: Proje[];
 }
 
+// Olgunlaşma Seviyesi Dağılımı kartına özel mavi gradyenti — en yoğun
+// olgunlaşma seviyesi deep navy, en düşük turkuaz. Sadece BU kart için
+// kullanılır (user request 2026-04-22): tag'lerin kendi rengi yerine
+// tutarlı mavi tonlamasıyla hiyerarşi hissi verilsin. Diğer yerlerde
+// (MyProjectsList, BreakdownMatrix vb.) tag'ler hâlâ kendi renkleriyle.
+const BLUE_GRADIENT = [
+  "#0B2545", // deep navy
+  "#1E3A8A", // navy
+  "#1D4ED8", // royal
+  "#2563EB", // blue
+  "#3B82F6", // bright blue
+  "#0EA5E9", // sky
+  "#06B6D4", // cyan
+  "#14B8A6", // teal
+  "#2DD4BF", // turquoise
+  "#67E8F9", // light cyan
+];
+
 /**
  * Right-side companion to BreakdownMatrixCard. Lists every tag that
  * actually appears on a project, sorted by count desc, rendered as a
- * horizontal bar with the tag's own color and a trailing circular
- * "N proje" badge. Unused tag_definitions entries are skipped so the
- * list stays relevant.
+ * horizontal bar with a blue-family color (navy → turquoise gradient)
+ * indexed by position in the sorted list.
  */
 export default function TagDistributionCard({ projeler }: Props) {
   const { t } = useTranslation();
-  const tagDefinitions = useDataStore((s) => s.tagDefinitions);
 
   // Build { tagName → count } in one pass — reuses the pattern from
   // MyProjectsList for consistency.
@@ -28,14 +43,18 @@ export default function TagDistributionCard({ projeler }: Props) {
         tagCount.set(tag, (tagCount.get(tag) ?? 0) + 1);
       }
     }
-    const colorFor = (name: string) =>
-      tagDefinitions.find((td) => td.name === name)?.color ?? "#94a3b8";
 
+    // Rank by count desc; darkest blue for #1, lightest/turquoise for last.
+    // Wrap around modulo if tag count exceeds palette length.
     return Array.from(tagCount.entries())
       .filter(([, count]) => count > 0)
-      .map(([name, count]) => ({ name, count, color: colorFor(name) }))
-      .sort((a, b) => b.count - a.count);
-  }, [projeler, tagDefinitions]);
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count], i) => ({
+        name,
+        count,
+        color: BLUE_GRADIENT[i % BLUE_GRADIENT.length],
+      }));
+  }, [projeler]);
 
   const max = rows[0]?.count ?? 0;
 

@@ -59,6 +59,8 @@ export function getSourceOptions(_t: TFunction): { key: Source; label: string }[
     { key: "Türkiye", label: "Türkiye" },
     { key: "Kurumsal", label: "Kurumsal" },
     { key: "International", label: "International" },
+    { key: "LALE", label: "LALE" },
+    { key: "Organik", label: "Organik" },
   ];
 }
 
@@ -89,4 +91,6 @@ export const SOURCE_OPTIONS: { key: Source; label: string }[] = [
   { key: "Türkiye", label: "Türkiye" },
   { key: "Kurumsal", label: "Kurumsal" },
   { key: "International", label: "International" },
+  { key: "LALE", label: "LALE" },
+  { key: "Organik", label: "Organik" },
 ];

@@ -42,9 +42,11 @@ import type { Proje, Source, EntityStatus } from "@/types";
 
 // ─── Source colors (matching T-Map) ───────────────────────────────
 const SOURCE_COLORS: Record<Source, { bg: string; border: string; text: string }> = {
-  "Türkiye": { bg: "#E1F5EE", border: "#10b981", text: "#065f46" },
-  Kurumsal: { bg: "#EEEDFE", border: "#8b5cf6", text: "#5b21b6" },
+  "Türkiye":     { bg: "#E1F5EE", border: "#10b981", text: "#065f46" },
+  Kurumsal:      { bg: "#EEEDFE", border: "#8b5cf6", text: "#5b21b6" },
   International: { bg: "#FAECE7", border: "#f97316", text: "#9a3412" },
+  LALE:          { bg: "#FCE7F3", border: "#ec4899", text: "#9d174d" }, // pink
+  Organik:       { bg: "#ECFCCB", border: "#84cc16", text: "#3f6212" }, // lime
 };
 
 // ─── Status dot hex colors for inline usage ───────────────────────
@@ -74,7 +76,7 @@ interface AlignmentNodeData {
 function AlignmentNode({ data }: NodeProps<Node<AlignmentNodeData>>) {
   const { t } = useTranslation();
   const { proje, actionCount, nodeType } = data;
-  const sc = SOURCE_COLORS[proje.source];
+  const sc = SOURCE_COLORS[proje.source] ?? SOURCE_COLORS.Kurumsal;
   const isParent = nodeType === "parent";
   const isStandalone = nodeType === "standalone";
 

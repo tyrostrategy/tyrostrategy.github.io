@@ -19,9 +19,11 @@ import type { Proje, Source } from "@/types";
 
 // Tema renkleri (source → renk paleti)
 const THEME_COLORS: Record<Source, { bg: string; border: string; text: string; light: string }> = {
-  "Türkiye": { bg: "#E1F5EE", border: "#10b981", text: "#065f46", light: "#d1fae5" },
-  "Kurumsal": { bg: "#EEEDFE", border: "#8b5cf6", text: "#5b21b6", light: "#ede9fe" },
+  "Türkiye":       { bg: "#E1F5EE", border: "#10b981", text: "#065f46", light: "#d1fae5" },
+  "Kurumsal":      { bg: "#EEEDFE", border: "#8b5cf6", text: "#5b21b6", light: "#ede9fe" },
   "International": { bg: "#FAECE7", border: "#f97316", text: "#9a3412", light: "#ffedd5" },
+  "LALE":          { bg: "#FCE7F3", border: "#ec4899", text: "#9d174d", light: "#fce7f3" },
+  "Organik":       { bg: "#ECFCCB", border: "#84cc16", text: "#3f6212", light: "#d9f99d" },
 };
 
 const stagger = {
@@ -291,12 +293,15 @@ export default function StrategyMapPage() {
     return projeler.filter((h) => matchedProjeIds.has(h.id));
   }, [projeler, matchedProjeIds]);
 
-  // Source'a göre grupla (filtreli)
+  // Source'a göre grupla (filtreli) — tüm Source enum üyelerini baştan
+  // oluştur ki LALE/Organik gibi yeni kaynaklar da gruba girsin.
   const themeGroups = useMemo(() => {
     const groups: Record<Source, Proje[]> = {
       "Türkiye": [],
       "Kurumsal": [],
       "International": [],
+      "LALE": [],
+      "Organik": [],
     };
     for (const h of filteredProjeler) {
       if (groups[h.source]) {

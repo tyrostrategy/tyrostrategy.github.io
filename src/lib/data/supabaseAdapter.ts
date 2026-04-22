@@ -352,9 +352,24 @@ export const supabaseAdapter: DataService = {
 
   async fetchAksiyonlar(): Promise<Aksiyon[]> {
     if (!supabase) return [];
-    const { data, error } = await supabase.from("aksiyonlar").select("*").order("sort_order", { ascending: true, nullsFirst: false }).order("created_at");
-    if (error) throw error;
-    return (data as DbAksiyon[]).map(dbToAksiyon);
+    // Supabase `db-max-rows` default 1000 — .range() bunu aşamıyor. 50 kullanıcılı
+    // app'te aksiyon sayısı 10-20 binlere çıkabilir, o yüzden batch (sayfalı)
+    // fetch yapıyoruz: 1000'lik dilimlerle, boş dönene kadar.
+    const BATCH = 1000;
+    const all: DbAksiyon[] = [];
+    for (let offset = 0; ; offset += BATCH) {
+      const { data, error } = await supabase
+        .from("aksiyonlar")
+        .select("*")
+        .order("sort_order", { ascending: true, nullsFirst: false })
+        .order("created_at")
+        .range(offset, offset + BATCH - 1);
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      all.push(...(data as DbAksiyon[]));
+      if (data.length < BATCH) break;
+    }
+    return all.map(dbToAksiyon);
   },
 
   async fetchAksiyonlarByProje(projeId: string): Promise<Aksiyon[]> {

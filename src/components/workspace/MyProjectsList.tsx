@@ -12,12 +12,12 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import { useMyWorkspace } from "@/hooks/useMyWorkspace";
 import { useDataStore } from "@/stores/dataStore";
 import TagChip from "@/components/ui/TagChip";
-import { progressColor } from "@/lib/colorUtils";
+import { statusColor } from "@/lib/colorUtils";
 import { getStatusLabel } from "@/lib/constants";
 import { formatDate } from "@/lib/dateUtils";
 import type { EntityStatus } from "@/types";
 
-const SOURCE_COLORS: Record<string, string> = { "Türkiye": "#10b981", "Kurumsal": "#8b5cf6", "International": "#f97316" };
+const SOURCE_COLORS: Record<string, string> = { "Türkiye": "#10b981", "Kurumsal": "#8b5cf6", "International": "#f97316", "LALE": "#ec4899", "Organik": "#84cc16" };
 const STATUS_COLORS: Record<string, string> = {
   "On Track": "#10b981", "Achieved": "#3b82f6", "High Risk": "#ef4444", "At Risk": "#f59e0b", "Not Started": "#94a3b8",
 };
@@ -87,7 +87,10 @@ function ProgressCard({ item, onClick, showParent }: {
   showParent?: boolean;
 }) {
   const { t } = useTranslation();
-  const pColor = progressColor(item.progress);
+  // Halka + yüzde yazısı statüye göre renklensin — "Yüksek Riskte" bir proje %63
+  // ilerlemiş olsa bile kullanıcıya kırmızı görünsün. (progressColor hâlâ başka
+  // yerlerde kullanılıyor — örn. aksiyon detayında gradient.)
+  const pColor = statusColor(item.status);
   return (
     <motion.div
       onClick={onClick}

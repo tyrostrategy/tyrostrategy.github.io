@@ -26,7 +26,7 @@ const createProjeSchema = (t: TFunction) =>
     owner: z.string().min(1, t("validation.ownerRequired")),
     participants: z.array(z.string()).default([]),
     department: z.string().default(""),
-    source: z.enum(["T\u00fcrkiye", "Kurumsal", "International"]),
+    source: z.enum(["T\u00fcrkiye", "Kurumsal", "International", "LALE", "Organik"]),
     status: z.enum(["On Track", "At Risk", "High Risk", "Achieved", "Not Started", "Cancelled", "On Hold"]),
     progress: z.number().min(0).max(100),
     tags: z.array(z.string()).default([]),

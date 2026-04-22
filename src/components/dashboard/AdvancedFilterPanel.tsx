@@ -27,6 +27,8 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
     { key: "High Risk", label: t("status.behind"), color: "bg-tyro-danger" },
     { key: "At Risk", label: t("status.atRisk"), color: "bg-tyro-warning" },
     { key: "Not Started", label: t("status.notStarted"), color: "bg-tyro-text-muted" },
+    { key: "On Hold", label: t("status.onHold"), color: "bg-violet-500" },
+    { key: "Cancelled", label: t("status.cancelled"), color: "bg-gray-400" },
   ];
 
   const [kaynak, setKaynak] = useState<Set<string>>(new Set());

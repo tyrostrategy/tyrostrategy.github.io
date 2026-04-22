@@ -22,7 +22,7 @@ const createWizardSchema = (t: TFunction) =>
   z.object({
     name: z.string().min(3, t("validation.minChars")),
     description: z.string().optional().default(""),
-    source: z.enum(["Türkiye", "Kurumsal", "International"], {
+    source: z.enum(["Türkiye", "Kurumsal", "International", "LALE", "Organik"], {
       message: t("validation.sourceRequired"),
     }),
     department: z.string().default(""),

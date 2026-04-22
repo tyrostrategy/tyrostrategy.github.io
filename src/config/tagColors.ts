@@ -1,5 +1,9 @@
-// 16 preset renk — Etiket Yönetimi'nde seçilebilir
+// 32 preset renk — Etiket Yönetimi'nde seçilebilir (8 sütunlu grid, 4 satır)
+// Satır 1-2: canlı / doymuş (ana etiket renkleri)
+// Satır 3: derin / koyu tonlar + nötr griler (ciddi/kurumsal etiketler için)
+// Satır 4: taze ana renkler + yumuşak pastel aksanlar (vurgu/sınıflandırma için)
 export const TAG_COLOR_PALETTE = [
+  // ── Satır 1: canlı ana renkler ──
   "#D4A017", // gold
   "#3B82F6", // blue
   "#10B981", // emerald
@@ -8,6 +12,7 @@ export const TAG_COLOR_PALETTE = [
   "#F97316", // orange
   "#06B6D4", // cyan
   "#EC4899", // pink
+  // ── Satır 2: canlı destek renkler ──
   "#14B8A6", // teal
   "#F59E0B", // amber
   "#6366F1", // indigo
@@ -16,6 +21,24 @@ export const TAG_COLOR_PALETTE = [
   "#0EA5E9", // sky
   "#A855F7", // purple
   "#78716C", // stone
+  // ── Satır 3: derin tonlar + nötrler ──
+  "#1E3A8A", // navy
+  "#065F46", // forest
+  "#7F1D1D", // wine
+  "#4C1D95", // royal
+  "#9A3412", // rust
+  "#155E75", // deep teal
+  "#64748B", // slate
+  "#6B7280", // gray
+  // ── Satır 4: taze ana renkler + pastel aksanlar ──
+  "#EAB308", // yellow
+  "#22C55E", // green
+  "#FB7185", // coral
+  "#34D399", // mint
+  "#FBBF24", // mustard
+  "#A78BFA", // lavender
+  "#FDBA74", // peach
+  "#2DD4BF", // turquoise
 ];
 
 export const DEFAULT_TAG_COLOR = "#D4A017";

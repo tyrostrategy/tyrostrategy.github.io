@@ -1,14 +1,15 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Building2, UserCircle2, Briefcase } from "lucide-react";
+import { Building2, UserCircle2, Briefcase, ChevronDown, ChevronUp } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
-import { STATUS_HEX, STATUS_ORDER } from "@/lib/statusColors";
+import { STATUS_HEX, STATUS_HEX_DARK, STATUS_ORDER } from "@/lib/statusColors";
 import { getStatusLabel } from "@/lib/constants";
 import { deptLabel } from "@/config/departments";
 import type { Proje, EntityStatus } from "@/types";
 
 type Dim = "dept" | "leader" | "source";
+const INITIAL_ROWS = 5;
 
 interface Props {
   projeler: Proje[];
@@ -24,6 +25,11 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
   const sidebarTheme = useSidebarTheme();
   const accentColor = sidebarTheme.accentColor ?? "#c8922a";
   const [dim, setDim] = useState<Dim>("dept");
+  const [expanded, setExpanded] = useState(false);
+
+  // Tab değişince collapsed duruma dön — farklı boyutta kullanıcı en yoğun
+  // ilk 5'i görsün, gerekirse tekrar açsın.
+  useEffect(() => { setExpanded(false); }, [dim]);
 
   // Tab metadata — label comes from i18n; icon lifts visual distinction
   // between the three dimensions.
@@ -128,7 +134,7 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
                 </td>
               </tr>
             )}
-            {matrix.map(({ key, counts }) => (
+            {(expanded ? matrix : matrix.slice(0, INITIAL_ROWS)).map(({ key, counts }) => (
               <tr key={key}>
                 <td className="text-[12px] font-medium text-tyro-text-primary px-2 py-1.5 truncate max-w-[200px] sticky left-0 bg-tyro-surface z-10">
                   {key}
@@ -136,14 +142,26 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
                 {STATUS_ORDER.map((s) => {
                   const n = counts[s] ?? 0;
                   const color = STATUS_HEX[s];
+                  const darkColor = STATUS_HEX_DARK[s];
                   return (
                     <td key={s} className="px-1 py-1">
                       <div
                         className="h-10 flex items-center justify-center rounded-lg tabular-nums text-[13px] font-bold"
                         style={
                           n > 0
-                            ? { backgroundColor: `${color}20`, color }
-                            : { backgroundColor: "var(--tyro-bg)", color: "var(--tyro-text-muted)", opacity: 0.5 }
+                            ? {
+                                // Dolu hücreler — soft tint bg + same-hue deep text
+                                // (Tailwind 700 varyantı). Sayı arka plana bulanmaz,
+                                // rengiyle çerçevelenir ve canlı okunur.
+                                backgroundColor: `${color}33`, // ~20% alpha
+                                color: darkColor,               // deep 700 variant
+                                border: `1px solid ${color}66`, // ~40% alpha outline
+                              }
+                            : {
+                                backgroundColor: "var(--tyro-bg)",
+                                color: "var(--tyro-text-muted)",
+                                opacity: 0.5,
+                              }
                         }
                       >
                         {n}
@@ -156,6 +174,21 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* Daha fazla göster / gizle — varsayılan 5 satır, fazlasını kullanıcı
+          isterse açsın. Aşağıya doğru animasyon olmadan direkt genişler
+          (satır sayısı az ise buton hiç çıkmaz). */}
+      {matrix.length > INITIAL_ROWS && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-[12px] font-semibold text-tyro-text-secondary hover:text-tyro-navy hover:bg-tyro-bg/60 transition-colors cursor-pointer border border-dashed border-tyro-border/40"
+        >
+          {expanded
+            ? <>{t("common.showLess")} <ChevronUp size={14} /></>
+            : <>+{matrix.length - INITIAL_ROWS} {t("common.showMore")} <ChevronDown size={14} /></>}
+        </button>
+      )}
     </GlassCard>
   );
 }
