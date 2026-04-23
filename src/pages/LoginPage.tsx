@@ -350,15 +350,22 @@ export default function LoginPage() {
         )}
       </div>
 
-      {/* ═════ MOBILE single-column ═════ */}
-      <div className="lg:hidden relative z-[30] min-h-screen flex flex-col items-center justify-center p-6">
+      {/* ═════ MOBILE single-column ═════
+          Text block üstte, button (ve orbit halkaları onun etrafında) orta-alt
+          bölgede — orbit'in üst yayı (outermost ring 420px çapında, radius 210)
+          button merkezinden ~210px yukarıda başlar. pt-[4vh] + gap-5 ile text
+          block'u ~240px yüksekliğe sığdırıp tamamen orbit'in üst yayının
+          üzerinde tutuyoruz; altındaki flex-1 spacer button'ı aynı dikey
+          merkezde (yaklaşık %65 konumunda) bırakıyor. */}
+      <div className="lg:hidden relative z-[30] min-h-screen flex flex-col items-center justify-start pt-[6.5vh] p-6">
         <motion.div
-          className="w-full max-w-[440px] flex flex-col items-center gap-6 text-center"
+          className="w-full max-w-[440px] flex flex-col items-center text-center"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          {/* Logo + app name — identical pattern to desktop brand row */}
+          {/* Logo + app name — identical pattern to desktop brand row.
+              Sabit konumda, pt-[6.5vh] ile ekranın üstüne yerleşmiş. */}
           <div className="flex items-center gap-3">
             <TyroLogo size={42} variant="login" />
             <span className="text-[22px] font-extrabold tracking-tight text-white leading-none">
@@ -377,26 +384,48 @@ export default function LoginPage() {
             </span>
           </div>
 
-          <h1 className="text-[26px] font-extrabold leading-tight text-white">
-            {t("login.strategicManagement")}
-            <br />
-            <span
-              style={{
-                background: "linear-gradient(90deg, #e0ad3e 0%, #f0c95e 50%, #c8922a 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                color: "transparent",
-              }}
-            >
-              {t("login.platform")}
-            </span>
-          </h1>
+          {/* Title + description — orbit'e yakın, logo ile orbit arasındaki
+              ferah boşluğu dolduruyor. translate-y layout akışını bozmuyor:
+              Logo flex'te kendi yerinde, button/orbit kendi merkezinde.
+              Görsel olarak h1+p ~48px aşağı kayıyor, DOM'da hâlâ logo'nun
+              hemen altında. Bu yüzden button pozisyonu değişmez. */}
+          <div className="flex flex-col items-center gap-5 mt-5 translate-y-12">
+            <h1 className="text-[26px] font-extrabold leading-tight text-white">
+              {t("login.strategicManagement")}
+              <br />
+              <span
+                style={{
+                  background: "linear-gradient(90deg, #e0ad3e 0%, #f0c95e 50%, #c8922a 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {t("login.platform")}
+              </span>
+            </h1>
 
-          <p className="text-[13px] leading-relaxed" style={{ color: "#c8daec" }}>
-            {t("login.heroDescription")}
-          </p>
+            <p className="text-[13px] leading-relaxed" style={{ color: "#c8daec" }}>
+              {t("login.heroDescription")}
+            </p>
+          </div>
+        </motion.div>
 
+        {/* Spacer — text ile button arası boşluğu orbit için açıyor. Orbit
+            button merkezli olduğu için button'ın üst yarısı bu boşlukta
+            kalacak; text'e artık bitişmiyor. */}
+        <div className="flex-1 min-h-[12vh]" />
+
+        {/* Button + olası MSAL hata bileşeni — ekranın alt-orta bölgesinde.
+            PortalButton kendi orbit halkalarını kendi merkezinde çizer, bu
+            pozisyon (orbit dahil) değişmiyor. */}
+        <motion.div
+          className="flex flex-col items-center gap-4"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+        >
           <PortalButton
             phase={phase}
             onActivate={startIntro}
@@ -405,12 +434,16 @@ export default function LoginPage() {
           />
 
           {msalError && (
-            <div className="flex items-start gap-2 p-3 rounded-xl backdrop-blur-sm border bg-red-500/10 border-red-400/25 text-left">
+            <div className="flex items-start gap-2 p-3 rounded-xl backdrop-blur-sm border bg-red-500/10 border-red-400/25 text-left max-w-[440px]">
               <Shield size={13} className="mt-0.5 shrink-0 text-red-300" />
               <p className="text-[11px] leading-relaxed text-red-100">{msalError}</p>
             </div>
           )}
         </motion.div>
+
+        {/* Spacer — button'ın altında ferah alan bırakır, copyright'a
+            değmesin diye. */}
+        <div className="flex-1 min-h-[8vh]" />
 
         {/* Copyright — pinned to the bottom so the orbital rings never cut through it */}
         <p
