@@ -167,6 +167,40 @@ interface DbRolePermission {
   permissions: Record<string, unknown>;
 }
 
+// ===== Participant email resolution =====
+// ProjeForm `allUsers` display_name array'i döndürüyor ve seçilenleri öyle
+// kaydediyor. Ama proje_participants.user_email kolonu (adından anlaşılacağı
+// gibi) email bekliyor. Bu helper form'dan gelen stringleri (her biri ya
+// email ya display_name) canonical email'lere çevirir.
+//
+// Eşleşmeyen display_name'ler (DB'de hiç olmayan kişi) atlanır, konsola uyarı.
+// Zaten email formatındaysa direkt döner.
+async function resolveParticipantEmails(selected: string[]): Promise<string[]> {
+  if (!supabase || selected.length === 0) return [];
+  const { data: users } = await supabase.from("users").select("email, display_name");
+  const byDisplay = new Map<string, string>();
+  const emailSet = new Set<string>();
+  for (const u of users ?? []) {
+    if (u.email) {
+      emailSet.add(u.email.toLowerCase().trim());
+      byDisplay.set((u.display_name ?? "").toLowerCase().trim(), u.email);
+    }
+  }
+  const resolved: string[] = [];
+  for (const s of selected) {
+    const trimmed = s.trim();
+    const lower = trimmed.toLowerCase();
+    if (trimmed.includes("@") && emailSet.has(lower)) {
+      resolved.push(lower);
+    } else if (byDisplay.has(lower)) {
+      resolved.push(byDisplay.get(lower)!);
+    } else {
+      console.warn(`[Supabase] resolveParticipantEmails: "${trimmed}" eşleşmedi, atlandı`);
+    }
+  }
+  return resolved;
+}
+
 // ===== ID Generation =====
 function generateId(prefix: "P" | "A", existingIds: string[]): string {
   const yy = String(new Date().getFullYear()).slice(-2);
@@ -291,11 +325,14 @@ export const supabaseAdapter: DataService = {
       if (tagInserts.length) await supabase.from("proje_tags").insert(tagInserts);
     }
 
-    // Handle participants
+    // Handle participants — form "Cenk Şayli" gibi display_name gönderiyor
+    // ama user_email kolonu (adı üzerinde) email bekliyor. users tablosundan
+    // display_name → email lookup yap. Eşleşmeyen display_name'leri atla
+    // (konsola log) — bozuk veri yazmaktansa boş bırakmak daha iyi.
     const participants = input.participants ?? [];
     if (participants.length) {
-      const partInserts = participants.map((name) => ({ proje_id: id, user_email: name }));
-      await supabase.from("proje_participants").insert(partInserts);
+      const emails = await resolveParticipantEmails(participants);
+      if (emails.length) await supabase.from("proje_participants").insert(emails.map((e) => ({ proje_id: id, user_email: e })));
     }
 
     return dbToProje(data as DbProje, input.tags ?? [], participants);
@@ -329,8 +366,9 @@ export const supabaseAdapter: DataService = {
       await supabase.from("proje_participants").delete().eq("proje_id", id);
       try {
         if (data.participants.length) {
-          const partInserts = data.participants.map((name) => ({ proje_id: id, user_email: name }));
-          await supabase.from("proje_participants").insert(partInserts);
+          // display_name → email çevirisi (create ile aynı mantık)
+          const emails = await resolveParticipantEmails(data.participants);
+          if (emails.length) await supabase.from("proje_participants").insert(emails.map((e) => ({ proje_id: id, user_email: e })));
         }
       } catch (partErr) {
         // Rollback: restore old participants if insert failed
