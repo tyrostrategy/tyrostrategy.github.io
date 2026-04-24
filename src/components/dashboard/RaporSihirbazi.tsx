@@ -501,7 +501,10 @@ export default function RaporSihirbazi() {
         unit: "mm",
         format: [210, pageH],
       });
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 10, 10, imgW, imgH);
+      // JPEG quality 0.92: PNG'ye göre ~%70 boyut tasarrufu, gözle farkı yok.
+      // Scale 2 korunuyor (detay aynı), sadece format/kompresyon değişti.
+      // 40 MB → ~8-12 MB tipik tahmin.
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 10, 10, imgW, imgH);
       pdf.save(getFileName("pdf").replace(/\.pdf$/, "-tek-sayfa.pdf"));
     } catch (err) {
       console.warn("Single-page PDF export failed, falling back to paginated PDF:", err);
