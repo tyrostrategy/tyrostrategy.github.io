@@ -19,7 +19,7 @@ export const NAV_ORDER: { path: string; pageKey: PageKey }[] = [
   // Görünümler
   { path: "/dashboard",        pageKey: "kpi" },
   { path: "/strategy-map",     pageKey: "tMap" },
-  { path: "/t-alignment",      pageKey: "projeler" },
+  { path: "/t-alignment",      pageKey: "tAlignment" },
   { path: "/gantt",            pageKey: "gantt" },
   // Sistem
   { path: "/kullanicilar",     pageKey: "kullanicilar" },
