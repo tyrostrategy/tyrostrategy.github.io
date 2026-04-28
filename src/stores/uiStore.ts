@@ -52,13 +52,32 @@ function syncSetting(key: string, value: unknown) {
   }
 }
 
-/** Sync locale to users table (fire-and-forget) */
+/** Sync locale to users table (fire-and-forget).
+ *
+ * KRITIK: Equality guard ZORUNLU. Önce yoktu — aynı locale ile çağrılsa
+ * bile her seferinde Supabase'e UPDATE atıyordu. Birleşince applyUser ile
+ * (her users-array değişiminde fire eder) zincir bir loop'a giriyor:
+ *
+ *   applyUser fire → setLocale("tr") → syncUserLocale → updateUser
+ *     → users state new ref → AuthGuard re-fires applyUser → ...
+ *
+ * applyUser'ın kendi guard'ı (ui.locale !== user.locale) tek başına
+ * yetmiyor çünkü bazen value tam eşit olmayabilir (case, undefined vs
+ * "tr"). syncUserLocale tarafında ek savunma şart. Sonuç: 354K boş
+ * UPDATE çağrısı (Supabase Observability'de yakalandı 2026-04-24).
+ *
+ * Ek olarak: artık kullanıcı bulunamazsa veya locale zaten eşitse hiç
+ * RPC fire etmiyoruz.
+ */
 function syncUserLocale(userName: string, locale: string) {
   if (!isSupabaseMode) return;
   import("@/stores/dataStore").then(({ useDataStore }) => {
     const { users, updateUser } = useDataStore.getState();
     const me = users.find((u) => u.displayName.toLowerCase().trim() === userName.toLowerCase().trim());
-    if (me) updateUser(me.id, { locale });
+    if (!me) return;
+    // Equality guard — DB'deki locale zaten istenen değer ise hiçbir şey yapma.
+    if (me.locale === locale) return;
+    updateUser(me.id, { locale });
   }).catch((err) => {
     console.error("[Supabase] syncUserLocale failed:", err);
   });
