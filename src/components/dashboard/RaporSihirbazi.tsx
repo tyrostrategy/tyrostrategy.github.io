@@ -412,6 +412,16 @@ export default function RaporSihirbazi() {
             }
           });
         });
+        // line-clamp kaldır — açıklama yarım çıkmasın (single-page PDF ile aynı fix)
+        doc.querySelectorAll(".line-clamp-1, .line-clamp-2, .line-clamp-3, [class*='line-clamp-']").forEach((node) => {
+          const el = node as HTMLElement;
+          el.style.webkitLineClamp = "unset";
+          el.style.display = "block";
+          el.style.overflow = "visible";
+          el.classList.forEach((cls) => {
+            if (cls.startsWith("line-clamp-")) el.classList.remove(cls);
+          });
+        });
       },
     });
     const imgData = canvas.toDataURL("image/png");
@@ -474,6 +484,19 @@ export default function RaporSihirbazi() {
               if (val && (val.includes("oklab") || val.includes("oklch") || val.includes("color("))) {
                 (e.style as unknown as Record<string, string>)[prop] = "transparent";
               }
+            });
+          });
+          // line-clamp temizle — proje açıklamaları 2 satırda kesilip "..."
+          // ile yarım çıkıyordu (kullanıcı raporu 2026-04-25). PDF tek sayfa
+          // olduğundan layout sınırı yok, tam metin gösterilebilir.
+          doc.querySelectorAll(".line-clamp-1, .line-clamp-2, .line-clamp-3, [class*='line-clamp-']").forEach((node) => {
+            const e = node as HTMLElement;
+            e.style.webkitLineClamp = "unset";
+            e.style.display = "block";
+            e.style.overflow = "visible";
+            // Tailwind sınıfını da kaldır ki specificity savaşı yaşanmasın
+            e.classList.forEach((cls) => {
+              if (cls.startsWith("line-clamp-")) e.classList.remove(cls);
             });
           });
         },
