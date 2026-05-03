@@ -188,12 +188,16 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
                     </td>
                   );
                 })}
-                {/* Row total — accent-tinted to set it apart from per-status cells */}
+                {/* Row total — beyaz arkaplan, accent-renkli sayı + border.
+                    Önceden ${accentColor}1f tint'ti ama navy temada gri'ye
+                    yakın çıkıp Cancelled/Not Started hücreleriyle karışıyordu.
+                    Beyaz arkaplan ayrımı kesinleştiriyor; numara + ince border
+                    yine accent rengiyle "toplam" sinyalini koruyor. */}
                 <td className="px-1 py-1 border-l-2 border-tyro-border/60">
                   <div
                     className="h-10 flex items-center justify-center rounded-lg tabular-nums text-[13px] font-bold"
                     style={{
-                      backgroundColor: `${accentColor}1f`,
+                      backgroundColor: "#ffffff",
                       color: accentColor,
                       border: `1px solid ${accentColor}55`,
                     }}
@@ -217,7 +221,7 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
                       <div
                         className="h-10 flex items-center justify-center rounded-lg tabular-nums text-[13px] font-bold"
                         style={{
-                          backgroundColor: `${accentColor}14`,
+                          backgroundColor: "#ffffff",
                           color: accentColor,
                           border: `1px solid ${accentColor}40`,
                         }}
