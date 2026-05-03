@@ -118,6 +118,15 @@ export default function RaporSihirbazi() {
 
   const projeler = useDataStore((s) => s.projeler);
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
+  const tagDefinitions = useDataStore((s) => s.tagDefinitions);
+  // Tag adı → tag rengi map'i. Kullanıcı Ayarlar → Etiket Yönetimi'nde
+  // her etiket için renk seçiyor; raporda da o renkler görünmeli.
+  // Önceden tüm etiketler hardcoded turuncu (bg-tyro-gold) çıkıyordu.
+  const tagColorMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const td of tagDefinitions) m.set(td.name, td.color);
+    return m;
+  }, [tagDefinitions]);
   const sidebarThemeId = useUIStore((s) => s.sidebarTheme);
   const companyName = useUIStore((s) => s.companyName);
   const theme = sidebarThemes[sidebarThemeId];
@@ -1587,10 +1596,6 @@ ${clone.outerHTML}
                   const ha = aksiyonlar.filter((a) => a.projeId === h.id);
                   const p = calcProjeProgress(h, aksiyonlar);
                   const isExp = expandedIds.has(h.id);
-                  // Statü-spesifik ikon — Clock/Check/AlertTriangle/PauseCircle
-                  // gibi ifadeyi temsil eden Lucide icon. Eski "▸" yerine
-                  // bu kullanılıyor; aksiyon statüleri ile tutarlı.
-                  const HIcon = STATUS_DOT[h.status];
 
                   return (
                     <div key={h.id} className="glass-card rounded-xl overflow-hidden print:break-inside-avoid" style={{ borderLeft: `3px solid ${STATUS_COLOR[h.status]}` }}>
@@ -1605,10 +1610,9 @@ ${clone.outerHTML}
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-[20px] font-extrabold tabular-nums" style={{ color: STATUS_COLOR[h.status] }}>{p}%</span>
                           <span
-                            className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                            className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                             style={{ backgroundColor: `${STATUS_COLOR[h.status]}12`, color: STATUS_COLOR[h.status] }}
                           >
-                            <HIcon size={11} className="shrink-0" />
                             {STATUS_TR[h.status]}
                           </span>
                         </div>
@@ -1633,9 +1637,20 @@ ${clone.outerHTML}
                           {h.tags && h.tags.length > 0 && (
                             <>
                               <span className="text-tyro-border">|</span>
-                              {h.tags.map((tag) => (
-                                <span key={tag} className="px-2 py-0.5 rounded-full bg-tyro-gold/10 text-tyro-gold text-[11px] font-semibold">{tag}</span>
-                              ))}
+                              {h.tags.map((tag) => {
+                                // Tag rengini tagDefinitions'tan al; tanımsız bir
+                                // etiket gelirse fallback olarak tyro-gold turuncu.
+                                const c = tagColorMap.get(tag) ?? "#c8922a";
+                                return (
+                                  <span
+                                    key={tag}
+                                    className="px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                                    style={{ backgroundColor: `${c}1a`, color: c }}
+                                  >
+                                    {tag}
+                                  </span>
+                                );
+                              })}
                             </>
                           )}
                           <span className="ml-auto text-tyro-text-secondary font-medium">{ha.length} {t("dashboard.action")}</span>
@@ -1672,26 +1687,27 @@ ${clone.outerHTML}
                               >
                                 <div className="px-4 pb-3 space-y-0.5">
                                   {ha.map((a) => {
-                                    const AIcon = STATUS_DOT[a.status];
                                     return (
-                                      <div key={a.id} className="flex items-center justify-between py-2 border-b border-tyro-border/8 last:border-0">
-                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                          <AIcon size={12} style={{ color: STATUS_COLOR[a.status] }} className="shrink-0" />
-                                          <div className="min-w-0">
-                                            <p className="text-[12px] font-semibold text-tyro-text-primary truncate">{a.name}</p>
-                                            <p className="text-[11px] text-tyro-text-secondary">
-                                              {a.owner} · {new Date(a.startDate).toLocaleDateString(dateLocale)} → {new Date(a.endDate).toLocaleDateString(dateLocale)}
-                                            </p>
-                                          </div>
+                                      // items-start: aksiyon adı uzun ve sarılırsa
+                                      // % + statü hep ilk satırla hizalı kalsın.
+                                      // mt-0.5 sağ tarafta dengeleme.
+                                      <div key={a.id} className="flex items-start justify-between gap-3 py-2 border-b border-tyro-border/8 last:border-0">
+                                        <div className="flex-1 min-w-0">
+                                          {/* truncate yerine break-words: uzun aksiyon adı
+                                              ekran taşmıyor, alt satıra sarılıyor — sağ
+                                              kolondaki yüzde ve statü sıkışmıyor. */}
+                                          <p className="text-[12px] font-semibold text-tyro-text-primary leading-snug break-words">{a.name}</p>
+                                          <p className="text-[11px] text-tyro-text-secondary mt-0.5">
+                                            {a.owner} · {new Date(a.startDate).toLocaleDateString(dateLocale)} → {new Date(a.endDate).toLocaleDateString(dateLocale)}
+                                          </p>
                                         </div>
-                                        {/* Sabit-genişlik kolonlar: yüzde + pill her satırda
-                                            aynı x-pozisyonunda hizalansın. Yüzde sola yaslı (kullanıcı
-                                            "sola hizalanmış" istedi), pill ortalı + en uzun statü
-                                            ("Yüksek Riskte") rahat sığacak min-width. */}
-                                        <div className="flex items-center gap-2 shrink-0">
+                                        {/* Sabit-genişlik kolonlar — yüzde sola yaslı + en
+                                            uzun statü ("Yüksek Riskte") için min-width.
+                                            İkon yok (kullanıcı isteği — html2canvas'ta SVG
+                                            ikonlar dikeyde kayıyordu). */}
+                                        <div className="flex items-center gap-2 shrink-0 mt-0.5">
                                           <span className="w-10 text-left text-[12px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                          <span className="inline-flex items-center justify-center gap-1 min-w-[110px] text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
-                                            <AIcon size={10} className="shrink-0" />
+                                          <span className="inline-block min-w-[110px] text-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
                                             {STATUS_TR[a.status]}
                                           </span>
                                         </div>
@@ -1710,27 +1726,23 @@ ${clone.outerHTML}
                               html2canvas'ta yarım kesiyordu. */}
                           <div className={`hidden ${hideActionsInExport ? "" : "print:block"} px-4 pb-3 space-y-0.5`}>
                             <p className="text-[11px] font-bold uppercase text-tyro-text-muted tracking-wider mb-1">{t("dashboard.actionsLabel")} ({ha.length})</p>
-                            {ha.map((a) => {
-                              const AIcon = STATUS_DOT[a.status];
-                              return (
-                                <div key={a.id} className="flex items-start justify-between gap-2 py-1.5 border-b border-tyro-border/8 last:border-0">
-                                  <div className="flex items-start gap-2 flex-1 min-w-0">
-                                    <AIcon size={11} style={{ color: STATUS_COLOR[a.status] }} className="shrink-0 mt-0.5" />
-                                    <p className="text-[12px] font-medium text-tyro-text-primary leading-snug break-words">{a.name}</p>
-                                  </div>
-                                  {/* Print/HTML — sabit-genişlik kolonlar, expand list ile aynı
-                                      hizalama mantığı. Statü burada pill değil renkli text;
-                                      en uzun "Yüksek Riskte" için min-width benzer. */}
-                                  <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                    <span className="w-9 text-left text-[11px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                    <span className="inline-flex items-center justify-center gap-1 min-w-[90px] text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>
-                                      <AIcon size={9} className="shrink-0" />
-                                      {STATUS_TR[a.status]}
-                                    </span>
-                                  </div>
+                            {ha.map((a) => (
+                              <div key={a.id} className="flex items-start justify-between gap-3 py-1.5 border-b border-tyro-border/8 last:border-0">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[12px] font-medium text-tyro-text-primary leading-snug break-words">{a.name}</p>
                                 </div>
-                              );
-                            })}
+                                {/* Print/HTML — sabit-genişlik kolonlar, expand list ile
+                                    aynı hizalama mantığı. Statü burada pill değil renkli
+                                    text; ikon yok (html2canvas'ta SVG ikonlar dikey
+                                    kayıyordu — kullanıcı isteğiyle çıkarıldı). */}
+                                <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                                  <span className="w-9 text-left text-[11px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
+                                  <span className="inline-block min-w-[90px] text-center text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>
+                                    {STATUS_TR[a.status]}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </>
                       )}
