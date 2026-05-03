@@ -52,15 +52,17 @@ const STATUS_DOT: Record<EntityStatus, typeof Check> = {
 };
 
 // SOURCES, REPORT_SECTIONS, DATE_PRESETS, STATUS_TR moved inside component for i18n
-
-
+//
+// progressColor — kokpit STATUS_BAR paletini birebir kullanır. Hiçbir yeni
+// renk uydurulmaz: sadece Not Started gri, High Risk kırmızı, At Risk amber,
+// On Track yeşil ve Achieved mavi tonları. Mavi sadece %100'e ayrılmış —
+// %50-99 hep yeşildir, ara renge (sarı/turuncu/mavi) gerek yok.
 function progressColor(p: number): string {
-  if (p === 0) return "#94a3b8";
-  if (p < 25) return "#ef4444";
-  if (p < 50) return "#f59e0b";
-  if (p < 75) return "#3b82f6";
-  if (p < 100) return "#10b981";
-  return "#059669";
+  if (p === 0)   return "#94a3b8";   // Not Started — slate
+  if (p <= 25)  return "#ef4444";   // High Risk — red
+  if (p <= 50)  return "#f59e0b";   // At Risk — amber
+  if (p < 100)  return "#10b981";   // On Track — emerald
+  return "#3b82f6";                  // Achieved — blue (sadece %100)
 }
 
 function calcProjeProgress(h: Proje, aksiyonlar: Aksiyon[]): number {
@@ -463,18 +465,27 @@ export default function RaporSihirbazi() {
             if (cls.startsWith("line-clamp-")) el.classList.remove(cls);
           });
         });
-        // Pill / chip metni html2canvas'ta dikeyde kayıyordu — inline span'in
-        // baseline'ı padding ile birleşince renderer alt kenara yapışıyor,
-        // sonuçta yazı pill'in içinde yukarıya itilmiş gözüküyor. Sabit fix:
-        // span[rounded-full] elementlerini inline-flex + center align +
-        // line-height 1 yap. Padding zaten yer açıyor, text-* boyutu line-height
-        // 1 ile tam pill yüksekliğini doldurur.
+        // Pill / chip metni html2canvas'ta dikeyde kayıyordu. inline-flex
+        // + align-items: center yaklaşımı yetmedi — renderer flex
+        // centering'i tutarsız uyguluyor, "Yolunda" / "Tamamlandı" /
+        // "Uygulama" gibi pill'lerde yazı pill'in üst kenarına kayıyor.
+        //
+        // Daha güvenilir yöntem: dikey padding'i line-height'a çevir.
+        // Pill toplam yüksekliği = font-size + üst+alt padding; bunu
+        // tek bir line-height değerine sığdırıp padding-y'yi 0'la.
+        // Sonuç: tek-line baseline rendering, html2canvas hep doğru
+        // dikey merkezler. Yatay padding (px-*) aynen kalıyor.
         doc.querySelectorAll('span[class*="rounded-full"]').forEach((node) => {
           const e = node as HTMLElement;
-          e.style.display = "inline-flex";
-          e.style.alignItems = "center";
-          e.style.justifyContent = "center";
-          e.style.lineHeight = "1";
+          const cs = getComputedStyle(e);
+          const pt = parseFloat(cs.paddingTop) || 0;
+          const pb = parseFloat(cs.paddingBottom) || 0;
+          const fs = parseFloat(cs.fontSize) || 11;
+          e.style.display = "inline-block";
+          e.style.verticalAlign = "middle";
+          e.style.lineHeight = `${Math.round(fs + pt + pb)}px`;
+          e.style.paddingTop = "0";
+          e.style.paddingBottom = "0";
         });
       },
     });
@@ -564,17 +575,23 @@ export default function RaporSihirbazi() {
             e.style.lineHeight = "1.4";
             e.classList.remove("truncate");
           });
-          // Pill / chip metni dikeyde kayıyordu — inline span'in baseline'ı
-          // padding ile birleşince html2canvas yazıyı alt kenara itip pill'in
-          // ortasından kaydırıyor. inline-flex + center align + line-height 1
-          // pill yüksekliğini ve dikey hizayı sabitler. Status pill'leri,
-          // tag chip'leri, source/period rozetleri hepsi bu pattern'le çıkıyor.
+          // Pill / chip metni dikeyde kayıyordu. inline-flex + align-items
+          // center yaklaşımı html2canvas'ta tutarsız (yazı pill'in üst
+          // kenarına yapışıyor — Yolunda / Tamamlandı / tag chip'lerinde
+          // belirgin). Kalıcı fix: dikey padding'i line-height'a çevir,
+          // padding-y'yi 0'la. Tek line baseline rendering tutarlı dikey
+          // merkezleme veriyor; yatay padding (px-*) aynen kalıyor.
           doc.querySelectorAll('span[class*="rounded-full"]').forEach((node) => {
             const e = node as HTMLElement;
-            e.style.display = "inline-flex";
-            e.style.alignItems = "center";
-            e.style.justifyContent = "center";
-            e.style.lineHeight = "1";
+            const cs = getComputedStyle(e);
+            const pt = parseFloat(cs.paddingTop) || 0;
+            const pb = parseFloat(cs.paddingBottom) || 0;
+            const fs = parseFloat(cs.fontSize) || 11;
+            e.style.display = "inline-block";
+            e.style.verticalAlign = "middle";
+            e.style.lineHeight = `${Math.round(fs + pt + pb)}px`;
+            e.style.paddingTop = "0";
+            e.style.paddingBottom = "0";
           });
         },
       });
@@ -1643,9 +1660,13 @@ ${clone.outerHTML}
                                             </p>
                                           </div>
                                         </div>
+                                        {/* Sabit-genişlik kolonlar: yüzde + pill her satırda
+                                            aynı x-pozisyonunda hizalansın. Yüzde sola yaslı (kullanıcı
+                                            "sola hizalanmış" istedi), pill ortalı + en uzun statü
+                                            ("Yüksek Riskte") rahat sığacak min-width. */}
                                         <div className="flex items-center gap-2 shrink-0">
-                                          <span className="text-[12px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
+                                          <span className="w-10 text-left text-[12px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
+                                          <span className="inline-block min-w-[110px] text-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
                                             {STATUS_TR[a.status]}
                                           </span>
                                         </div>
@@ -1672,9 +1693,12 @@ ${clone.outerHTML}
                                     <AIcon size={11} style={{ color: STATUS_COLOR[a.status] }} className="shrink-0 mt-0.5" />
                                     <p className="text-[12px] font-medium text-tyro-text-primary leading-snug break-words">{a.name}</p>
                                   </div>
+                                  {/* Print/HTML — sabit-genişlik kolonlar, expand list ile aynı
+                                      hizalama mantığı. Statü burada pill değil renkli text;
+                                      en uzun "Yüksek Riskte" için min-width benzer. */}
                                   <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                    <span className="text-[11px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                    <span className="text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>{STATUS_TR[a.status]}</span>
+                                    <span className="w-9 text-left text-[11px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
+                                    <span className="inline-block min-w-[90px] text-center text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>{STATUS_TR[a.status]}</span>
                                   </div>
                                 </div>
                               );
