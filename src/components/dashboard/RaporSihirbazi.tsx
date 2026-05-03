@@ -27,11 +27,15 @@ import type { Proje, Aksiyon, EntityStatus, Source } from "@/types";
 import { deptLabel } from "@/config/departments";
 
 // ===== Status helpers =====
+// Kokpit ekranıyla (MasterDetailView) BİREBİR aynı renkler — kullanıcı
+// "kokpitte renklerimiz var, onları kullan" diye işaret etti. Achieved
+// kokpit'te mavi (#3b82f6), buradaki eski emerald'ten (#10b981) farklıydı,
+// rapor çıktısı kokpit'le tutarsız görünüyordu. Şimdi tutarlı.
 const STATUS_COLOR: Record<EntityStatus, string> = {
   "On Track": "#10b981",
   "At Risk": "#f59e0b",
   "High Risk": "#ef4444",
-  "Achieved": "#10b981",
+  "Achieved": "#3b82f6",
   "Not Started": "#94a3b8",
   "On Hold": "#8b5cf6",
   "Cancelled": "#6b7280",
@@ -373,6 +377,16 @@ export default function RaporSihirbazi() {
 
   const handleGenerate = () => {
     setReportGenerated(true);
+    // Aksiyon adımları bölümü açıksa tüm projeleri varsayılan olarak
+    // genişlet — kullanıcı tek tek expand etmek zorunda kalmasın.
+    // sections.actions kapalıysa zaten aksiyonlar render edilmiyor,
+    // expand state'i set etmenin görsel etkisi yok ama temiz tutmak
+    // için yine de boş bırakıyoruz.
+    if (sections.actions) {
+      setExpandedIds(new Set(reportProjeler.map((h) => h.id)));
+    } else {
+      setExpandedIds(new Set());
+    }
   };
 
   const getFileName = (ext: string) => {
@@ -448,6 +462,19 @@ export default function RaporSihirbazi() {
           el.classList.forEach((cls) => {
             if (cls.startsWith("line-clamp-")) el.classList.remove(cls);
           });
+        });
+        // Pill / chip metni html2canvas'ta dikeyde kayıyordu — inline span'in
+        // baseline'ı padding ile birleşince renderer alt kenara yapışıyor,
+        // sonuçta yazı pill'in içinde yukarıya itilmiş gözüküyor. Sabit fix:
+        // span[rounded-full] elementlerini inline-flex + center align +
+        // line-height 1 yap. Padding zaten yer açıyor, text-* boyutu line-height
+        // 1 ile tam pill yüksekliğini doldurur.
+        doc.querySelectorAll('span[class*="rounded-full"]').forEach((node) => {
+          const e = node as HTMLElement;
+          e.style.display = "inline-flex";
+          e.style.alignItems = "center";
+          e.style.justifyContent = "center";
+          e.style.lineHeight = "1";
         });
       },
     });
@@ -536,6 +563,18 @@ export default function RaporSihirbazi() {
             e.style.textOverflow = "clip";
             e.style.lineHeight = "1.4";
             e.classList.remove("truncate");
+          });
+          // Pill / chip metni dikeyde kayıyordu — inline span'in baseline'ı
+          // padding ile birleşince html2canvas yazıyı alt kenara itip pill'in
+          // ortasından kaydırıyor. inline-flex + center align + line-height 1
+          // pill yüksekliğini ve dikey hizayı sabitler. Status pill'leri,
+          // tag chip'leri, source/period rozetleri hepsi bu pattern'le çıkıyor.
+          doc.querySelectorAll('span[class*="rounded-full"]').forEach((node) => {
+            const e = node as HTMLElement;
+            e.style.display = "inline-flex";
+            e.style.alignItems = "center";
+            e.style.justifyContent = "center";
+            e.style.lineHeight = "1";
           });
         },
       });
@@ -651,9 +690,11 @@ ${clone.outerHTML}
     });
     // Sheet 2: Projects
     const ws2 = wb.addWorksheet(t("dashboard.projectsSheet"));
-    ws2.addRow([t("dashboard.projectName"), t("dashboard.descriptionCol"), t("dashboard.leaderCol"), t("dashboard.departmentCol"), t("dashboard.sourceCol"), t("dashboard.statusLabel"), t("dashboard.progressPercent"), t("dashboard.startDateCol"), t("dashboard.endDateCol")]);
+    // Proje açıklaması raporda gösterilmiyor — kullanıcı isteği (2026-05-03):
+    // proje adı yeterli, açıklama tüm çıktılardan çıkarıldı.
+    ws2.addRow([t("dashboard.projectName"), t("dashboard.leaderCol"), t("dashboard.departmentCol"), t("dashboard.sourceCol"), t("dashboard.statusLabel"), t("dashboard.progressPercent"), t("dashboard.startDateCol"), t("dashboard.endDateCol")]);
     reportProjeler.forEach((h) => {
-      ws2.addRow([h.name, h.description || "", h.owner, deptLabel(h.department, t), h.source, STATUS_TR[h.status], calcProjeProgress(h, aksiyonlar), h.startDate, h.endDate]);
+      ws2.addRow([h.name, h.owner, deptLabel(h.department, t), h.source, STATUS_TR[h.status], calcProjeProgress(h, aksiyonlar), h.startDate, h.endDate]);
     });
     // Sheet 3: Actions
     const ws3 = wb.addWorksheet(t("dashboard.actionsSheet"));
@@ -685,7 +726,6 @@ ${clone.outerHTML}
     reportProjeler.forEach((h) => {
       const p = calcProjeProgress(h, aksiyonlar);
       children.push(new Paragraph({ text: h.name, heading: HeadingLevel.HEADING_2 }));
-      if (h.description) children.push(new Paragraph({ text: h.description }));
       children.push(new Paragraph({ children: [new TextRun({ text: `${t("dashboard.leaderCol")}: ${h.owner} · ${h.source} · ${deptLabel(h.department, t)} · %${p} · ${STATUS_TR[h.status]}` })] }));
       children.push(new Paragraph({ text: "" }));
     });
@@ -716,8 +756,7 @@ ${clone.outerHTML}
       const p = calcProjeProgress(h, aksiyonlar);
       const slide = pptx.addSlide();
       slide.addText(h.name, { x: 0.5, y: 0.3, w: 8, fontSize: 18, bold: true, color: "1e3a5f" });
-      slide.addText(`%${p} · ${STATUS_TR[h.status]}`, { x: 0.5, y: 1, w: 4, fontSize: 24, bold: true, color: progressColor(p).replace("#", "") });
-      if (h.description) slide.addText(h.description, { x: 0.5, y: 1.8, w: 9, fontSize: 12, color: "475569" });
+      slide.addText(`%${p} · ${STATUS_TR[h.status]}`, { x: 0.5, y: 1, w: 4, fontSize: 24, bold: true, color: STATUS_COLOR[h.status].replace("#", "") });
       slide.addText(`${h.owner} · ${h.source} · ${deptLabel(h.department, t)}`, { x: 0.5, y: 2.5, w: 9, fontSize: 11, color: "64748b" });
     });
     pptx.writeFile({ fileName: getFileName("pptx") });
@@ -993,7 +1032,7 @@ ${clone.outerHTML}
                   {t("dashboard.close")}
                 </button>
                 <button
-                  onClick={() => { setFilterOpen(false); setReportGenerated(true); }}
+                  onClick={() => { setFilterOpen(false); handleGenerate(); }}
                   className="px-5 py-2 rounded-lg text-white text-[12px] font-semibold cursor-pointer transition-all hover:brightness-110"
                   style={{ backgroundColor: theme.accentColor }}
                 >
@@ -1519,15 +1558,12 @@ ${clone.outerHTML}
                       <div className="px-4 py-3 flex items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <h4 className="text-[14px] font-bold text-tyro-text-primary leading-snug">{h.name}</h4>
-                          {h.description && (
-                            <p className="text-[12px] text-tyro-text-secondary mt-1 line-clamp-2">{h.description}</p>
-                          )}
                           <p className="text-[12px] text-tyro-text-secondary mt-1.5">
                             {new Date(h.startDate).toLocaleDateString(dateLocale)} → {new Date(h.endDate).toLocaleDateString(dateLocale)}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-[20px] font-extrabold tabular-nums" style={{ color: progressColor(p) }}>{p}%</span>
+                          <span className="text-[20px] font-extrabold tabular-nums" style={{ color: STATUS_COLOR[h.status] }}>{p}%</span>
                           <span
                             className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                             style={{ backgroundColor: `${STATUS_COLOR[h.status]}12`, color: STATUS_COLOR[h.status] }}
@@ -1608,7 +1644,7 @@ ${clone.outerHTML}
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2 shrink-0">
-                                          <span className="text-[12px] font-bold tabular-nums" style={{ color: progressColor(a.progress) }}>{a.progress}%</span>
+                                          <span className="text-[12px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
                                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
                                             {STATUS_TR[a.status]}
                                           </span>
@@ -1637,7 +1673,7 @@ ${clone.outerHTML}
                                     <p className="text-[12px] font-medium text-tyro-text-primary leading-snug break-words">{a.name}</p>
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                    <span className="text-[11px] font-bold tabular-nums" style={{ color: progressColor(a.progress) }}>{a.progress}%</span>
+                                    <span className="text-[11px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
                                     <span className="text-[9px] font-semibold whitespace-nowrap" style={{ color: STATUS_COLOR[a.status] }}>{STATUS_TR[a.status]}</span>
                                   </div>
                                 </div>
