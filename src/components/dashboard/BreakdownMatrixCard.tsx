@@ -50,7 +50,10 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
 
   // Build { rowKey → Record<EntityStatus, number> }. Single pass,
   // zero cells initialized so the matrix is rectangular — no holes.
-  const matrix = useMemo(() => {
+  // Column totals + grand total are computed across the FULL matrix
+  // (not just visible rows) so collapsing/expanding never changes the
+  // numbers in the "Toplam" footer — what you see is the real total.
+  const { matrix, columnTotals, grandTotal } = useMemo(() => {
     const bucket = new Map<string, Record<EntityStatus, number>>();
     const blank = (): Record<EntityStatus, number> =>
       STATUS_ORDER.reduce((acc, s) => ({ ...acc, [s]: 0 }), {} as Record<EntityStatus, number>);
@@ -62,13 +65,21 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
       row[h.status] = (row[h.status] ?? 0) + 1;
     }
 
-    // Sort rows by total desc so the heaviest buckets read first.
-    return Array.from(bucket.entries())
+    const rows = Array.from(bucket.entries())
       .map(([key, counts]) => {
         const total = STATUS_ORDER.reduce((s, st) => s + (counts[st] ?? 0), 0);
         return { key, counts, total };
       })
       .sort((a, b) => b.total - a.total);
+
+    const colTotals = STATUS_ORDER.reduce((acc, s) => {
+      acc[s] = rows.reduce((sum, r) => sum + (r.counts[s] ?? 0), 0);
+      return acc;
+    }, {} as Record<EntityStatus, number>);
+
+    const grand = rows.reduce((sum, r) => sum + r.total, 0);
+
+    return { matrix: rows, columnTotals: colTotals, grandTotal: grand };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projeler, dim]);
 
@@ -121,20 +132,28 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
                   {getStatusLabel(s, t)}
                 </th>
               ))}
+              {/* Right-most TOPLAM column header — separated visually from
+                  the status columns by a heavier left border. */}
+              <th
+                className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 text-center border-l-2 border-tyro-border/60"
+                style={{ minWidth: 64, color: accentColor }}
+              >
+                {t("dashboard.total")}
+              </th>
             </tr>
           </thead>
           <tbody>
             {matrix.length === 0 && (
               <tr>
                 <td
-                  colSpan={STATUS_ORDER.length + 1}
+                  colSpan={STATUS_ORDER.length + 2}
                   className="text-center text-[12px] text-tyro-text-muted py-8"
                 >
                   {t("common.noResults")}
                 </td>
               </tr>
             )}
-            {(expanded ? matrix : matrix.slice(0, INITIAL_ROWS)).map(({ key, counts }) => (
+            {(expanded ? matrix : matrix.slice(0, INITIAL_ROWS)).map(({ key, counts, total }) => (
               <tr key={key}>
                 <td className="text-[12px] font-medium text-tyro-text-primary px-2 py-1.5 truncate max-w-[200px] sticky left-0 bg-tyro-surface z-10">
                   {key}
@@ -169,9 +188,60 @@ export default function BreakdownMatrixCard({ projeler }: Props) {
                     </td>
                   );
                 })}
+                {/* Row total — accent-tinted to set it apart from per-status cells */}
+                <td className="px-1 py-1 border-l-2 border-tyro-border/60">
+                  <div
+                    className="h-10 flex items-center justify-center rounded-lg tabular-nums text-[13px] font-bold"
+                    style={{
+                      backgroundColor: `${accentColor}1f`,
+                      color: accentColor,
+                      border: `1px solid ${accentColor}55`,
+                    }}
+                  >
+                    {total}
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
+          {matrix.length > 0 && (
+            <tfoot>
+              <tr>
+                <td className="text-[11px] font-bold uppercase tracking-wider px-2 py-1.5 sticky left-0 bg-tyro-surface z-10 border-t-2 border-tyro-border/60" style={{ color: accentColor }}>
+                  {t("dashboard.total")}
+                </td>
+                {STATUS_ORDER.map((s) => {
+                  const n = columnTotals[s] ?? 0;
+                  return (
+                    <td key={s} className="px-1 py-1 border-t-2 border-tyro-border/60">
+                      <div
+                        className="h-10 flex items-center justify-center rounded-lg tabular-nums text-[13px] font-bold"
+                        style={{
+                          backgroundColor: `${accentColor}14`,
+                          color: accentColor,
+                          border: `1px solid ${accentColor}40`,
+                        }}
+                      >
+                        {n}
+                      </div>
+                    </td>
+                  );
+                })}
+                {/* Grand total — strongest emphasis */}
+                <td className="px-1 py-1 border-t-2 border-l-2 border-tyro-border/60">
+                  <div
+                    className="h-10 flex items-center justify-center rounded-lg tabular-nums text-[14px] font-extrabold text-white"
+                    style={{
+                      backgroundColor: accentColor,
+                      border: `1px solid ${accentColor}`,
+                    }}
+                  >
+                    {grandTotal}
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 
