@@ -465,27 +465,40 @@ export default function RaporSihirbazi() {
             if (cls.startsWith("line-clamp-")) el.classList.remove(cls);
           });
         });
-        // Pill / chip metni html2canvas'ta dikeyde kayıyordu. inline-flex
-        // + align-items: center yaklaşımı yetmedi — renderer flex
-        // centering'i tutarsız uyguluyor, "Yolunda" / "Tamamlandı" /
-        // "Uygulama" gibi pill'lerde yazı pill'in üst kenarına kayıyor.
+        // Pill metninin dikey merkezleme sorunu — html2canvas'a karşı 3.
+        // deneme. line-height-based yaklaşım yetmedi, inline-flex de.
+        // En güvenilir yöntem: TABLE-CELL centering. CSS table layout
+        // html2canvas tarafından ana akış tablolama olarak işleniyor,
+        // vertical-align: middle table-cell'de garantili çalışıyor.
         //
-        // Daha güvenilir yöntem: dikey padding'i line-height'a çevir.
-        // Pill toplam yüksekliği = font-size + üst+alt padding; bunu
-        // tek bir line-height değerine sığdırıp padding-y'yi 0'la.
-        // Sonuç: tek-line baseline rendering, html2canvas hep doğru
-        // dikey merkezler. Yatay padding (px-*) aynen kalıyor.
+        // Pattern:
+        //   <span> (was the pill)            → inline-table + sabit height
+        //     <span> (yeni, içeriği sarar)   → table-cell + vertical-align: middle
+        //
+        // Yatay padding korunuyor, yazı (▸/text/içeride span'ler dahil)
+        // table-cell'in altına taşınıyor.
         doc.querySelectorAll('span[class*="rounded-full"]').forEach((node) => {
           const e = node as HTMLElement;
           const cs = getComputedStyle(e);
           const pt = parseFloat(cs.paddingTop) || 0;
           const pb = parseFloat(cs.paddingBottom) || 0;
           const fs = parseFloat(cs.fontSize) || 11;
-          e.style.display = "inline-block";
+          const h = Math.round(fs + pt + pb);
+          // Mevcut çocukları iç span'e taşı
+          const inner = doc.createElement("span");
+          while (e.firstChild) inner.appendChild(e.firstChild);
+          inner.style.display = "table-cell";
+          inner.style.verticalAlign = "middle";
+          inner.style.lineHeight = "1";
+          e.appendChild(inner);
+          // Outer span'i inline-table yap; height ve vertical padding sıfır
+          e.style.display = "inline-table";
           e.style.verticalAlign = "middle";
-          e.style.lineHeight = `${Math.round(fs + pt + pb)}px`;
+          e.style.height = `${h}px`;
           e.style.paddingTop = "0";
           e.style.paddingBottom = "0";
+          e.style.lineHeight = "1";
+          e.style.boxSizing = "border-box";
         });
       },
     });
@@ -575,23 +588,34 @@ export default function RaporSihirbazi() {
             e.style.lineHeight = "1.4";
             e.classList.remove("truncate");
           });
-          // Pill / chip metni dikeyde kayıyordu. inline-flex + align-items
-          // center yaklaşımı html2canvas'ta tutarsız (yazı pill'in üst
-          // kenarına yapışıyor — Yolunda / Tamamlandı / tag chip'lerinde
-          // belirgin). Kalıcı fix: dikey padding'i line-height'a çevir,
-          // padding-y'yi 0'la. Tek line baseline rendering tutarlı dikey
-          // merkezleme veriyor; yatay padding (px-*) aynen kalıyor.
+          // Pill metninin dikey merkezleme sorunu — TABLE-CELL centering.
+          // line-height ve flex yaklaşımları html2canvas'ta tutarsız
+          // (yazı pill'in üst kenarına yapışıyor). table-cell layout
+          // her zaman güvenilir — CSS spec garantili, html2canvas
+          // tablolarda iyi çalışıyor.
+          //
+          // Outer span → inline-table + sabit height (font-size + padding-y)
+          // Inner span → table-cell + vertical-align: middle  (yazıyı dikey ortalar)
           doc.querySelectorAll('span[class*="rounded-full"]').forEach((node) => {
             const e = node as HTMLElement;
             const cs = getComputedStyle(e);
             const pt = parseFloat(cs.paddingTop) || 0;
             const pb = parseFloat(cs.paddingBottom) || 0;
             const fs = parseFloat(cs.fontSize) || 11;
-            e.style.display = "inline-block";
+            const h = Math.round(fs + pt + pb);
+            const inner = doc.createElement("span");
+            while (e.firstChild) inner.appendChild(e.firstChild);
+            inner.style.display = "table-cell";
+            inner.style.verticalAlign = "middle";
+            inner.style.lineHeight = "1";
+            e.appendChild(inner);
+            e.style.display = "inline-table";
             e.style.verticalAlign = "middle";
-            e.style.lineHeight = `${Math.round(fs + pt + pb)}px`;
+            e.style.height = `${h}px`;
             e.style.paddingTop = "0";
             e.style.paddingBottom = "0";
+            e.style.lineHeight = "1";
+            e.style.boxSizing = "border-box";
           });
         },
       });
