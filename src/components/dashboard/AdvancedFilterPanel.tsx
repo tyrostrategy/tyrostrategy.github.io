@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button, DatePicker } from "@heroui/react";
 import { X, RotateCcw } from "lucide-react";
@@ -7,12 +7,61 @@ import { useTranslation } from "react-i18next";
 import { useDataStore } from "@/stores/dataStore";
 import { deptLabel } from "@/config/departments";
 
+// State is OWNED by the parent (DashboardPage). The panel used to keep its
+// own local state but never propagated it upward — chip clicks were
+// black-holed and "Uygula" only closed the modal. Lifting state to the
+// parent makes the filter actually drive the dashboard, AND survives the
+// AnimatePresence unmount when the panel is closed and reopened.
+export interface DashboardFilter {
+  kaynak: Set<string>;
+  durum: Set<string>;
+  departman: Set<string>;
+  lider: Set<string>;
+  dateFrom: string;
+  dateTo: string;
+  progressMin: number;
+  progressMax: number;
+}
+
+export const EMPTY_DASHBOARD_FILTER: DashboardFilter = {
+  kaynak: new Set(),
+  durum: new Set(),
+  departman: new Set(),
+  lider: new Set(),
+  dateFrom: "",
+  dateTo: "",
+  progressMin: 0,
+  progressMax: 100,
+};
+
+export function countActiveFilters(f: DashboardFilter): number {
+  return (
+    f.kaynak.size +
+    f.durum.size +
+    f.departman.size +
+    f.lider.size +
+    (f.dateFrom ? 1 : 0) +
+    (f.dateTo ? 1 : 0) +
+    (f.progressMin > 0 ? 1 : 0) +
+    (f.progressMax < 100 ? 1 : 0)
+  );
+}
+
 interface AdvancedFilterPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  filter: DashboardFilter;
+  onChange: (next: Partial<DashboardFilter>) => void;
+  onClear: () => void;
 }
 
-export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterPanelProps) {
+export default function AdvancedFilterPanel({
+  isOpen,
+  onClose,
+  filter,
+  onChange,
+  onClear,
+}: AdvancedFilterPanelProps) {
   const { t } = useTranslation();
   const projeler = useDataStore((s) => s.projeler);
 
@@ -31,30 +80,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
     { key: "Cancelled", label: t("status.cancelled"), color: "bg-gray-400" },
   ];
 
-  const [kaynak, setKaynak] = useState<Set<string>>(new Set());
-  const [durum, setDurum] = useState<Set<string>>(new Set());
-  const [departman, setDepartman] = useState<Set<string>>(new Set());
-  const [lider, setLider] = useState<Set<string>>(new Set());
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const [progressMin, setProgressMin] = useState(0);
-  const [progressMax, setProgressMax] = useState(100);
-
-  const activeCount =
-    kaynak.size + durum.size + departman.size + lider.size +
-    (dateFrom ? 1 : 0) + (dateTo ? 1 : 0) +
-    (progressMin > 0 ? 1 : 0) + (progressMax < 100 ? 1 : 0);
-
-  const clearAll = () => {
-    setKaynak(new Set());
-    setDurum(new Set());
-    setDepartman(new Set());
-    setLider(new Set());
-    setDateFrom("");
-    setDateTo("");
-    setProgressMin(0);
-    setProgressMax(100);
-  };
+  const activeCount = countActiveFilters(filter);
 
   // Close on Escape
   useEffect(() => {
@@ -65,11 +91,12 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, onClose]);
 
-  const toggleSet = (set: Set<string>, value: string, setter: (s: Set<string>) => void) => {
-    const next = new Set(set);
+  const toggleSet = (key: keyof Pick<DashboardFilter, "kaynak" | "durum" | "departman" | "lider">, value: string) => {
+    const current = filter[key];
+    const next = new Set(current);
     if (next.has(value)) next.delete(value);
     else next.add(value);
-    setter(next);
+    onChange({ [key]: next } as Partial<DashboardFilter>);
   };
 
   return (
@@ -119,7 +146,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               <FilterSection title={t("dashboard.source")}>
                 <div className="flex flex-wrap gap-2">
                   {sourceOptions.map((s) => (
-                    <ChipToggle key={s} label={s} active={kaynak.has(s)} onClick={() => toggleSet(kaynak, s, setKaynak)} />
+                    <ChipToggle key={s} label={s} active={filter.kaynak.has(s)} onClick={() => toggleSet("kaynak", s)} />
                   ))}
                 </div>
               </FilterSection>
@@ -131,8 +158,8 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                     <ChipToggle
                       key={s.key}
                       label={s.label}
-                      active={durum.has(s.key)}
-                      onClick={() => toggleSet(durum, s.key, setDurum)}
+                      active={filter.durum.has(s.key)}
+                      onClick={() => toggleSet("durum", s.key)}
                       dotColor={s.color}
                     />
                   ))}
@@ -143,7 +170,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               <FilterSection title={t("dashboard.department")}>
                 <div className="flex flex-wrap gap-2">
                   {departmanOptions.map((d) => (
-                    <ChipToggle key={d} label={deptLabel(d, t)} active={departman.has(d)} onClick={() => toggleSet(departman, d, setDepartman)} />
+                    <ChipToggle key={d} label={deptLabel(d, t)} active={filter.departman.has(d)} onClick={() => toggleSet("departman", d)} />
                   ))}
                 </div>
               </FilterSection>
@@ -152,7 +179,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               <FilterSection title={t("dashboard.projectLeader")}>
                 <div className="flex flex-wrap gap-2">
                   {liderOptions.map((l) => (
-                    <ChipToggle key={l} label={l} active={lider.has(l)} onClick={() => toggleSet(lider, l, setLider)} />
+                    <ChipToggle key={l} label={l} active={filter.lider.has(l)} onClick={() => toggleSet("lider", l)} />
                   ))}
                 </div>
               </FilterSection>
@@ -163,8 +190,8 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                   <div>
                     <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("dashboard.start")}</label>
                     <DatePicker
-                      value={toCalendarDate(dateFrom)}
-                      onChange={(date) => setDateFrom(fromCalendarDate(date))}
+                      value={toCalendarDate(filter.dateFrom)}
+                      onChange={(date) => onChange({ dateFrom: fromCalendarDate(date) })}
                       variant="bordered"
                       granularity="day"
                       size="sm"
@@ -173,8 +200,8 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                   <div>
                     <label className="block text-[12px] font-semibold text-tyro-text-secondary mb-1.5">{t("dashboard.end")}</label>
                     <DatePicker
-                      value={toCalendarDate(dateTo)}
-                      onChange={(date) => setDateTo(fromCalendarDate(date))}
+                      value={toCalendarDate(filter.dateTo)}
+                      onChange={(date) => onChange({ dateTo: fromCalendarDate(date) })}
                       variant="bordered"
                       granularity="day"
                       size="sm"
@@ -187,24 +214,24 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
               <FilterSection title={t("dashboard.progressRange")}>
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
-                    <label className="text-[11px] font-semibold text-tyro-text-secondary mb-1 block">Min %{progressMin}</label>
+                    <label className="text-[11px] font-semibold text-tyro-text-secondary mb-1 block">Min %{filter.progressMin}</label>
                     <input
                       type="range"
                       min={0}
                       max={100}
-                      value={progressMin}
-                      onChange={(e) => setProgressMin(Number(e.target.value))}
+                      value={filter.progressMin}
+                      onChange={(e) => onChange({ progressMin: Number(e.target.value) })}
                       className="w-full accent-tyro-navy"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-[11px] font-semibold text-tyro-text-secondary mb-1 block">Max %{progressMax}</label>
+                    <label className="text-[11px] font-semibold text-tyro-text-secondary mb-1 block">Max %{filter.progressMax}</label>
                     <input
                       type="range"
                       min={0}
                       max={100}
-                      value={progressMax}
-                      onChange={(e) => setProgressMax(Number(e.target.value))}
+                      value={filter.progressMax}
+                      onChange={(e) => onChange({ progressMax: Number(e.target.value) })}
                       className="w-full accent-tyro-navy"
                     />
                   </div>
@@ -219,7 +246,7 @@ export default function AdvancedFilterPanel({ isOpen, onClose }: AdvancedFilterP
                 size="sm"
                 className="rounded-button text-xs"
                 startContent={<RotateCcw size={14} />}
-                onPress={clearAll}
+                onPress={onClear}
                 isDisabled={activeCount === 0}
               >
                 {t("common.clear")}

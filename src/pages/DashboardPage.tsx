@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from "react";
+import { useState, useMemo, useCallback, lazy, Suspense } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
@@ -11,6 +11,11 @@ import KPICard from "@/components/dashboard/KPICard";
 import GlassCard from "@/components/ui/GlassCard";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import CircularProgress from "@/components/ui/CircularProgress";
+import {
+  EMPTY_DASHBOARD_FILTER,
+  countActiveFilters,
+  type DashboardFilter,
+} from "@/components/dashboard/AdvancedFilterPanel";
 
 // Lazy load heavy chart components (recharts ~200KB)
 const ProjectStatusBreakdown = lazy(() => import("@/components/dashboard/ProjectStatusBreakdown"));
@@ -70,9 +75,42 @@ export default function DashboardPage() {
   const allProjeler = useDataStore((s) => s.projeler);
   const allAksiyonlar = useDataStore((s) => s.aksiyonlar);
   const { filterProjeler, filterAksiyonlar, canAccessPage } = usePermissions();
-  const projeler = useMemo(() => filterProjeler(allProjeler), [allProjeler, filterProjeler]);
-  const aksiyonlar = useMemo(() => filterAksiyonlar(allAksiyonlar), [allAksiyonlar, filterAksiyonlar]);
+  const rlsProjeler = useMemo(() => filterProjeler(allProjeler), [allProjeler, filterProjeler]);
+  const rlsAksiyonlar = useMemo(() => filterAksiyonlar(allAksiyonlar), [allAksiyonlar, filterAksiyonlar]);
   const openCommandPalette = useUIStore((s) => s.openCommandPalette);
+
+  // ===== Advanced Filter — owned here, panel is controlled =====
+  // Single state object so partial updates from the panel can be merged
+  // with one setter call. RLS-filtered list above is the *base*; the
+  // user-driven filter narrows it further before any KPI / chart math.
+  const [filter, setFilter] = useState<DashboardFilter>(EMPTY_DASHBOARD_FILTER);
+  const updateFilter = useCallback((next: Partial<DashboardFilter>) => {
+    setFilter((prev) => ({ ...prev, ...next }));
+  }, []);
+  const clearFilter = useCallback(() => setFilter(EMPTY_DASHBOARD_FILTER), []);
+  const activeFilterCount = countActiveFilters(filter);
+
+  // Apply user filter on top of RLS-filtered list. Aksiyonlar follow
+  // proje membership so a hidden proje's aksiyons disappear too.
+  const projeler = useMemo(() => {
+    let list = rlsProjeler;
+    if (filter.kaynak.size > 0) list = list.filter((p) => filter.kaynak.has(p.source));
+    if (filter.durum.size > 0) list = list.filter((p) => filter.durum.has(p.status));
+    if (filter.departman.size > 0) list = list.filter((p) => filter.departman.has(p.department));
+    if (filter.lider.size > 0) list = list.filter((p) => filter.lider.has(p.owner));
+    // Date range: project overlaps [from, to] window when its end >= from AND start <= to
+    if (filter.dateFrom) list = list.filter((p) => p.endDate >= filter.dateFrom);
+    if (filter.dateTo) list = list.filter((p) => p.startDate <= filter.dateTo);
+    if (filter.progressMin > 0) list = list.filter((p) => p.progress >= filter.progressMin);
+    if (filter.progressMax < 100) list = list.filter((p) => p.progress <= filter.progressMax);
+    return list;
+  }, [rlsProjeler, filter]);
+
+  const aksiyonlar = useMemo(() => {
+    if (activeFilterCount === 0) return rlsAksiyonlar;
+    const ids = new Set(projeler.map((p) => p.id));
+    return rlsAksiyonlar.filter((a) => ids.has(a.projeId));
+  }, [rlsAksiyonlar, projeler, activeFilterCount]);
 
   // ===== KPI Hesaplamaları (tamamen veriye dayalı) =====
 
@@ -266,10 +304,15 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setFilterOpen(true)}
-            className="h-9 w-9 rounded-lg border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-navy/5 transition-colors shrink-0"
+            className="relative h-9 w-9 rounded-lg border border-tyro-border bg-tyro-surface flex items-center justify-center cursor-pointer hover:bg-tyro-navy/5 transition-colors shrink-0"
             aria-label={t("common.filter")}
           >
             <SlidersHorizontal size={15} className="text-tyro-text-secondary" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full bg-tyro-navy text-white text-[9px] font-bold leading-none">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
 
@@ -291,10 +334,19 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setFilterOpen(true)}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-button border border-tyro-border bg-tyro-surface text-tyro-text-secondary hover:border-tyro-navy/20 hover:text-tyro-navy transition-colors cursor-pointer"
+              className={`inline-flex items-center gap-2 h-10 px-4 rounded-button border transition-colors cursor-pointer ${
+                activeFilterCount > 0
+                  ? "border-tyro-navy/40 bg-tyro-navy/5 text-tyro-navy hover:bg-tyro-navy/10"
+                  : "border-tyro-border bg-tyro-surface text-tyro-text-secondary hover:border-tyro-navy/20 hover:text-tyro-navy"
+              }`}
             >
               <SlidersHorizontal size={16} />
               <span className="text-[13px] font-semibold">{t("common.filter")}</span>
+              {activeFilterCount > 0 && (
+                <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-tyro-navy text-white text-[10px] font-bold leading-none">
+                  {activeFilterCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -302,7 +354,13 @@ export default function DashboardPage() {
 
       {/* Advanced Filter Panel */}
       <Suspense fallback={null}>
-        <AdvancedFilterPanel isOpen={filterOpen} onClose={() => setFilterOpen(false)} />
+        <AdvancedFilterPanel
+          isOpen={filterOpen}
+          onClose={() => setFilterOpen(false)}
+          filter={filter}
+          onChange={updateFilter}
+          onClear={clearFilter}
+        />
       </Suspense>
 
       {/* Row 1: 4 KPI Cards — equal height */}
