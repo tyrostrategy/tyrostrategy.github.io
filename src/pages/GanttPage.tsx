@@ -99,17 +99,24 @@ export default function GanttPage() {
         })
       : withDates;
 
-    // Text search across project name + action fields
+    // Text search — PROJE alanları (id, ad, açıklama, lider, kaynak,
+    // departman, durum) üzerinde. Aksiyon alanları (name/description/
+    // owner/status) BİLİNÇLİ olarak hariç: kullanıcı bir proje arar,
+    // o projenin tüm aksiyonlarını görmek ister; aksiyon adına göre
+    // arama o projedeki diğer aksiyonları gizliyordu.
     const q = ganttSearch.trim().toLocaleLowerCase("tr");
+    const matchingProjeIds = new Set<string>();
+    if (q) {
+      for (const p of projeler) {
+        const hay = [p.id, p.name, p.description, p.owner, p.source, p.department, p.status]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase("tr");
+        if (hay.includes(q)) matchingProjeIds.add(p.id);
+      }
+    }
     const searched = q
-      ? rangeFiltered.filter((a) => {
-          const projeName = projeler.find((p) => p.id === a.projeId)?.name ?? "";
-          return [a.name, a.description, a.owner, projeName, a.status]
-            .filter(Boolean)
-            .join(" ")
-            .toLocaleLowerCase("tr")
-            .includes(q);
-        })
+      ? rangeFiltered.filter((a) => matchingProjeIds.has(a.projeId))
       : rangeFiltered;
 
     // Group by projeId
