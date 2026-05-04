@@ -20,10 +20,10 @@ import { isSupabaseMode } from "@/lib/supabaseMode";
  *
  * Faster backoff (kullanıcı geri bildirimi 2026-05-04: 42s çok uzun,
  * kullanıcı ekrandan çıkmadan önce hata mesajını görmeli):
- *   - initial call fails → retry 1 after ~1s
- *   - retry 1 fails → retry 2 after ~3s
+ *   - initial call fails → retry 1 after ~2s
+ *   - retry 1 fails → retry 2 after ~5s
  *   - retry 2 fails → give up, show toast
- *   Toplam max ~11s (önceden 42s'di).
+ *   Toplam max ~7s (önceden 42s'di).
  *
  * Permanent error fast-path: 42501 (RLS denial), 23xxx (constraint violations),
  * 22xxx (data exceptions) RETRY YAPILMIYOR — bunlar tekrar denemekle çözülmez,
@@ -76,8 +76,9 @@ function syncToSupabase(fn: () => Promise<unknown>, ctx?: SyncContext, attempt =
       toast.error(buildErrorToast(err, ctx));
       return;
     }
-    // 1s, 3s base + ±30% jitter — 50 kullanıcı thundering herd'ünü dağıtır
-    const base = 1000 * Math.pow(3, attempt);
+    // 2s, 5s base + ±30% jitter — 50 kullanıcı thundering herd'ünü dağıtır
+    const BASE_DELAYS_MS = [2000, 5000];
+    const base = BASE_DELAYS_MS[attempt];
     const delay = base * (0.7 + Math.random() * 0.6);
     setTimeout(() => syncToSupabase(fn, ctx, attempt + 1), delay);
   });
