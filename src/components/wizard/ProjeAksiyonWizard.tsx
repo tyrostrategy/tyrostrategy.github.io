@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Wand2, Target, Users, ListChecks, ClipboardCheck, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import { useDataStore } from "@/stores/dataStore";
+import { useDataStore, waitForPendingSync } from "@/stores/dataStore";
 import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "@/stores/toastStore";
 import { useSidebarTheme } from "@/hooks/useSidebarTheme";
@@ -170,7 +170,7 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
   }, [steps.length, getValues, setValue]);
 
   const onSubmit = useCallback(
-    (data: WizardFormData) => {
+    async (data: WizardFormData) => {
       if (!canCreateProje) {
         toast.error(t("toast.operationFailed"), t("permissions.noCreatePermission", "Proje oluşturma yetkiniz yok."));
         return;
@@ -204,6 +204,14 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
         });
 
         const newProjeId = useDataStore.getState().projeler.at(-1)!.id;
+
+        // RACE CONDITION FIX (kullanıcı raporu 2026-05-04):
+        // Wizard ardışık addProje + addAksiyon paralel async sync atıyordu.
+        // Bazen aksiyon createAksiyon DB'ye, parent proje createProje'den
+        // ÖNCE ulaşıyor → FK violation veya RLS deny → "Canlı Geçiş
+        // oluşturma başarısız: yetkiniz yok". Çözüm: parent proje sync
+        // bitmesini bekle, sonra child aksiyonları fire et.
+        await waitForPendingSync(newProjeId);
 
         (data.aksiyonlar ?? []).forEach((a, i) => {
           addAksiyon({

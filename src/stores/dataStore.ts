@@ -61,27 +61,53 @@ function isPermanentError(err: unknown): boolean {
 
 function buildErrorToast(err: unknown, ctx: SyncContext | undefined): string {
   const e = err as PgError;
-  const reason = e?.code === "42501" ? "yetkiniz yok" : (e?.message || "bilinmeyen hata");
+  const reason = e?.code === "42501"
+    ? "yetkiniz yok"
+    : e?.code === "23503"
+      ? "ilişkili kayıt eksik"
+      : e?.code?.startsWith("23")
+        ? "geçersiz veri kısıtlaması"
+        : (e?.message || "bilinmeyen hata");
   if (!ctx) return i18n.t("toast.syncFailed");
-  const subject = ctx.label || ctx.entity;
+  // Entity TÜRÜ HER ZAMAN mesajda — kullanıcı raporu 2026-05-04: aksiyon
+  // hatası proje hatası gibi görünüyordu. Format:
+  //   "Aksiyon \"Canlı Geçiş\" oluşturma başarısız: ..."
+  //   "Kullanıcı \"Büşra Kaplan rolü\" güncelleme başarısız: ..."
+  const subject = ctx.label ? `${ctx.entity} "${ctx.label}"` : ctx.entity;
   return `${subject} ${ctx.action} başarısız: ${reason}. Tekrar deneyin.`;
 }
 
-function syncToSupabase(fn: () => Promise<unknown>, ctx?: SyncContext, attempt = 0): void {
-  if (!isSupabaseMode) return;
-  fn().catch((err) => {
+function syncToSupabase(fn: () => Promise<unknown>, ctx?: SyncContext, attempt = 0): Promise<unknown> {
+  if (!isSupabaseMode) return Promise.resolve();
+  return fn().catch((err) => {
     const permanent = isPermanentError(err);
     if (permanent || attempt >= 2) {
       console.error(`[Supabase Sync] ${permanent ? "Permanent" : "Failed after 2 retries"}:`, err);
       toast.error(buildErrorToast(err, ctx));
-      return;
+      throw err;
     }
-    // 2s, 5s base + ±30% jitter — 50 kullanıcı thundering herd'ünü dağıtır
     const BASE_DELAYS_MS = [2000, 5000];
     const base = BASE_DELAYS_MS[attempt];
     const delay = base * (0.7 + Math.random() * 0.6);
-    setTimeout(() => syncToSupabase(fn, ctx, attempt + 1), delay);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => syncToSupabase(fn, ctx, attempt + 1).then(resolve, reject), delay);
+    });
   });
+}
+
+// Pending CREATE sync promiseleri (id-bazlı). Race condition fix:
+// wizard yeni bir proje oluşturup hemen aksiyon eklediğinde, aksiyon
+// parent proje DB'de henüz yokken hit ediyordu → FK violation veya
+// 42501. Wizard waitForPendingSync(projeId) ile parent sync bitmesini
+// bekleyip sonra child create'leri fire ediyor.
+const _pendingCreates = new Map<string, Promise<unknown>>();
+export function waitForPendingSync(id: string): Promise<void> {
+  const p = _pendingCreates.get(id);
+  if (!p) return Promise.resolve();
+  return p.then(
+    () => undefined,
+    () => undefined,  // parent zaten kendi toast'ını attı; child'a hata fırlatmıyoruz
+  );
 }
 
 interface DataState {
@@ -300,10 +326,15 @@ export const useDataStore = create<DataState>()(
         set((s) => {
           const id = generateSystematicId("P", h.startDate, s.projeler.map((x) => x.id));
           const newProje = { ...h, id, createdBy: h.createdBy ?? getCurrentUser(), createdAt: h.createdAt ?? now() };
-          syncToSupabase(
+          // Sync promise'i pending map'e ekle — wizard child aksiyonları
+          // bu promise'i bekleyip sonra fire eder. Promise success/fail'da
+          // map'ten silinir (auto-cleanup).
+          const syncP = syncToSupabase(
             () => supabaseAdapter.createProje({ ...newProje }),
             { entity: "Proje", action: "oluşturma", label: newProje.name }
           );
+          _pendingCreates.set(id, syncP);
+          syncP.finally(() => _pendingCreates.delete(id));
           return { projeler: [...s.projeler, newProje] };
         }),
       updateProje: (id, data) =>
