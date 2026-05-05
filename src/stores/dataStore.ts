@@ -123,10 +123,23 @@ interface DataState {
   fixDataConsistency: () => void;
 }
 
+// Client-generated ID. users + tag_definitions tabloları UUID kolonu —
+// "gen-XXX" formatı DB'de "invalid input syntax for type uuid" üretiyor
+// (kullanıcı raporu 2026-05-04: "tyro" user oluşturma 400). crypto.randomUUID()
+// modern browser'larda ve Node 14.17+'da var. Defansif fallback için
+// Date.now() bazlı üreticiyi koruyoruz ama gerçek UUID formatına yakın.
 let counter = Date.now();
 function uid(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback — bu yola modern browser/Node'da hiç düşmez. Yine de UUID-benzeri
+  // 8-4-4-4-12 formatında üret (DB CHECK CONSTRAINT'i kabul etmez ama crash da
+  // etmez). Eğer hit olursa konsola warning.
   counter += 1;
-  return `gen-${counter}`;
+  console.warn("[uid] crypto.randomUUID unavailable — falling back to non-UUID format. ID may be rejected by DB.");
+  const hex = counter.toString(16).padStart(12, "0");
+  return `00000000-0000-4000-8000-${hex.slice(-12)}`;
 }
 
 /**

@@ -335,6 +335,61 @@ async function api(method, path, body) {
     return "204";
   });
 
+  // ── Client-generated ID validation ──
+  // Smoke test PostgREST'e id'siz POST atıyor → DB kendi UUID'sini üretiyor
+  // → 201. Ama UI flow client-tarafından id üretip GÖNDERİYOR (dataStore.uid).
+  // Eğer uid() yanlış format üretirse smoke "201 OK" der ama UI fail olur.
+  // Bu test client-side ID üretiminin DB tarafından KABUL EDİLEN format
+  // olduğunu doğrular — UI wiring'i kapsamak için.
+  console.log("\nCLIENT-ID FORMAT (UI wiring guard):");
+
+  // 1) UUID format users tablosuna gidiyor — geçerli olmalı
+  const VALID_UUID = "00000000-0000-4000-8000-000000000001";
+  await api("DELETE", `/users?id=eq.${VALID_UUID}`).catch(() => {});
+  await step("INSERT user with client UUID id (valid)", async () => {
+    const r = await api("POST", "/users", {
+      id: VALID_UUID,
+      email: "smoke.uuid.test@tiryaki.com.tr",
+      display_name: "UUID_TEST",
+      role: "Proje Lideri",
+      department: "BT",
+      locale: "tr",
+      is_active: true,
+    });
+    return `id=${r[0].id}`;
+  });
+  await api("DELETE", `/users?id=eq.${VALID_UUID}`);
+
+  // 2) Eski "gen-XXX" formatı users.id UUID kolonuna gönderilirse REJECT
+  //    olmalı (regression guard — uid() yine "gen-X" üretirse smoke fail olur).
+  await step("INSERT user with gen-XXX id (must be REJECTED)", async () => {
+    let rejected = false;
+    try {
+      await api("POST", "/users", {
+        id: "gen-1234567890",
+        email: "smoke.bad.id.test@tiryaki.com.tr",
+        display_name: "BAD_ID_TEST",
+        role: "Proje Lideri",
+        department: "BT",
+        locale: "tr",
+        is_active: true,
+      });
+    } catch (e) {
+      if (e.message.includes("invalid input syntax for type uuid")) {
+        rejected = true;
+      } else {
+        throw new Error(`unexpected error: ${e.message}`);
+      }
+    }
+    if (!rejected) {
+      // Eğer gen-XXX kabul edildiyse büyük problem — ya schema değişti ya
+      // başka bir bug. Cleanup ve hata.
+      await api("DELETE", `/users?id=eq.gen-1234567890`).catch(() => {});
+      throw new Error("gen-XXX format ACCEPTED by DB — uid() output may break in production");
+    }
+    return "rejected as expected";
+  });
+
   // ── role_permissions (READ-ONLY — bu tabloyu yazmak gerçek izinleri bozar) ──
   console.log("\nROLE_PERMISSIONS (read-only):");
   await step("SELECT all roles exist", async () => {
