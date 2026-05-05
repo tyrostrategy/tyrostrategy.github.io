@@ -1,0 +1,54 @@
+#!/bin/bash
+# ============================================================================
+# Smart pre-push hook — TYRO Strategy
+# ============================================================================
+# Sadece CRUD / data-layer dosyaları değiştiğinde smoke test çalıştırır.
+# Saf UI / dil / CSS değişikliklerinde hiç test yapmaz, gereksiz egress
+# harcamaz.
+#
+# Tetikleyici dosyalar:
+#   - src/lib/data/supabaseAdapter.ts    (Supabase REST adapter)
+#   - src/stores/dataStore.ts            (CRUD orkestrasyon)
+#   - src/lib/supabase.ts                (client config + auth header)
+#   - src/types/index.ts                 (entity şemaları)
+#   - supabase/migrations/*.sql          (DB schema migrations)
+#   - scripts/smoke-test-crud.cjs        (smoke test'in kendisi)
+#
+# Bypass:  git push --no-verify
+# ============================================================================
+
+set -e
+
+# Diff range — tracked upstream'a karşı
+upstream=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "origin/main")
+changed=$(git diff --name-only "$upstream"..HEAD 2>/dev/null || true)
+
+# Yeni branch / no upstream → son commit'e bak
+if [ -z "$changed" ]; then
+  changed=$(git diff --name-only HEAD~1..HEAD 2>/dev/null || true)
+fi
+
+# CRUD / data-layer pattern
+pattern='(src/lib/data/supabaseAdapter|src/stores/dataStore|src/lib/supabase\.ts$|src/types/index|supabase/migrations/|scripts/smoke-test-crud)'
+
+if echo "$changed" | grep -qE "$pattern"; then
+  matched=$(echo "$changed" | grep -E "$pattern")
+  echo ""
+  echo "🧪 Data-layer changes detected:"
+  echo "$matched" | sed 's/^/    /'
+  echo ""
+  echo "Running smoke test before push..."
+  echo ""
+  if ! npm run smoke; then
+    echo ""
+    echo "❌ Smoke test FAILED — push aborted."
+    echo "   Fix the issue or bypass with: git push --no-verify"
+    exit 1
+  fi
+  echo ""
+  echo "✅ Smoke test passed — push proceeding."
+else
+  echo "ℹ️  No data-layer changes — skipping smoke test."
+fi
+
+exit 0

@@ -214,6 +214,146 @@ async function api(method, path, body) {
     return "204";
   });
 
+  // ── Link tables — proje_participants + proje_tags ──
+  // Bunları test etmek için yeni bir parent proje + ilgili user+tag lazım.
+  console.log("\nLINK TABLES (proje_participants + proje_tags):");
+  const PROJE2_ID = "P26-9992";
+  const TEST_EMAIL2 = "smoke.link.test.delete.me@tiryaki.com.tr";
+  let tag2Id = null;
+  // Pre-cleanup
+  await api("DELETE", `/proje_participants?proje_id=eq.${PROJE2_ID}`).catch(() => {});
+  await api("DELETE", `/proje_tags?proje_id=eq.${PROJE2_ID}`).catch(() => {});
+  await api("DELETE", `/projeler?id=eq.${PROJE2_ID}`).catch(() => {});
+  await api("DELETE", `/users?email=eq.${TEST_EMAIL2}`).catch(() => {});
+  await api("DELETE", `/tag_definitions?name=eq.SMOKE_LINK_TAG`).catch(() => {});
+
+  await step("setup parent proje", async () => {
+    const r = await api("POST", "/projeler", {
+      id: PROJE2_ID, name: "SMOKE_LINK_TEST", source: "Türkiye",
+      status: "Not Started", owner: "Cenk Şayli", department: "Stratejik Planlama",
+      progress: 0, start_date: "2026-05-04", end_date: "2026-05-05",
+    });
+    return `id=${r[0].id}`;
+  });
+  await step("setup user (for participant link)", async () => {
+    const r = await api("POST", "/users", {
+      email: TEST_EMAIL2, display_name: "SMOKE_LINK", role: "Proje Lideri",
+      department: "BT", locale: "tr", is_active: true,
+    });
+    return `id=${r[0].id}`;
+  });
+  await step("setup tag (for tag link)", async () => {
+    const r = await api("POST", "/tag_definitions", { name: "SMOKE_LINK_TAG", color: "#10b981" });
+    tag2Id = r[0].id;
+    return `id=${tag2Id}`;
+  });
+  await step("INSERT proje_participants", async () => {
+    const r = await api("POST", "/proje_participants", {
+      proje_id: PROJE2_ID, user_email: TEST_EMAIL2,
+    });
+    return `linked ${r[0].user_email}`;
+  });
+  await step("INSERT proje_tags", async () => {
+    const r = await api("POST", "/proje_tags", {
+      proje_id: PROJE2_ID, tag_id: tag2Id,
+    });
+    return `linked tag_id=${r[0].tag_id}`;
+  });
+  await step("SELECT proje_participants", async () => {
+    const r = await api("GET", `/proje_participants?proje_id=eq.${PROJE2_ID}&select=*`);
+    if (r.length !== 1) throw new Error(`expected 1 row, got ${r.length}`);
+    return `count=${r.length}`;
+  });
+  await step("SELECT proje_tags", async () => {
+    const r = await api("GET", `/proje_tags?proje_id=eq.${PROJE2_ID}&select=*`);
+    if (r.length !== 1) throw new Error(`expected 1 row, got ${r.length}`);
+    return `count=${r.length}`;
+  });
+  await step("DELETE proje_participants", async () => {
+    await api("DELETE", `/proje_participants?proje_id=eq.${PROJE2_ID}`);
+    return "204";
+  });
+  await step("DELETE proje_tags", async () => {
+    await api("DELETE", `/proje_tags?proje_id=eq.${PROJE2_ID}`);
+    return "204";
+  });
+  await step("cleanup link test parent proje", async () => {
+    await api("DELETE", `/projeler?id=eq.${PROJE2_ID}`);
+    return "204";
+  });
+  await step("cleanup link test user", async () => {
+    await api("DELETE", `/users?email=eq.${TEST_EMAIL2}`);
+    return "204";
+  });
+  await step("cleanup link test tag", async () => {
+    await api("DELETE", `/tag_definitions?id=eq.${tag2Id}`);
+    return "204";
+  });
+
+  // ── app_settings (key/value config) ──
+  console.log("\nAPP_SETTINGS:");
+  const SETTING_KEY = "__smoke_test_key__";
+  await api("DELETE", `/app_settings?key=eq.${SETTING_KEY}`).catch(() => {});
+  await step("UPSERT app_setting (insert via upsert)", async () => {
+    const r = await api("POST", "/app_settings", { key: SETTING_KEY, value: "v1" });
+    return `value=${r[0].value}`;
+  });
+  await step("SELECT app_setting", async () => {
+    const r = await api("GET", `/app_settings?key=eq.${SETTING_KEY}&select=*`);
+    if (r.length !== 1) throw new Error(`expected 1 row, got ${r.length}`);
+    return `value=${r[0].value}`;
+  });
+  await step("UPDATE app_setting", async () => {
+    const r = await api("PATCH", `/app_settings?key=eq.${SETTING_KEY}`, { value: "v2" });
+    if (r[0].value !== "v2") throw new Error(`update silently no-op: ${r[0].value}`);
+    return `value=${r[0].value}`;
+  });
+  await step("DELETE app_setting", async () => {
+    await api("DELETE", `/app_settings?key=eq.${SETTING_KEY}`);
+    return "204";
+  });
+
+  // ── report_templates ──
+  console.log("\nREPORT_TEMPLATES:");
+  let tmplId = null;
+  await api("DELETE", `/report_templates?name=eq.SMOKE_TEMPLATE`).catch(() => {});
+  await step("INSERT report_template", async () => {
+    const r = await api("POST", "/report_templates", {
+      name: "SMOKE_TEMPLATE",
+      owner_email: ADMIN_EMAIL,
+      config: { sourceFilter: "all", statusFilters: [], deptFilter: "all", sections: { cover: true, summary: true }, datePreset: "all", dateFrom: "", dateTo: "" },
+    });
+    tmplId = r[0].id;
+    return `id=${tmplId}`;
+  });
+  await step("UPDATE report_template", async () => {
+    const r = await api("PATCH", `/report_templates?id=eq.${tmplId}`, { name: "SMOKE_TEMPLATE_UPDATED" });
+    return `name=${r[0].name}`;
+  });
+  await step("DELETE report_template", async () => {
+    await api("DELETE", `/report_templates?id=eq.${tmplId}`);
+    return "204";
+  });
+
+  // ── role_permissions (READ-ONLY — bu tabloyu yazmak gerçek izinleri bozar) ──
+  console.log("\nROLE_PERMISSIONS (read-only):");
+  await step("SELECT all roles exist", async () => {
+    const r = await api("GET", `/role_permissions?select=role`);
+    const roles = r.map((x) => x.role).sort();
+    const expected = ["Admin", "Management", "Proje Lideri"];
+    for (const exp of expected) {
+      if (!roles.includes(exp)) throw new Error(`missing role: ${exp} (got ${roles})`);
+    }
+    return `roles=${roles.join(",")}`;
+  });
+  await step("SELECT Admin pages.kullanicilar", async () => {
+    const r = await api("GET", `/role_permissions?role=eq.Admin&select=permissions`);
+    if (r.length !== 1) throw new Error(`Admin row missing`);
+    const v = r[0].permissions?.pages?.kullanicilar;
+    if (v !== true) throw new Error(`Admin pages.kullanicilar=${v} (expected true)`);
+    return `${v}`;
+  });
+
   // ── Verify cleanup ──
   console.log("\nVERIFY CLEANUP:");
   await step("proje gone", async () => {
@@ -223,6 +363,16 @@ async function api(method, path, body) {
   });
   await step("user gone", async () => {
     const r = await api("GET", `/users?email=eq.${TEST_EMAIL}&select=id`);
+    if (r.length !== 0) throw new Error(`still exists: ${JSON.stringify(r)}`);
+    return "0 rows";
+  });
+  await step("link parent proje gone", async () => {
+    const r = await api("GET", `/projeler?id=eq.${PROJE2_ID}&select=id`);
+    if (r.length !== 0) throw new Error(`still exists: ${JSON.stringify(r)}`);
+    return "0 rows";
+  });
+  await step("app_setting gone", async () => {
+    const r = await api("GET", `/app_settings?key=eq.${SETTING_KEY}&select=key`);
     if (r.length !== 0) throw new Error(`still exists: ${JSON.stringify(r)}`);
     return "0 rows";
   });

@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "i18n:check": "node scripts/i18n-check.cjs",
     "i18n:scan": "node scripts/i18n-hardcoded.cjs",
-    "smoke": "node scripts/smoke-test-crud.cjs"
+    "smoke": "node scripts/smoke-test-crud.cjs",
+    "hooks:install": "node scripts/install-git-hooks.cjs"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.9",
