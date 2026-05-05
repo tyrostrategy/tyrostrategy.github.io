@@ -407,7 +407,10 @@ export const supabaseAdapter: DataService = {
   async deleteProje(id: string): Promise<boolean> {
     if (!supabase) return false;
     const { error } = await supabase.from("projeler").delete().eq("id", id);
-    return !error;
+    // throw — syncToSupabase'in error toast'ı tetiklemesi için. Önceden
+    // return !error ile silent fail oluyordu.
+    if (error) { console.error("[Supabase] deleteProje:", error); throw error; }
+    return true;
   },
 
   // ── Aksiyonlar ──
@@ -475,7 +478,8 @@ export const supabaseAdapter: DataService = {
   async deleteAksiyon(id: string): Promise<boolean> {
     if (!supabase) return false;
     const { error } = await supabase.from("aksiyonlar").delete().eq("id", id);
-    return !error;
+    if (error) { console.error("[Supabase] deleteAksiyon:", error); throw error; }
+    return true;
   },
 
   // ── Tag Definitions ──
@@ -504,7 +508,8 @@ export const supabaseAdapter: DataService = {
   async deleteTagDefinition(id: string): Promise<boolean> {
     if (!supabase) return false;
     const { error } = await supabase.from("tag_definitions").delete().eq("id", id);
-    return !error;
+    if (error) { console.error("[Supabase] deleteTagDefinition:", error); throw error; }
+    return true;
   },
 
   // ── Users ──
@@ -544,7 +549,10 @@ export const supabaseAdapter: DataService = {
     if (user.id) row.id = user.id;
     if (user.createdAt) row.created_at = user.createdAt;
     const { data, error } = await supabase.from("users").insert(row).select().single();
-    if (error) { console.error("[Supabase] createUser:", error); return null; }
+    // KRİTİK: error'ı return null ile yutmak SİLENT veri kaybı yaratır
+    // (kullanıcı raporu 2026-05-04: "tyro" user oluşturuldu sandı, F5 sonra
+    // yok). throw — syncToSupabase yakalayıp context-aware toast atar.
+    if (error) { console.error("[Supabase] createUser:", error); throw error; }
     return { id: data.id, email: data.email, displayName: data.display_name, department: data.department ?? "", role: data.role, locale: data.locale ?? "tr", title: data.title ?? undefined, isActive: data.is_active ?? true, createdAt: data.created_at, updatedAt: data.updated_at };
   },
 
@@ -571,7 +579,8 @@ export const supabaseAdapter: DataService = {
   async deleteUser(id: string): Promise<boolean> {
     if (!supabase) return false;
     const { error } = await supabase.from("users").delete().eq("id", id);
-    return !error;
+    if (error) { console.error("[Supabase] deleteUser:", error); throw error; }
+    return true;
   },
 
   // ── App Settings ──
