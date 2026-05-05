@@ -595,7 +595,9 @@ export const supabaseAdapter: DataService = {
   async upsertAppSetting(key: string, value: unknown): Promise<void> {
     if (!supabase) return;
     const { error } = await supabase.from("app_settings").upsert({ key, value }, { onConflict: "key" });
-    if (error) console.error("[Supabase] upsertAppSetting:", error);
+    // throw — adapter contract: tüm mutasyonlar error gelirse exception
+    // fırlatır. Caller (syncToSupabase) yakalayıp toast atar.
+    if (error) { console.error("[Supabase] upsertAppSetting:", error); throw error; }
   },
 
   // ── Report Templates ──
@@ -629,13 +631,13 @@ export const supabaseAdapter: DataService = {
       .from("report_templates")
       .update({ name, config })
       .eq("id", id);
-    if (error) console.error("[Supabase] updateReportTemplate:", error);
+    if (error) { console.error("[Supabase] updateReportTemplate:", error); throw error; }
   },
 
   async deleteReportTemplate(id: string): Promise<void> {
     if (!supabase) return;
     const { error } = await supabase.from("report_templates").delete().eq("id", id);
-    if (error) console.error("[Supabase] deleteReportTemplate:", error);
+    if (error) { console.error("[Supabase] deleteReportTemplate:", error); throw error; }
   },
 
   // ── Role Permissions ──
@@ -650,6 +652,6 @@ export const supabaseAdapter: DataService = {
   async upsertRolePermissions(role: string, permissions: Record<string, unknown>): Promise<void> {
     if (!supabase) return;
     const { error } = await supabase.from("role_permissions").upsert({ role, permissions }, { onConflict: "role" });
-    if (error) console.error("[Supabase] upsertRolePermissions:", error);
+    if (error) { console.error("[Supabase] upsertRolePermissions:", error); throw error; }
   },
 };
