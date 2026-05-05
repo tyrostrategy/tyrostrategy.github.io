@@ -124,7 +124,18 @@ export default function ProjeForm({ proje, onSuccess, onClose }: ProjeFormProps)
         });
       } else {
         addProje({ ...payload });
-        toast.success(t("toast.objectiveCreated"), { message: data.name });
+        // Detaylı success toast — aksiyon create ile simetrik. Kullanıcı
+        // hangi proje, lider, kaynak, departman, tarih aralığını gördüğünü
+        // anında bilsin.
+        toast.success(t("toast.objectiveCreated"), {
+          message: data.name,
+          details: [
+            { label: t("common.owner"), value: data.owner },
+            { label: t("common.source"), value: data.source },
+            { label: t("common.department"), value: deptLabel(data.department, t) },
+            { label: t("common.dateRange", "Tarih"), value: `${data.startDate} → ${data.endDate}` },
+          ],
+        });
       }
       onSuccess();
     } catch (err) {

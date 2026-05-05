@@ -219,7 +219,19 @@ export default function AksiyonForm({ aksiyon, defaultProjeId, onSuccess, onClos
         });
       } else {
         addAksiyon(data);
-        toast.success(t("toast.actionCreated"), { message: data.name });
+        // Detaylı success toast — kullanıcı isteği 2026-05-04: hangi
+        // projede hangi aksiyon, lider, tarih aralığı, başlangıç durumu.
+        // Update toast'ı zaten zengin (changed fields), create de
+        // simetrik olsun.
+        toast.success(t("toast.actionCreated"), {
+          message: data.name,
+          details: [
+            { label: t("common.proje", "Proje"), value: parentProje?.name ?? "—" },
+            { label: t("common.owner"), value: data.owner },
+            { label: t("common.dateRange", "Tarih"), value: `${formatDate(data.startDate)} → ${formatDate(data.endDate)}` },
+            { label: t("common.status"), value: data.status },
+          ],
+        });
       }
       onSuccess();
     } catch (err) {
