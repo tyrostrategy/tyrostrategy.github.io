@@ -326,17 +326,16 @@ export const supabaseAdapter: DataService = {
 
   async createProje(input: Omit<Proje, "id">): Promise<Proje> {
     if (!supabase) throw new Error("Supabase not configured");
-    // ID generation — aynı PostgREST 1000-row limit bug'ı (createAksiyon
-    // ile aynı düzeltme): yıl prefix'iyle eşleşen, descending order, ilk 1.
-    const yy = String(new Date().getFullYear()).slice(-2);
-    const yearPrefix = `P${yy}-`;
-    const { data: existing } = await supabase
-      .from("projeler")
-      .select("id")
-      .like("id", `${yearPrefix}%`)
-      .order("id", { ascending: false })
-      .limit(1);
-    const id = generateId("P", (existing ?? []).map((r: { id: string }) => r.id));
+    // ID generation — server-side RPC (migration 024). RLS-bypass'lı
+    // SECURITY DEFINER fonksiyonu gerçek max ID'yi döndürür. Önceki
+    // client-side SELECT yaklaşımı RLS-filtered listeden geliyor, kullanıcı
+    // tüm projeleri göremiyorsa stale max → ID collision (23505 bug,
+    // kullanıcı raporu 2026-05-06).
+    const { data: rpcId, error: rpcErr } = await supabase.rpc("next_proje_id", {
+      p_start_date: input.startDate,
+    });
+    if (rpcErr || !rpcId) throw rpcErr ?? new Error("next_proje_id RPC returned empty");
+    const id = rpcId as string;
     const dbData = { id, ...projeToDb(input as Partial<Proje>), owner: input.owner, created_by: input.createdBy };
     const { data, error } = await supabase.from("projeler").insert(dbData).select().single();
     if (error) throw error;
@@ -446,21 +445,19 @@ export const supabaseAdapter: DataService = {
 
   async createAksiyon(input: Omit<Aksiyon, "id">): Promise<Aksiyon> {
     if (!supabase) throw new Error("Supabase not configured");
-    // ID generation — yıl prefix'iyle eşleşen en yüksek ID'yi bul, +1.
-    // ÖNCEKI BUG: select("id") tüm tabloyu çekmeye çalışıyordu ama PostgREST
-    // default 1000 satır limitine takılıyordu. 1121 aksiyon olunca ilk 1000
-    // dönüyor, max ID A26-1000 görünüyor, yeni A26-1001 üretiliyor — ama o
-    // ID 2. batch'te zaten var → PRIMARY KEY duplicate → INSERT fail.
-    // Yeni: sadece bu yıl prefix'iyle eşleşen, descending sort, ilk 1 satır.
-    const yy = String(new Date().getFullYear()).slice(-2);
-    const yearPrefix = `A${yy}-`;
-    const { data: existing } = await supabase
-      .from("aksiyonlar")
-      .select("id")
-      .like("id", `${yearPrefix}%`)
-      .order("id", { ascending: false })
-      .limit(1);
-    const id = generateId("A", (existing ?? []).map((r: { id: string }) => r.id));
+    // ID generation — server-side RPC (migration 024). SECURITY DEFINER
+    // fonksiyonu RLS bypass'lı gerçek max ID döndürür.
+    //
+    // Önceki yaklaşım client-side SELECT yapıyordu — viewOnlyOwn rollü
+    // kullanıcılar (Proje Lideri, Kullanıcı) için bu sorgu RLS'le
+    // filtreleniyor, kullanıcı sadece kendi projelerinin aksiyonlarını
+    // görüyor → max ID stale (gerçek max'tan düşük) → adapter aynı ID'yi
+    // tekrar üretiyor → PRIMARY KEY çakışması (23505) → "geçersiz veri
+    // kısıtlaması" toast (kullanıcı raporu 2026-05-06: tyro Proje Lideri
+    // participant olduğu projede aksiyon ekleyemiyordu).
+    const { data: rpcId, error: rpcErr } = await supabase.rpc("next_aksiyon_id");
+    if (rpcErr || !rpcId) throw rpcErr ?? new Error("next_aksiyon_id RPC returned empty");
+    const id = rpcId as string;
     const dbData = { id, ...aksiyonToDb(input as Partial<Aksiyon>), proje_id: input.projeId, owner: input.owner, created_by: input.createdBy };
     const { data, error } = await supabase.from("aksiyonlar").insert(dbData).select().single();
     if (error) throw error;
