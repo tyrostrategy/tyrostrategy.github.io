@@ -418,17 +418,43 @@ function Scene({ t, phase, onPortalClick, onFeatureArchive, onSceneReady }: Scen
 /* ═══════════════════════════════════════════════════════════════════
  * EXPORT
  * ═══════════════════════════════════════════════════════════════════ */
+
+/** Düşük güçlü cihaz tespiti — postprocessing pipeline'ını atla.
+ *  N8AO + Bloom + Vignette toplamda ~150 KB JS + büyük GPU shader compile
+ *  maliyeti. Düşük cihazda scene zaten zorlanırken bu pipeline tarayıcıyı
+ *  kilitliyor.
+ *  Kriterler:
+ *    - prefers-reduced-motion: accessibility tercihi
+ *    - deviceMemory < 4: 4GB altı RAM
+ *    - hardwareConcurrency < 4: 4 çekirdek altı
+ *  Server-side render (typeof window === "undefined") da true.
+ */
+function shouldSkipPostprocessing(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return true;
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    if (typeof nav.deviceMemory === "number" && nav.deviceMemory < 4) return true;
+    if (typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency < 4) return true;
+  } catch { /* defensive — feature detection errors → render full pipeline */ }
+  return false;
+}
+
 export default function LoginChessboard({ t, phase, onPortalClick, onFeatureArchive }: Props) {
   // Defer the post-processing pipeline (N8AO + Bloom + Vignette) until
   // the chess set has parsed and uploaded its textures. Shader compile
   // for those effects is expensive; overlapping it with the first GLTF
   // paint is what made the scene appear "in pieces" on cold load.
   const [sceneReady, setSceneReady] = useState(false);
+  const skipPost = useMemo(shouldSkipPostprocessing, []);
 
   return (
     <Canvas
       camera={{ position: [0.28, 0.34, 0.52], fov: 42 }}
-      dpr={[1, 1.6]}
+      // dpr cap 1.5 (eskiden 1.6) — yüksek-DPI ekranda %20 fewer pixel
+      // hesabı, görsel olarak fark edilmez ama hafif cihazda fps'i
+      // canlandırır. SSR / 1×: 1.
+      dpr={[1, 1.5]}
       gl={{ alpha: true, antialias: true }}
       shadows
       style={{ width: "100%", height: "100%" }}
@@ -442,7 +468,7 @@ export default function LoginChessboard({ t, phase, onPortalClick, onFeatureArch
           onSceneReady={() => setSceneReady(true)}
         />
       </Suspense>
-      {sceneReady && (
+      {sceneReady && !skipPost && (
         <EffectComposer multisampling={4}>
           <N8AO aoRadius={0.08} intensity={1.5} distanceFalloff={0.2} />
           <Bloom mipmapBlur intensity={0.32} luminanceThreshold={0.82} luminanceSmoothing={0.3} />

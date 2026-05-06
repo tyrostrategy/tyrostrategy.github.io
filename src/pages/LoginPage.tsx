@@ -21,6 +21,49 @@ const LoginChessboard = lazy(() => import("@/components/ui/LoginChessboard"));
 
 const COPYRIGHT = "© 2026 Powered by TTECH Business Solutions · Tiryaki Agro";
 
+/* CSS-only loading state. LoginChessboard chunk (1.17 MB gzip 352 KB) +
+ * GLTF + textures yüklenirken tamamen siyah ekran yerine markalı bir
+ * yükleme görünümü. Vignette + faint chess pattern + altın halka
+ * pulse ile "scene yükleniyor" hissi. Scene mount olduğunda overlay
+ * doğal olarak unmount oluyor (Suspense boundary). */
+function ChessboardLoadingFallback() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(45deg, rgba(200,146,42,0.04) 25%, transparent 25%, transparent 75%, rgba(200,146,42,0.04) 75%), " +
+            "linear-gradient(45deg, rgba(200,146,42,0.04) 25%, transparent 25%, transparent 75%, rgba(200,146,42,0.04) 75%)",
+          backgroundSize: "64px 64px",
+          backgroundPosition: "0 0, 32px 32px",
+          opacity: 0.5,
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(10,22,40,0.65) 70%, rgba(5,11,24,0.9) 100%)",
+        }}
+      />
+      <div
+        className="relative w-32 h-32 rounded-full"
+        style={{
+          background: "radial-gradient(circle, rgba(200,146,42,0.15) 0%, transparent 70%)",
+          animation: "tyro-loading-pulse 2.4s ease-in-out infinite",
+        }}
+      />
+      <style>{`
+        @keyframes tyro-loading-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.6; }
+          50% { transform: scale(1.15); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 const PHASE_DELAYS: Record<Exclude<IntroPhase, "idle">, number> = {
   p1: 100, p2: 600, p2b: 900, p3: 1800, p4: 2100, p5: 2700, p6: 3100, auth: 3700,
 };
@@ -151,7 +194,7 @@ export default function LoginPage() {
     >
       {/* ═════ 3D CHESSBOARD — full-screen background ═════ */}
       <div className="hidden lg:block absolute inset-0 z-[1]" aria-hidden="true">
-        <Suspense fallback={null}>
+        <Suspense fallback={<ChessboardLoadingFallback />}>
           <LoginChessboard
             t={t}
             phase={phase}

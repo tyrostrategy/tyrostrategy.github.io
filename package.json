@@ -80,6 +80,7 @@
     "jsdom": "^29.0.1",
     "pg": "^8.20.0",
     "prettier": "^3.8.1",
+    "sharp": "^0.34.5",
     "supabase": "^2.92.1",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
