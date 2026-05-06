@@ -343,17 +343,29 @@ export default function KokpitPage() {
 
         </div>{/* end scrollable left */}
 
-        {/* Action buttons — right side, hidden on mobile (FABs instead) */}
+        {/* Action buttons — right side, hidden on mobile (FABs instead).
+            Yetki davranışı (kullanıcı raporu 2026-05-06): Yönetim rolü
+            proje/aksiyon CRUD haklarını kaybettiğinde butonlar dinamik
+            olarak DISABLED görünmeli. Eskiden sadece "selectedProje var mı"
+            kontrolü vardı; rol bazlı yetki kontrolü yoktu. */}
         <div className="hidden sm:flex items-center gap-2 shrink-0">
-          {/* Yeni — dropdown */}
+          {/* Yeni — proje veya aksiyon oluşturma yetkisi yoksa pasif */}
+          {(() => {
+            const canCreateAny = canCreateProje || canCreateAksiyon;
+            return (
           <div className="relative">
-            <Tooltip content={t("kokpit.createNewTooltip")} placement="bottom" delay={500} closeDelay={0}>
+            <Tooltip content={canCreateAny ? t("kokpit.createNewTooltip") : t("permissions.noCreatePermission", "Oluşturma yetkiniz yok.")} placement="bottom" delay={500} closeDelay={0}>
               <motion.button
                 type="button"
+                disabled={!canCreateAny}
                 onClick={() => { setNewMenuOpen(!newMenuOpen); setEditMenuOpen(false); }}
-                className="h-9 px-3.5 rounded-lg text-white flex items-center gap-1.5 cursor-pointer text-[13px] font-semibold shadow-sm"
-                style={{ backgroundColor: brandColor }}
-                whileTap={{ scale: 0.96 }}
+                className={`h-9 px-3.5 rounded-lg flex items-center gap-1.5 text-[13px] font-semibold shadow-sm ${
+                  canCreateAny
+                    ? "text-white cursor-pointer"
+                    : "bg-tyro-border/40 text-tyro-text-muted/60 cursor-not-allowed"
+                }`}
+                style={canCreateAny ? { backgroundColor: brandColor } : undefined}
+                whileTap={canCreateAny ? { scale: 0.96 } : {}}
               >
                 <Plus size={15} strokeWidth={2.5} />
                 <span className="hidden sm:inline">{t("common.new")}</span>
@@ -361,7 +373,7 @@ export default function KokpitPage() {
               </motion.button>
             </Tooltip>
             <AnimatePresence>
-              {newMenuOpen && (
+              {newMenuOpen && canCreateAny && (
                 <>
                   <motion.div className="fixed inset-0 z-40 hidden sm:block" onClick={() => setNewMenuOpen(false)} />
                   <motion.div
@@ -383,8 +395,9 @@ export default function KokpitPage() {
                     <div className="h-px bg-tyro-border/20 mx-3" />
                     <button
                       type="button"
+                      disabled={!canCreateAksiyon}
                       onClick={() => { setNewMenuOpen(false); setAksiyonPanelOpen(true); }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-tyro-text-primary hover:bg-tyro-navy/5 transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-tyro-text-primary hover:bg-tyro-navy/5"
                     >
                       <CircleCheckBig size={16} className="text-emerald-500" />
                       {t("kokpit.newAction")}
@@ -394,18 +407,24 @@ export default function KokpitPage() {
               )}
             </AnimatePresence>
           </div>
-          {/* Düzenle — dropdown */}
+            );
+          })()}
+          {/* Düzenle — seçili proje + edit yetkisi */}
+          {(() => {
+            const canEdit = !!selectedProje && canEditProje(selectedProje.id);
+            return (
           <div className="relative">
-            <Tooltip content={selectedProje ? t("kokpit.editTooltip") : t("kokpit.selectProjectFirst")} placement="bottom" delay={500} closeDelay={0}>
+            <Tooltip content={!selectedProje ? t("kokpit.selectProjectFirst") : canEdit ? t("kokpit.editTooltip") : t("permissions.noEditPermission", "Düzenleme yetkiniz yok.")} placement="bottom" delay={500} closeDelay={0}>
               <motion.button
                 type="button"
-                onClick={() => { if (!selectedProje) return; setEditMenuOpen(!editMenuOpen); setNewMenuOpen(false); }}
+                disabled={!canEdit}
+                onClick={() => { if (!canEdit) return; setEditMenuOpen(!editMenuOpen); setNewMenuOpen(false); }}
                 className={`h-9 px-3.5 rounded-lg border flex items-center gap-1.5 text-[13px] font-semibold transition-all ${
-                  selectedProje
+                  canEdit
                     ? "border-tyro-border text-tyro-text-primary hover:bg-tyro-navy/5 cursor-pointer"
-                    : "border-tyro-border/40 text-tyro-text-muted/40 cursor-default"
+                    : "border-tyro-border/40 text-tyro-text-muted/40 cursor-not-allowed"
                 }`}
-                whileTap={selectedProje ? { scale: 0.96 } : {}}
+                whileTap={canEdit ? { scale: 0.96 } : {}}
               >
                 <Pencil size={14} />
                 <span className="hidden sm:inline">{t("common.edit")}</span>
@@ -413,7 +432,7 @@ export default function KokpitPage() {
               </motion.button>
             </Tooltip>
             <AnimatePresence>
-              {editMenuOpen && selectedProje && (
+              {editMenuOpen && canEdit && selectedProje && (
                 <>
                   <motion.div className="fixed inset-0 z-40 hidden sm:block" onClick={() => setEditMenuOpen(false)} />
                   <motion.div
@@ -458,17 +477,19 @@ export default function KokpitPage() {
               )}
             </AnimatePresence>
           </div>
-          {/* Sil — desktop only */}
+            );
+          })()}
+          {/* Sil — desktop only, seçili proje + delete yetkisi */}
+          {(() => {
+            const canDelete = !!selectedProje && canDeleteProje(selectedProje.id);
+            return (
           <div className="hidden sm:block">
-            <Tooltip content={selectedProje ? t("kokpit.deleteTooltip") : t("kokpit.selectProjectFirst")} placement="bottom" delay={500} closeDelay={0}>
+            <Tooltip content={!selectedProje ? t("kokpit.selectProjectFirst") : canDelete ? t("kokpit.deleteTooltip") : t("permissions.noDeletePermission", "Silme yetkiniz yok.")} placement="bottom" delay={500} closeDelay={0}>
               <motion.button
                 type="button"
+                disabled={!canDelete}
                 onClick={() => {
-                  if (!selectedProje) return;
-                  if (!canDeleteProje(selectedProje.id)) {
-                    toast.error(t("toast.operationFailed"), t("permissions.noDeletePermission", "Proje silme yetkiniz yok."));
-                    return;
-                  }
+                  if (!canDelete || !selectedProje) return;
                   const reason = getProjeDeleteReason(selectedProje.id);
                   if (reason) {
                     toast.error(`"${selectedProje.name}" silinemez`, { message: reason });
@@ -477,18 +498,20 @@ export default function KokpitPage() {
                   setConfirmOpen(true);
                 }}
                 className={`h-9 px-3.5 rounded-lg border flex items-center gap-1.5 text-[13px] font-semibold transition-all ${
-                  selectedProje
+                  canDelete
                     ? "border-red-200 text-red-500 hover:bg-red-50 cursor-pointer"
-                    : "border-tyro-border/40 text-tyro-text-muted/40 cursor-default"
+                    : "border-tyro-border/40 text-tyro-text-muted/40 cursor-not-allowed"
                 }`}
-                whileHover={selectedProje ? { scale: 1.04 } : {}}
-                whileTap={selectedProje ? { scale: 0.96 } : {}}
+                whileHover={canDelete ? { scale: 1.04 } : {}}
+                whileTap={canDelete ? { scale: 0.96 } : {}}
               >
                 <Trash2 size={14} />
                 {t("common.delete")}
               </motion.button>
             </Tooltip>
           </div>
+            );
+          })()}
         </div>
       </div>
 
