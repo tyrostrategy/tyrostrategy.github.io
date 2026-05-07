@@ -391,15 +391,15 @@ export const useDataStore = create<DataState>()(
           const newAksiyon: Aksiyon = { ...a, id, createdBy: a.createdBy ?? getCurrentUser(), createdAt: a.createdAt ?? now() };
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
           const projeler = recalcProjeProgress(s.projeler, aksiyonlar, newAksiyon.projeId);
-          syncToSupabase(
+          const syncP = syncToSupabase(
             async () => {
               const created = await supabaseAdapter.createAksiyon({ ...newAksiyon });
-              // Server-side RPC (migration 024) sees the real DB max ID
-              // bypassing RLS — client-side generateSystematicId only sees
-              // the locally cached aksiyonlar (RLS-filtered view), which
-              // can be stale. Swap the temporary local ID with the real
-              // DB ID so subsequent edits, sortOrder duplicate checks and
-              // the next addAksiyon call all reference the row that
+              // Server-side trigger (migration 026) bypasses RLS to see
+              // the real DB max ID — client-side generateSystematicId
+              // only sees the locally cached aksiyonlar (RLS-filtered),
+              // which can be stale. Swap the temporary local ID with the
+              // real DB ID so subsequent edits, sortOrder duplicate checks
+              // and the next addAksiyon all reference the row that
               // actually exists in Postgres. Without this swap a second
               // create attempt re-uses the same client-side ID and INSERT
               // hits a 23505 PK collision → "geçersiz veri kısıtlaması"
@@ -412,6 +412,13 @@ export const useDataStore = create<DataState>()(
             },
             { entity: "Aksiyon", action: "oluşturma", label: newAksiyon.name }
           );
+          // Pending registry (kullanıcı raporu 2026-05-07): wizard burst
+          // ekleme sırasında form sırasının DB ID sırasıyla eşleşmesi
+          // için, her addAksiyon'un sync promise'ini local ID ile track
+          // ederiz. Wizard for...of içinde waitForPendingSync(lastId)
+          // çağırıp arrival order'ı garanti altına alır.
+          _pendingCreates.set(id, syncP);
+          syncP.finally(() => _pendingCreates.delete(id));
           // Also sync parent proje progress + completedAt drift (recalc
           // may set/clear completedAt on the parent row). Bu otomatik
           // arka-plan işlemi — kullanıcı doğrudan tetiklemediği için

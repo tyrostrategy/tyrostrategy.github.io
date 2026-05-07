@@ -213,7 +213,16 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
         // bitmesini bekle, sonra child aksiyonları fire et.
         await waitForPendingSync(newProjeId);
 
-        (data.aksiyonlar ?? []).forEach((a, i) => {
+        // SEQUENTIAL INSERT (kullanıcı raporu 2026-05-07):
+        // Form sırası DB ID sırasıyla birebir eşleşmeli — kullanıcı
+        // forma A önce, B sonra eklediyse A26-1341 = A, A26-1342 = B
+        // olmalı. forEach paralel fire-and-forget yaparken arrival
+        // order belirsizdi (advisory_xact_lock duplicate'i engelliyor
+        // ama arrival sırası NETWORK timing'ine bağlı). Sequential
+        // await ile her aksiyonun sync'i tamamlanana kadar bekleriz.
+        const aksiyonsToAdd = data.aksiyonlar ?? [];
+        for (let i = 0; i < aksiyonsToAdd.length; i++) {
+          const a = aksiyonsToAdd[i];
           addAksiyon({
             projeId: newProjeId,
             name: a.name,
@@ -225,7 +234,14 @@ export default function ProjeAksiyonWizard({ onClose }: Props) {
             progress: 0,
             sortOrder: i + 1,
           });
-        });
+          // En son eklenen aksiyon'un local ID'sini bul, sync'inin
+          // tamamlanmasını bekle. Böylece bir sonraki iteration'daki
+          // addAksiyon DB'ye gittiğinde önceki insert kesin landırılmış
+          // olur → trigger gerçek max'tan +1 ID atar.
+          const aksiyonsState = useDataStore.getState().aksiyonlar;
+          const lastLocalId = aksiyonsState[aksiyonsState.length - 1]?.id;
+          if (lastLocalId) await waitForPendingSync(lastLocalId);
+        }
 
         setCreatedName(data.name);
         setCreatedAksiyonCount(data.aksiyonlar?.length ?? 0);
