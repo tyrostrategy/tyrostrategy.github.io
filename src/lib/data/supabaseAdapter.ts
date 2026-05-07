@@ -326,19 +326,15 @@ export const supabaseAdapter: DataService = {
 
   async createProje(input: Omit<Proje, "id">): Promise<Proje> {
     if (!supabase) throw new Error("Supabase not configured");
-    // ID generation — server-side RPC (migration 024). RLS-bypass'lı
-    // SECURITY DEFINER fonksiyonu gerçek max ID'yi döndürür. Önceki
-    // client-side SELECT yaklaşımı RLS-filtered listeden geliyor, kullanıcı
-    // tüm projeleri göremiyorsa stale max → ID collision (23505 bug,
-    // kullanıcı raporu 2026-05-06).
-    const { data: rpcId, error: rpcErr } = await supabase.rpc("next_proje_id", {
-      p_start_date: input.startDate,
-    });
-    if (rpcErr || !rpcId) throw rpcErr ?? new Error("next_proje_id RPC returned empty");
-    const id = rpcId as string;
-    const dbData = { id, ...projeToDb(input as Partial<Proje>), owner: input.owner, created_by: input.createdBy };
+    // ID üretimi DB-side: migration 026 BEFORE INSERT trigger
+    // (app.assign_proje_id) advisory lock ile atomik olarak NEW.id'yi
+    // atar. RPC + ayrı INSERT yarış halinde aynı ID'yi iki callera verip
+    // ikinci insert'i 23505 ile patlatıyordu. id artık DB'den dönüyor —
+    // tag/participant insert'lerinde de bu gerçek id kullanılır.
+    const dbData = { ...projeToDb(input as Partial<Proje>), owner: input.owner, created_by: input.createdBy };
     const { data, error } = await supabase.from("projeler").insert(dbData).select().single();
     if (error) throw error;
+    const id = (data as DbProje).id;
 
     // Handle tags
     if (input.tags?.length) {
@@ -445,20 +441,13 @@ export const supabaseAdapter: DataService = {
 
   async createAksiyon(input: Omit<Aksiyon, "id">): Promise<Aksiyon> {
     if (!supabase) throw new Error("Supabase not configured");
-    // ID generation — server-side RPC (migration 024). SECURITY DEFINER
-    // fonksiyonu RLS bypass'lı gerçek max ID döndürür.
-    //
-    // Önceki yaklaşım client-side SELECT yapıyordu — viewOnlyOwn rollü
-    // kullanıcılar (Proje Lideri, Kullanıcı) için bu sorgu RLS'le
-    // filtreleniyor, kullanıcı sadece kendi projelerinin aksiyonlarını
-    // görüyor → max ID stale (gerçek max'tan düşük) → adapter aynı ID'yi
-    // tekrar üretiyor → PRIMARY KEY çakışması (23505) → "geçersiz veri
-    // kısıtlaması" toast (kullanıcı raporu 2026-05-06: tyro Proje Lideri
-    // participant olduğu projede aksiyon ekleyemiyordu).
-    const { data: rpcId, error: rpcErr } = await supabase.rpc("next_aksiyon_id");
-    if (rpcErr || !rpcId) throw rpcErr ?? new Error("next_aksiyon_id RPC returned empty");
-    const id = rpcId as string;
-    const dbData = { id, ...aksiyonToDb(input as Partial<Aksiyon>), proje_id: input.projeId, owner: input.owner, created_by: input.createdBy };
+    // ID üretimi DB-side: migration 026 BEFORE INSERT trigger
+    // (app.assign_aksiyon_id) advisory lock ile atomik olarak NEW.id'yi
+    // atar. RPC + ayrı INSERT iki transaction'a bölünmüş + arada race
+    // condition (kullanıcı raporu 2026-05-07: aynı saniyede 4 ardışık
+    // aksiyonlar_pkey ihlali). Adapter artık id göndermiyor; INSERT
+    // RETURNING * trigger'ın atadığı gerçek ID'yi geri verir.
+    const dbData = { ...aksiyonToDb(input as Partial<Aksiyon>), proje_id: input.projeId, owner: input.owner, created_by: input.createdBy };
     const { data, error } = await supabase.from("aksiyonlar").insert(dbData).select().single();
     if (error) throw error;
     return dbToAksiyon(data as DbAksiyon);
