@@ -390,6 +390,166 @@ async function api(method, path, body) {
     return "rejected as expected";
   });
 
+  // ── ID TRIGGER + SEQUENCE (migrations 025/026/027) ──
+  // Adapter artık id-less INSERT atıyor, BEFORE INSERT trigger
+  // pg_advisory_xact_lock ile atomik ID atıyor. Bu testler:
+  //   1. Trigger gerçekten çalışıyor mu (id-less insert kabul ediliyor mu)
+  //   2. Atanan ID son sıralı (max + 1) mi
+  //   3. 5 paralel insert'te 5 distinct sequential ID dönüyor mu (lock test)
+  //   4. Malformed ID CHECK constraint (027) tarafından reddediliyor mu
+  // Yıl prefix dinamik: current_date'ten ve start_date'ten türer (2027'de
+  // A27/P27'ye otomatik döner).
+  console.log("\nID TRIGGER + SEQUENCE (DB-side ID generation):");
+
+  // Yıl prefix hesapla — sistem tarihinden (trigger de aynısını yapıyor)
+  const yy = new Date().getFullYear().toString().slice(-2);
+  const aksiyonPrefix = `A${yy}-`;
+  // Smoke test proje start_date "2026-05-04" — trigger oradan prefix türetir
+  const projeStartDate = "2026-05-04";
+  const projePrefix = `P${projeStartDate.slice(2, 4)}-`;
+
+  // Helper: max ID for prefix → numeric (or 0 if no rows)
+  async function readMaxNum(table, prefix) {
+    const r = await api("GET", `/${table}?id=like.${prefix}*&select=id&order=id.desc&limit=1`);
+    if (!r.length) return 0;
+    return parseInt(r[0].id.slice(prefix.length), 10);
+  }
+
+  // 1) Single id-less INSERT proje → newId === prevMax + 1
+  let triggerProjeId = null;
+  let triggerAksiyonId = null;
+  await step("INSERT proje WITHOUT id (trigger assigns)", async () => {
+    const prevMax = await readMaxNum("projeler", projePrefix);
+    const r = await api("POST", "/projeler", {
+      name: "SMOKE_TRIGGER_TEST",
+      source: "Türkiye",
+      status: "Not Started",
+      owner: "Cenk Şayli",
+      department: "BT",
+      progress: 0,
+      start_date: projeStartDate,
+      end_date: "2026-05-05",
+    });
+    triggerProjeId = r[0].id;
+    if (!new RegExp(`^${projePrefix}\\d{4,}$`).test(triggerProjeId)) {
+      throw new Error(`format mismatch: ${triggerProjeId}`);
+    }
+    const newNum = parseInt(triggerProjeId.slice(projePrefix.length), 10);
+    if (newNum !== prevMax + 1) {
+      throw new Error(`sequence broken: prev=${prevMax} got=${newNum} (expected ${prevMax + 1})`);
+    }
+    return `${triggerProjeId} (prevMax=${prevMax} +1)`;
+  });
+
+  // 2) Single id-less INSERT aksiyon → newId === prevMax + 1
+  await step("INSERT aksiyon WITHOUT id (trigger assigns)", async () => {
+    const prevMax = await readMaxNum("aksiyonlar", aksiyonPrefix);
+    const r = await api("POST", "/aksiyonlar", {
+      proje_id: triggerProjeId,
+      name: "SMOKE_TRIGGER_TEST",
+      owner: "Cenk Şayli",
+      progress: 0,
+      status: "Not Started",
+      start_date: projeStartDate,
+      end_date: "2026-05-05",
+      sort_order: 1,
+    });
+    triggerAksiyonId = r[0].id;
+    if (!new RegExp(`^${aksiyonPrefix}\\d{4,}$`).test(triggerAksiyonId)) {
+      throw new Error(`format mismatch: ${triggerAksiyonId}`);
+    }
+    const newNum = parseInt(triggerAksiyonId.slice(aksiyonPrefix.length), 10);
+    if (newNum !== prevMax + 1) {
+      throw new Error(`sequence broken: prev=${prevMax} got=${newNum} (expected ${prevMax + 1})`);
+    }
+    return `${triggerAksiyonId} (prevMax=${prevMax} +1)`;
+  });
+
+  // Cleanup single-insert tests before burst (so prevMax is fresh)
+  await step("DELETE single-insert aksiyon", async () => {
+    await api("DELETE", `/aksiyonlar?id=eq.${triggerAksiyonId}`);
+    return "204";
+  });
+
+  // 3) Burst — 5 paralel aksiyon insert. Hepsi distinct sequential olmalı.
+  //    Migration 026 advisory_xact_lock dropped olsaydı veya unique
+  //    constraint var olsaydı (id PRIMARY KEY zaten unique), race ya
+  //    duplicate key error ya da gap'li sequence üretirdi.
+  await step("INSERT 5 aksiyon paralel (advisory lock + sequence)", async () => {
+    const prevMax = await readMaxNum("aksiyonlar", aksiyonPrefix);
+    const promises = Array.from({ length: 5 }, (_, i) =>
+      api("POST", "/aksiyonlar", {
+        proje_id: triggerProjeId,
+        name: `SMOKE_BURST_${i}`,
+        owner: "Cenk Şayli",
+        progress: 0,
+        status: "Not Started",
+        start_date: projeStartDate,
+        end_date: "2026-05-05",
+        sort_order: i,
+      }),
+    );
+    const results = await Promise.all(promises);
+    const ids = results.map((r) => r[0].id);
+    const unique = new Set(ids);
+    if (unique.size !== 5) throw new Error(`duplicates: ${ids.join(",")}`);
+    // Sequential check: sorted numeric values should be prevMax+1..prevMax+5
+    const nums = ids
+      .map((id) => parseInt(id.slice(aksiyonPrefix.length), 10))
+      .sort((a, b) => a - b);
+    for (let i = 0; i < 5; i++) {
+      if (nums[i] !== prevMax + 1 + i) {
+        throw new Error(
+          `sequence gap: expected ${prevMax + 1 + i} at position ${i}, got ${nums[i]}. Full: ${nums.join(",")}`,
+        );
+      }
+    }
+    return `${nums[0]}..${nums[4]} (5 distinct sequential)`;
+  });
+
+  // Cleanup burst aksiyons
+  await step("DELETE burst aksiyons", async () => {
+    await api("DELETE", `/aksiyonlar?proje_id=eq.${triggerProjeId}`);
+    return "204";
+  });
+
+  // 4) Malformed ID rejection — CHECK constraint (migration 027)
+  //    Format: ^P[0-9]{2}-[0-9]+$ → "BAD-FORMAT" reddedilmeli (23514).
+  await step("INSERT proje with malformed id (CHECK 027)", async () => {
+    let rejected = false;
+    try {
+      await api("POST", "/projeler", {
+        id: "BAD-FORMAT",
+        name: "SMOKE_BAD_ID",
+        source: "Türkiye",
+        status: "Not Started",
+        owner: "Cenk Şayli",
+        department: "BT",
+        progress: 0,
+        start_date: projeStartDate,
+        end_date: "2026-05-05",
+      });
+    } catch (e) {
+      // 23514 = check_violation
+      if (e.message.includes("violates check constraint") || e.message.includes("23514")) {
+        rejected = true;
+      } else {
+        throw new Error(`unexpected error: ${e.message}`);
+      }
+    }
+    if (!rejected) {
+      await api("DELETE", `/projeler?id=eq.BAD-FORMAT`).catch(() => {});
+      throw new Error("malformed id ACCEPTED — migration 027 CHECK constraint missing/dropped");
+    }
+    return "rejected (23514 check_violation)";
+  });
+
+  // Cleanup trigger test parent proje (cascade should clear remaining children)
+  await step("DELETE trigger test parent proje", async () => {
+    await api("DELETE", `/projeler?id=eq.${triggerProjeId}`);
+    return "204";
+  });
+
   // ── role_permissions (READ-ONLY — bu tabloyu yazmak gerçek izinleri bozar) ──
   console.log("\nROLE_PERMISSIONS (read-only):");
   await step("SELECT all roles exist", async () => {
