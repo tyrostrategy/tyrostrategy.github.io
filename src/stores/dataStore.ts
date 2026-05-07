@@ -392,7 +392,24 @@ export const useDataStore = create<DataState>()(
           const aksiyonlar = [...s.aksiyonlar, newAksiyon];
           const projeler = recalcProjeProgress(s.projeler, aksiyonlar, newAksiyon.projeId);
           syncToSupabase(
-            () => supabaseAdapter.createAksiyon({ ...newAksiyon }),
+            async () => {
+              const created = await supabaseAdapter.createAksiyon({ ...newAksiyon });
+              // Server-side RPC (migration 024) sees the real DB max ID
+              // bypassing RLS — client-side generateSystematicId only sees
+              // the locally cached aksiyonlar (RLS-filtered view), which
+              // can be stale. Swap the temporary local ID with the real
+              // DB ID so subsequent edits, sortOrder duplicate checks and
+              // the next addAksiyon call all reference the row that
+              // actually exists in Postgres. Without this swap a second
+              // create attempt re-uses the same client-side ID and INSERT
+              // hits a 23505 PK collision → "geçersiz veri kısıtlaması"
+              // toast (kullanıcı raporu 2026-05-07).
+              if (created.id !== id) {
+                set((st) => ({
+                  aksiyonlar: st.aksiyonlar.map((x) => (x.id === id ? created : x)),
+                }));
+              }
+            },
             { entity: "Aksiyon", action: "oluşturma", label: newAksiyon.name }
           );
           // Also sync parent proje progress + completedAt drift (recalc
