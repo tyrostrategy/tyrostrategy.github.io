@@ -41,7 +41,7 @@ Mode is selected at boot via `VITE_DATA_PROVIDER` (`mock` | `supabase`). `src/li
 Three layers, top → bottom:
 
 1. **`src/stores/dataStore.ts` (Zustand)** — single source of truth for the UI. Optimistic CRUD: `addX/updateX/deleteX` mutate local state synchronously, then fire-and-forget through `syncToSupabase(...)`. State is persisted to `localStorage` so a hard refresh shows the last-known data while the new fetch is in flight.
-2. **`src/lib/data/supabaseAdapter.ts`** — REST adapter over `@supabase/supabase-js`. Encapsulates the DB ↔ App shape mapping (snake_case ↔ camelCase, link tables for participants/tags). **Adapter contract: every mutation must `throw` on error** — `return null` / `return !error` is forbidden because it bypasses `syncToSupabase`'s retry + toast pipeline. `fetchX` may degrade to `[]` (UI shows empty state).
+2. **`src/lib/data/supabaseAdapter.ts`** — REST adapter over `@supabase/supabase-js`. Encapsulates the DB ↔ App shape mapping (snake_case ↔ camelCase, link tables for participants/tags). **Adapter contract: every mutation must `throw` on error** — `return null` / `return !error` is forbidden because it bypasses `syncToSupabase`'s retry + toast pipeline. `fetchX` may degrade to `[]` (UI shows empty state). Also: `createAksiyon` / `createProje` no longer send the `id` field — the DB trigger assigns it (see *ID generation*) and `RETURNING *` returns the real one; the dataStore drift fix swaps that ID into zustand.
 3. **PostgREST + Postgres + RLS** — `supabase/migrations/NNN_*.sql` are numeric, append-only, idempotent (CREATE OR REPLACE / DROP IF EXISTS). Migrations are NEVER mutated retroactively — fix mistakes by adding a new migration that supersedes.
 
 ### `syncToSupabase` contract (`dataStore.ts`)
@@ -51,6 +51,15 @@ Three layers, top → bottom:
 - **Permanent errors fast-path** — `42501` (RLS deny), `23xxx` (constraint), `22xxx` (data exception), `42P01/42P17` (table/recursion) skip retry and toast immediately.
 - Caller passes a `SyncContext` (`{ entity, action, label }`) so the toast shows `Aksiyon "Canlı Geçiş" oluşturma başarısız: yetkiniz yok. Tekrar deneyin.` instead of a generic message.
 - Internal `_pendingCreates` Map exposes `waitForPendingSync(id)` for parent→child create races (used by `ProjeAksiyonWizard`).
+
+### ID generation (proje + aksiyon)
+
+- Adapter mutations **do NOT send `id`**. INSERT goes id-less; the `BEFORE INSERT` trigger (migration 026, `app.assign_aksiyon_id` / `app.assign_proje_id`) uses `pg_advisory_xact_lock` to serialize parallel inserts and assign `NEW.id` atomically — wizard's "1 proje + 4 aksiyon" flow gets distinct sequential IDs even under burst load.
+- Format: `A{YY}-{NNNN}` (aksiyon, prefix from `current_date`) / `P{YY}-{NNNN}` (proje, prefix from `start_date`). Counter resets to `0001` on year rollover (next insert in 2027 → `A27-0001`). Above 9999 the function widens past 4 digits instead of truncating.
+- Defense-in-depth: migration 027 `CHECK (id ~ '^[A][0-9]{2}-[0-9]+$')` (and `^[P]` for projeler) blocks malformed IDs at the table level — even if the trigger were dropped, corruption can't slip in.
+- The trigger short-circuits when `NEW.id` is already set, preserving backward compatibility for data imports / `scripts/smoke-test-crud.cjs` (which uses `P26-9991` / `A26-9991`).
+- `dataStore.addAksiyon` writes a temporary client-side ID (`generateSystematicId`) to zustand for the optimistic render, then **swaps** it for the DB-returned ID once the adapter resolves. In mock mode the swap is short-circuited, so the client-side ID stays.
+- Migration 024's RPCs (`app.next_aksiyon_id`, `app.next_proje_id`) still exist in the DB but the adapter no longer calls them — kept around for any legacy caller.
 
 ### Identity & RLS
 
@@ -68,6 +77,8 @@ node scripts/apply-migration-direct.cjs <NN>
 ```
 
 The script runs the migration in a transaction, then automatically runs `npm run smoke` (set `SKIP_SMOKE=1` to bypass for seed migrations). If smoke fails the migration is flagged for rollback. The Supabase Dashboard SQL Editor is also available for manual application — but it does **not** trigger the post-migration smoke, so remember to run `npm run smoke` afterwards.
+
+A third path: if the Supabase MCP server is connected, `mcp__supabase__apply_migration` applies the SQL directly **and** records it in `supabase_migrations.schema_migrations`. The `apply-migration-direct.cjs` script does **not** write to that table, so migrations applied via the script are invisible to MCP `list_migrations`. Pick one tool per migration to keep history coherent.
 
 ## Smart pre-push hook
 
