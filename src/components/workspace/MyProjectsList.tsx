@@ -214,19 +214,24 @@ export default function MyProjectsList() {
                 color="var(--tyro-success)"
               />
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-3">
+                {/* Statü dağılımı üstteki "Proje Özeti" kartında zaten var —
+                    burada sadece ortalama ilerleme çubuğu yeterli (kullanıcı
+                    geri bildirimi 2026-05-07). */}
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-[13px] font-bold text-tyro-text-primary">
-                    {t("workspace.statusDistribution")}
+                    {t("workspace.avgProgress")}
                   </span>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-[11px] text-tyro-text-muted">{t("workspace.avgProgress")}</span>
-                    <span className="text-[16px] font-extrabold text-tyro-navy tabular-nums">%{projeAvg}</span>
-                  </div>
+                  <span className="text-[16px] font-extrabold text-tyro-navy tabular-nums">%{projeAvg}</span>
                 </div>
-                <StackedStatusBar
-                  items={ws.myProjeler}
-                  getStatus={(s) => getStatusLabel(s as EntityStatus, t)}
-                />
+                <div className="h-3 rounded-full overflow-hidden bg-tyro-bg/60">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: "var(--tyro-navy)" }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${projeAvg}%` }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  />
+                </div>
               </div>
             </div>
 
