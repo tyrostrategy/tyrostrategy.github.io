@@ -56,7 +56,10 @@ export default function GanttPage() {
   const currentYear = new Date().getFullYear();
   const defaultYear = yearOptions.includes(currentYear) ? currentYear : yearOptions[0];
 
-  const [zoom, setZoom] = useState<ZoomLevel>("year");
+  // Default 2026-05-08: kullanıcı geri bildirimi — varsayılan zoom "Tümü"
+  // (yıllık 12 aylık pencereden çok kapsamlı tüm aksiyonları gösteren
+  // mod daha kullanışlı bulundu). Manuel "Yıl" / "Çeyrek" seçimi mevcut.
+  const [zoom, setZoom] = useState<ZoomLevel>("all");
   const [selectedYear, setSelectedYear] = useState(defaultYear);
   const [selectedQuarter, setSelectedQuarter] = useState(Math.ceil((new Date().getMonth() + 1) / 3));
   const [ganttSearch, setGanttSearch] = useState("");

@@ -390,8 +390,11 @@ function DetailPanel({
         );
       })()}
 
-      {/* === INFO GRID — 4 column expandable === */}
-      <div className="rounded-2xl bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/30 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+      {/* === INFO GRID — 4 column expandable ===
+           Hafif gri zemin (slate-100/60) — üstteki proje adı + statü
+           kartından görsel olarak ayrılsın (kullanıcı geri bildirimi
+           2026-05-08). Beyaz/80 → açık gri/60. */}
+      <div className="rounded-2xl bg-slate-100/60 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/40 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         {/* Always visible: 4 dates */}
         <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-tyro-border/40">
           <InfoCell icon={<Calendar size={12} />} label={t("common.startDate")} value={formatDate(proje.startDate)} />
