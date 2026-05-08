@@ -484,17 +484,21 @@ function DetailPanel({
                 const stColor = STATUS_HEX[aksiyon.status] ?? "#94a3b8";
                 return (
                   <div key={aksiyon.id} className="relative">
-                    {/* Per-row trunk segment.
-                        - isFirst: top: 20 (dot center), bottom: -8 (gap'i de aşar)
-                        - middle: top: -8, bottom: -8 (üst+alt gap'leri köprüler)
-                        - isLast: top: -8, bottom: calc(100% - 20px) (dot'ta biter)
-                        Tek aksiyonlu projede trunk hiç render edilmez. */}
+                    {/* Per-row trunk segment — kullanıcı raporu 2026-05-09:
+                        Önceki halde her satır hem yukarı hem aşağı 8px uzanıyordu;
+                        komşu satırların trunk'ları gap alanında üst üste binip
+                        15% × 2 = ~28% efektif opacity ile koyu bir parça oluşturuyordu.
+                        Çözüm: yalnız AŞAĞI uzan, üstten extension yok. Komşu satırın
+                        trunk'ı kendi y=0'ından başlar, sınırda BİRLEŞİR ama overlap olmaz.
+                        - isFirst: top: 20 (dot merkezinden başla), bottom: -8 (gap köprü)
+                        - middle:  top: 0,  bottom: -8 (alt gap'i köprüler)
+                        - isLast:  top: 0,  bottom: calc(100% - 20px) (dot'ta biter) */}
                     {sortedAksiyonlar.length > 1 && (
                       <span
                         className="absolute w-[2px] bg-tyro-navy/15"
                         style={{
                           left: -23,
-                          top: isFirst ? 20 : -8,
+                          top: isFirst ? 20 : 0,
                           bottom: isLast ? "calc(100% - 20px)" : -8,
                         }}
                         aria-hidden
