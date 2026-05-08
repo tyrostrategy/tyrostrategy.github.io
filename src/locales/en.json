@@ -852,6 +852,7 @@
     "overallProgress": "Overall Progress",
     "objectiveInfo": "Project Details",
     "actionsCount": "Actions ({{count}})",
+    "expectedNow": "Expected level today: {{pct}}%",
     "addAction": "Add Action",
     "actionsCompleted": "{{completed}}/{{total}} actions completed",
     "noObjectivesFound": "No projects match these filters",

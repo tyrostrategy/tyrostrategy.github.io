@@ -391,10 +391,10 @@ function DetailPanel({
       })()}
 
       {/* === INFO GRID — 4 column expandable ===
-           Hafif gri zemin (slate-100/60) — üstteki proje adı + statü
-           kartından görsel olarak ayrılsın (kullanıcı geri bildirimi
-           2026-05-08). Beyaz/80 → açık gri/60. */}
-      <div className="rounded-2xl bg-slate-100/60 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/40 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+           Açık gri zemin (slate-50/70) — üstteki proje adı + statü
+           kartından görsel olarak ayrılsın (2026-05-08), 2026-05-09'da
+           daha açık tona çekildi (slate-100/60 → slate-50/70). */}
+      <div className="rounded-2xl bg-slate-50/70 dark:bg-white/5 backdrop-blur-xl border border-tyro-border/40 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         {/* Always visible: 4 dates */}
         <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-tyro-border/40">
           <InfoCell icon={<Calendar size={12} />} label={t("common.startDate")} value={formatDate(proje.startDate)} />
@@ -467,26 +467,74 @@ function DetailPanel({
           {/* Aksiyon Ekle butonu kaldırıldı — FAB üzerinden erişiliyor */}
         </div>
 
-        <div className="flex flex-col gap-2">
-          {[...aksiyonlar]
-            .sort((a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999))
-            .map((aksiyon) => (
-              <AksiyonRow
-                key={aksiyon.id}
-                aksiyon={aksiyon}
-                index={aksiyon.sortOrder ?? 0}
-                canEdit={canEditAksiyon(aksiyon.id)}
-                onQuickProgress={(val) => handleQuickProgress(aksiyon.id, val)}
-                onClick={() => onClickAksiyon?.(aksiyon)}
-                onEdit={() => onEditAksiyon?.(aksiyon)}
-              />
-            ))}
-          {aksiyonlar.length === 0 && (
-            <p className="text-[12px] text-tyro-text-muted italic text-center py-6">
-              {t("detail.noActionsYet")}
-            </p>
-          )}
-        </div>
+        {/* Connector layer — kullanıcı isteği 2026-05-09: aksiyon kartlarının
+            DIŞINDA, kart soluna ince trunk + statü renkli halka + yatay stub.
+            Rapor konfigürasyonundaki tree connector ile aynı dil, kokpit'te
+            daha büyük ölçek (w-3 dot, 2px trunk). pl-8 container'a sol boşluk
+            açıyor; trunk per-row segment'le first/last'da nokta hizasında bitiyor. */}
+        {(() => {
+          const sortedAksiyonlar = [...aksiyonlar].sort(
+            (a, b) => (a.sortOrder ?? 9999) - (b.sortOrder ?? 9999)
+          );
+          return (
+            <div className="relative pl-8 flex flex-col gap-2">
+              {sortedAksiyonlar.map((aksiyon, idx) => {
+                const isFirst = idx === 0;
+                const isLast = idx === sortedAksiyonlar.length - 1;
+                const stColor = STATUS_HEX[aksiyon.status] ?? "#94a3b8";
+                return (
+                  <div key={aksiyon.id} className="relative">
+                    {/* Per-row trunk segment.
+                        - isFirst: top: 20 (dot center), bottom: -8 (gap'i de aşar)
+                        - middle: top: -8, bottom: -8 (üst+alt gap'leri köprüler)
+                        - isLast: top: -8, bottom: calc(100% - 20px) (dot'ta biter)
+                        Tek aksiyonlu projede trunk hiç render edilmez. */}
+                    {sortedAksiyonlar.length > 1 && (
+                      <span
+                        className="absolute w-[2px] bg-tyro-navy/15"
+                        style={{
+                          left: -23,
+                          top: isFirst ? 20 : -8,
+                          bottom: isLast ? "calc(100% - 20px)" : -8,
+                        }}
+                        aria-hidden
+                      />
+                    )}
+                    {/* Connector dot — statü renkli halka, içi beyaz */}
+                    <span
+                      className="absolute w-3 h-3 rounded-full border-[2px] bg-white shadow-sm"
+                      style={{
+                        left: -28,
+                        top: 14,
+                        borderColor: stColor,
+                      }}
+                      aria-hidden
+                    />
+                    {/* Horizontal stub — dot'tan kart kenarına */}
+                    <span
+                      className="absolute h-[2px] bg-tyro-navy/15"
+                      style={{ left: -16, top: 19, width: 16 }}
+                      aria-hidden
+                    />
+                    <AksiyonRow
+                      aksiyon={aksiyon}
+                      index={aksiyon.sortOrder ?? 0}
+                      canEdit={canEditAksiyon(aksiyon.id)}
+                      onQuickProgress={(val) => handleQuickProgress(aksiyon.id, val)}
+                      onClick={() => onClickAksiyon?.(aksiyon)}
+                      onEdit={() => onEditAksiyon?.(aksiyon)}
+                    />
+                  </div>
+                );
+              })}
+              {aksiyonlar.length === 0 && (
+                <p className="text-[12px] text-tyro-text-muted italic text-center py-6">
+                  {t("detail.noActionsYet")}
+                </p>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Footer meta moved to expandable info card */}
@@ -570,14 +618,79 @@ function AksiyonRow({
       {(() => {
         const p = aksiyon.progress;
         const statusColor = STATUS_HEX[aksiyon.status] ?? "#94a3b8";
+        // Beklenen ilerleme — bugünün tarihine göre aksiyonun olması gereken
+        // seviye (kullanıcı isteği 2026-05-09): start ile end arasındaki
+        // doğrusal beklenti. Achieved olan veya tarihleri eksik olanlar için
+        // gizlenir; aksi halde altın renkli ▼/▲ markörler + bar üzerinde
+        // ince dikey çizgi ile gösterilir. HeroUI Tooltip ile "%X" detayı.
+        const expectedPct: number | null = (() => {
+          if (aksiyon.status === "Achieved") return null;
+          if (!aksiyon.startDate || !aksiyon.endDate) return null;
+          const startMs = new Date(aksiyon.startDate).getTime();
+          const endMs = new Date(aksiyon.endDate).getTime();
+          if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
+          const e = ((Date.now() - startMs) / (endMs - startMs)) * 100;
+          return Math.min(100, Math.max(0, e));
+        })();
         return (
           <div className="flex flex-col gap-1.5 ml-7">
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-2 rounded-full bg-tyro-border/15 overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${p}%`, backgroundColor: statusColor, transition: "width 500ms ease" }}
-                />
+              <div className="relative flex-1">
+                {expectedPct !== null && (
+                  <Tooltip
+                    content={t("kokpit.expectedNow", { pct: Math.round(expectedPct) })}
+                    placement="top"
+                    size="sm"
+                  >
+                    {/* Marker grubu — bar'ı dikey ortalayan absolute container.
+                        Üstte ters üçgen (▼), bar boyunca ince çizgi, altta üçgen (▲).
+                        Gold renk (--tyro-gold) statü renklerinden farklı, target/hedef
+                        semantiği veriyor. */}
+                    <div
+                      className="absolute pointer-events-auto cursor-help"
+                      style={{
+                        left: `${expectedPct}%`,
+                        top: -5,
+                        bottom: -5,
+                        width: 10,
+                        transform: "translateX(-50%)",
+                      }}
+                      aria-label={t("kokpit.expectedNow", { pct: Math.round(expectedPct) })}
+                    >
+                      <div className="relative w-full h-full flex flex-col items-center">
+                        {/* ▼ üst */}
+                        <div
+                          className="w-0 h-0"
+                          style={{
+                            borderLeft: "4px solid transparent",
+                            borderRight: "4px solid transparent",
+                            borderTop: "5px solid var(--tyro-gold)",
+                          }}
+                        />
+                        {/* ince dikey çizgi (bar boyunca) */}
+                        <span
+                          className="flex-1 w-[1.5px] bg-tyro-gold/70 rounded-full"
+                          aria-hidden
+                        />
+                        {/* ▲ alt */}
+                        <div
+                          className="w-0 h-0"
+                          style={{
+                            borderLeft: "4px solid transparent",
+                            borderRight: "4px solid transparent",
+                            borderBottom: "5px solid var(--tyro-gold)",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </Tooltip>
+                )}
+                <div className="h-2 rounded-full bg-tyro-border/15 overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${p}%`, backgroundColor: statusColor, transition: "width 500ms ease" }}
+                  />
+                </div>
               </div>
               <span className="text-[11px] font-bold tabular-nums shrink-0" style={{ color: statusColor }}>
                 %{p}

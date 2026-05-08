@@ -852,6 +852,7 @@
     "overallProgress": "Genel İlerleme",
     "objectiveInfo": "Proje Bilgileri",
     "actionsCount": "Aksiyonlar ({{count}})",
+    "expectedNow": "Bugün için beklenen seviye: %{{pct}}",
     "addAction": "Aksiyon Ekle",
     "actionsCompleted": "{{completed}}/{{total}} aksiyon tamamlandı",
     "noObjectivesFound": "Bu filtrelere uygun proje bulunamadı",
