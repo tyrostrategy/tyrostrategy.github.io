@@ -1719,35 +1719,84 @@ ${clone.outerHTML}
                                 transition={{ duration: 0.15 }}
                                 className="overflow-hidden"
                               >
-                                <div className="px-4 pb-3 space-y-0.5">
-                                  {ha.map((a) => {
-                                    return (
-                                      // items-start: aksiyon adı uzun ve sarılırsa
-                                      // % + statü hep ilk satırla hizalı kalsın.
-                                      // mt-0.5 sağ tarafta dengeleme.
-                                      <div key={a.id} className="flex items-start justify-between gap-3 py-2 border-b border-tyro-border/8 last:border-0">
-                                        <div className="flex-1 min-w-0">
-                                          {/* truncate yerine break-words: uzun aksiyon adı
-                                              ekran taşmıyor, alt satıra sarılıyor — sağ
-                                              kolondaki yüzde ve statü sıkışmıyor. */}
-                                          <p className="text-[12px] font-semibold text-tyro-text-primary leading-snug break-words">{a.name}</p>
-                                          <p className="text-[11px] text-tyro-text-secondary mt-0.5">
-                                            {a.owner} · {new Date(a.startDate).toLocaleDateString(dateLocale)} → {new Date(a.endDate).toLocaleDateString(dateLocale)}
-                                          </p>
+                                {/* Aksiyon listesi — kullanıcı geri bildirimi 2026-05-08:
+                                     (1) sol tarafta birbirine bağlı "tree" connector
+                                         (vertical trunk + horizontal stub) görsel hiyerarşi
+                                         versin
+                                     (2) aksiyon adı ve yüzde arasında statü renkli progress
+                                         çubuk; aksiyon adı uzunsa alt satıra sarsın, çubuğa
+                                         çarpmasın.
+                                     pl-6: connector için sol boşluk. */}
+                                <div className="relative px-4 pb-3 pl-9">
+                                  {/* Vertical trunk — ilk aksiyondan sonuncuya */}
+                                  <span
+                                    className="absolute left-[26px] w-[1.5px] bg-tyro-navy/20 print:bg-slate-400"
+                                    style={{ top: 14, bottom: 14 }}
+                                    aria-hidden
+                                  />
+                                  <div className="space-y-0.5">
+                                    {ha.map((a) => {
+                                      const sColor = STATUS_COLOR[a.status];
+                                      return (
+                                        <div
+                                          key={a.id}
+                                          className="relative flex items-start gap-3 py-2 border-b border-tyro-border/8 last:border-0"
+                                        >
+                                          {/* Connector dot — trunk merkeziyle hizalı (sol kenardan
+                                              23px = trunk merkezi 26.75px ± 0.25px). Statü
+                                              renginde halka, içi beyaz — durum hızlıca okunsun. */}
+                                          <span
+                                            className="absolute w-2 h-2 rounded-full border-[1.5px] bg-white print:bg-white"
+                                            style={{
+                                              left: -13,
+                                              top: 13,
+                                              borderColor: sColor,
+                                            }}
+                                            aria-hidden
+                                          />
+                                          {/* Horizontal stub — dotun sağından satır içeriğine */}
+                                          <span
+                                            className="absolute h-[1.5px] bg-tyro-navy/20 print:bg-slate-400"
+                                            style={{ left: -5, top: 16, width: 5 }}
+                                            aria-hidden
+                                          />
+
+                                          {/* Aksiyon adı + sahip/tarih — wrap edebilir */}
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-[12px] font-semibold text-tyro-text-primary leading-snug break-words">{a.name}</p>
+                                            <p className="text-[11px] text-tyro-text-secondary mt-0.5">
+                                              {a.owner} · {new Date(a.startDate).toLocaleDateString(dateLocale)} → {new Date(a.endDate).toLocaleDateString(dateLocale)}
+                                            </p>
+                                          </div>
+
+                                          {/* Progress bar — sabit genişlikli kolon, statü renkli.
+                                              Aksiyon adı multi-line olunca da yana yaslı kalır. */}
+                                          <div className="w-24 shrink-0 mt-1.5">
+                                            <div
+                                              className="h-1.5 rounded-full overflow-hidden"
+                                              style={{ backgroundColor: `${sColor}1A` }}
+                                            >
+                                              <div
+                                                className="h-full rounded-full"
+                                                style={{
+                                                  width: `${Math.max(0, Math.min(100, a.progress))}%`,
+                                                  backgroundColor: sColor,
+                                                }}
+                                              />
+                                            </div>
+                                          </div>
+
+                                          {/* % + statü pill — eski yapı korunuyor */}
+                                          <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                                            <span className="w-10 text-left text-[12px] font-bold tabular-nums" style={{ color: sColor }}>{a.progress}%</span>
+                                            <span className="inline-block min-w-[110px] text-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${sColor}12`, color: sColor }}>
+                                              {STATUS_TR[a.status]}
+                                            </span>
+                                          </div>
                                         </div>
-                                        {/* Sabit-genişlik kolonlar — yüzde sola yaslı + en
-                                            uzun statü ("Yüksek Riskte") için min-width.
-                                            İkon yok (kullanıcı isteği — html2canvas'ta SVG
-                                            ikonlar dikeyde kayıyordu). */}
-                                        <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                                          <span className="w-10 text-left text-[12px] font-bold tabular-nums" style={{ color: STATUS_COLOR[a.status] }}>{a.progress}%</span>
-                                          <span className="inline-block min-w-[110px] text-center text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${STATUS_COLOR[a.status]}12`, color: STATUS_COLOR[a.status] }}>
-                                            {STATUS_TR[a.status]}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
+                                      );
+                                    })}
+                                  </div>
                                 </div>
                               </motion.div>
                             )}
