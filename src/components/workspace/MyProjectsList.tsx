@@ -24,28 +24,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 // Only project-based — no aksiyon tab
 
-/* ── Radial Gauge (compact) ── */
-function RadialGauge({ value, total, avgProgress: _avgProgress, color }: { value: number; total: number; avgProgress: number; color: string }) {
-  const pct = total > 0 ? (value / total) * 100 : 0;
-  return (
-    <div className="relative w-[70px] h-[70px] shrink-0">
-      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-        <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" className="text-tyro-bg" strokeWidth="2.5" />
-        <circle
-          cx="18" cy="18" r="15" fill="none" stroke={color} strokeWidth="2.5"
-          strokeDasharray={`${pct * 0.942} 94.2`}
-          strokeLinecap="round"
-          className="transition-all duration-700"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[14px] font-extrabold tabular-nums text-tyro-text-primary leading-none">{value}</span>
-        <span className="text-[11px] text-tyro-text-muted">/ {total}</span>
-      </div>
-    </div>
-  );
-}
-
 /* ── Horizontal Stacked Bar ── */
 function StackedStatusBar({ items, getStatus }: { items: { status: string }[]; getStatus: (s: string) => string }) {
   const counts = new Map<string, number>();
@@ -160,11 +138,6 @@ export default function MyProjectsList() {
     for (const tag of (h.tags ?? [])) projeTagMap.set(tag, (projeTagMap.get(tag) ?? 0) + 1);
   }
   const getTagColor = useDataStore((s) => s.getTagColor);
-  const projeAvg = ws.myProjeler.length > 0
-    ? Math.round(ws.myProjeler.reduce((s, h) => s + h.progress, 0) / ws.myProjeler.length) : 0;
-  const projeAchieved = ws.myProjeler.filter((h) => h.status === "Achieved").length;
-  const aksiyonAvg = ws.myAksiyonlar.length > 0
-    ? Math.round(ws.myAksiyonlar.reduce((s, a) => s + a.progress, 0) / ws.myAksiyonlar.length) : 0;
 
   const aksiyonlar = useDataStore((s) => s.aksiyonlar);
   const projeNameMap = new Map(ws.myProjeler.map((h) => [h.id, h.name]));
@@ -205,35 +178,10 @@ export default function MyProjectsList() {
             transition={{ duration: 0.2 }}
             className="flex flex-col gap-5 flex-1"
           >
-            {/* Gauge + Status bars */}
-            <div className="flex items-start gap-6">
-              <RadialGauge
-                value={projeAchieved}
-                total={ws.myProjeler.length}
-                avgProgress={projeAvg}
-                color="var(--tyro-success)"
-              />
-              <div className="flex-1 min-w-0">
-                {/* Statü dağılımı üstteki "Proje Özeti" kartında zaten var —
-                    burada sadece ortalama ilerleme çubuğu yeterli (kullanıcı
-                    geri bildirimi 2026-05-07). */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[13px] font-bold text-tyro-text-primary">
-                    {t("workspace.avgProgress")}
-                  </span>
-                  <span className="text-[16px] font-extrabold text-tyro-navy tabular-nums">%{projeAvg}</span>
-                </div>
-                <div className="h-3 rounded-full overflow-hidden bg-tyro-bg/60">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: "var(--tyro-navy)" }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${projeAvg}%` }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                  />
-                </div>
-              </div>
-            </div>
+            {/* Gauge + ortalama ilerleme çubuğu kaldırıldı (kullanıcı geri
+                bildirimi 2026-05-08): "İş Dağılım Özeti" kartı doğrudan
+                İş Kolu Dağılımı'ndan başlasın. Statü dağılımı + ortalama
+                ilerleme zaten üstteki "Proje Özeti" kartında var. */}
 
             {/* Source distribution (proje only) */}
             {ws.myProjeler.length > 0 && (
